@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TAA Signal Reference — Full Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;--bg4:#21262d;
+  --border:#30363d;--border2:#444c56;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --teal:#2dd4bf;--teal2:#14b8a6;--teal3:#0d9488;
+  --blue:#58a6ff;--blue2:#388bfd;
+  --amber:#d29922;--amber2:#e3b341;
+  --purple:#bc8cff;--purple2:#a371f7;
+  --green:#3fb950;--green2:#56d364;
+  --red:#f85149;--red2:#ff7b72;
+  --orange:#f0883e;
+  --f:+1;--m:+2;--s:+3;--v:+4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.5}
+a{color:var(--blue);text-decoration:none}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.main{flex:1;padding:28px 32px;max-width:1100px;overflow-x:hidden}
+
+/* Sidebar */
+.sb-logo{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.sb-logo-tag{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--teal)}
+.sb-logo-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.sb-section{padding:14px 16px 4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:500}
+.sb-link{display:flex;align-items:center;gap:7px;padding:6px 16px;color:var(--text2);font-size:12px;cursor:pointer;border-left:2px solid transparent;transition:all .12s}
+.sb-link:hover{background:var(--bg3);color:var(--text)}
+.sb-link.active{background:rgba(45,212,191,.06);color:var(--teal);border-left-color:var(--teal)}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sb-spacer{flex:1}
+.sb-footer{padding:10px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--border)}
+
+/* Navigation groups */
+.nav-group-fi .sb-dot{background:var(--blue)}
+.nav-group-eq .sb-dot{background:var(--green)}
+.nav-group-pillar .sb-dot{background:var(--teal)}
+
+/* View panels */
+.view{display:none}
+.view.active{display:block}
+
+/* Page header */
+.page-header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
+.page-title span{color:var(--teal)}
+.page-desc{font-size:12px;color:var(--text2);max-width:680px;line-height:1.6}
+
+/* Section headers */
+.section-header{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin:28px 0 14px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.sub-header{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px}
+
+/* Chips / pills */
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;font-family:'IBM Plex Mono',monospace;letter-spacing:.2px;white-space:nowrap}
+.chip-teal{background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.2)}
+.chip-blue{background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.2)}
+.chip-green{background:rgba(63,185,80,.1);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.chip-amber{background:rgba(227,179,65,.1);color:var(--amber2);border:1px solid rgba(227,179,65,.2)}
+.chip-purple{background:rgba(188,140,255,.1);color:var(--purple);border:1px solid rgba(188,140,255,.2)}
+.chip-red{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.2)}
+.chip-gray{background:rgba(139,148,158,.1);color:var(--text2);border:1px solid rgba(139,148,158,.2)}
+.chip-orange{background:rgba(240,136,62,.1);color:var(--orange);border:1px solid rgba(240,136,62,.2)}
+
+/* Signal sign badges */
+.sign-pos{color:var(--green);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.sign-neg{color:var(--red);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.sign-con{color:var(--purple);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.sign-na{color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:500;color:var(--text)}
+.card.pillar-F{border-top:2px solid var(--teal)}
+.card.pillar-M{border-top:2px solid var(--amber2)}
+.card.pillar-S{border-top:2px solid var(--purple)}
+.card.pillar-V{border-top:2px solid var(--blue)}
+
+/* Signal table */
+.sig-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.sig-table th{background:var(--bg3);color:var(--text3);padding:7px 10px;text-align:left;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.sig-table th:first-child{border-radius:6px 0 0 0}
+.sig-table th:last-child{border-radius:0 6px 0 0}
+.sig-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.4}
+.sig-table tr:last-child td{border-bottom:none}
+.sig-table tr:hover td{background:rgba(255,255,255,.02)}
+.sig-name{font-weight:500;color:var(--text);margin-bottom:2px}
+.sig-sub{font-size:10px;color:var(--text3)}
+.ticker{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);background:rgba(88,166,255,.06);padding:1px 5px;border-radius:3px}
+.metric-box{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal2);background:rgba(20,184,166,.06);padding:3px 7px;border-radius:4px;line-height:1.6}
+.window-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* Asset class matrix */
+.ac-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.ac-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .15s}
+.ac-card:hover{border-color:var(--border2);background:var(--bg3)}
+.ac-card.selected{border-color:var(--teal);background:rgba(45,212,191,.05)}
+.ac-card-name{font-weight:500;font-size:12px;margin-bottom:2px}
+.ac-card-sub{font-size:10px;color:var(--text3)}
+.ac-card-badge{float:right;margin-top:-2px}
+.ac-group-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:12px 0 6px;font-weight:500}
+
+/* Pillar composition view */
+.pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pillar-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pillar-card-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pillar-card-title{font-size:12px;font-weight:600;letter-spacing:.3px}
+.pillar-card-body{padding:0}
+.signal-row{padding:8px 14px;border-bottom:1px solid rgba(48,54,61,.5);display:grid;grid-template-columns:1fr 28px 40px;gap:6px;align-items:start;transition:background .1s}
+.signal-row:last-child{border-bottom:none}
+.signal-row:hover{background:rgba(255,255,255,.02)}
+.sig-row-name{font-size:11.5px;font-weight:500;color:var(--text);margin-bottom:1px}
+.sig-row-desc{font-size:10px;color:var(--text3);line-height:1.4}
+.sig-row-sign{text-align:center;padding-top:2px}
+.sig-row-wt{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);padding-top:3px}
+
+/* Aggregation flow */
+.agg-step{display:flex;gap:14px;margin-bottom:20px;align-items:flex-start}
+.agg-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;font-family:'IBM Plex Mono',monospace}
+.agg-content{flex:1}
+.agg-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;font-family:'Syne',sans-serif}
+.agg-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8;overflow-x:auto}
+.code-block .kw{color:var(--purple2)}
+.code-block .fn{color:var(--blue)}
+.code-block .var{color:var(--teal)}
+.code-block .num{color:var(--orange)}
+.code-block .cm{color:var(--text3)}
+
+/* View matrix (relative) */
+.matrix-wrap{overflow-x:auto;margin-bottom:16px}
+.matrix-table{border-collapse:collapse;font-size:11px;white-space:nowrap}
+.matrix-table th{background:var(--bg3);color:var(--text3);padding:7px 12px;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;border:1px solid var(--border);text-align:center}
+.matrix-table th:first-child{text-align:left;min-width:160px}
+.matrix-table td{padding:7px 10px;border:1px solid var(--border);text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.matrix-table td:first-child{text-align:left;font-family:'Inter',sans-serif;font-size:11px;color:var(--text)}
+.mc-strong-pos{background:rgba(63,185,80,.2);color:var(--green2);font-weight:600}
+.mc-pos{background:rgba(63,185,80,.08);color:var(--green)}
+.mc-neg{background:rgba(248,81,73,.08);color:var(--red)}
+.mc-strong-neg{background:rgba(248,81,73,.2);color:var(--red2);font-weight:600}
+.mc-neutral{color:var(--text3)}
+.mc-na{color:var(--border2);font-size:9px}
+
+/* Conviction table */
+.conviction-table{width:100%;border-collapse:collapse;font-size:12px}
+.conviction-table td,.conviction-table th{padding:10px 14px;border-bottom:1px solid var(--border)}
+.conviction-table th{background:var(--bg3);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:500}
+.conviction-table tr:last-child td{border-bottom:none}
+
+/* Info boxes */
+.info-box{background:rgba(45,212,191,.05);border:1px solid rgba(45,212,191,.2);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.65}
+.info-box strong{color:var(--teal);font-weight:500}
+.warn-box{background:rgba(227,179,65,.05);border:1px solid rgba(227,179,65,.2);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.65}
+.warn-box strong{color:var(--amber2);font-weight:500}
+
+/* Tabs (inline) */
+.itabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.itab{padding:5px 14px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;color:var(--text3);border:1px solid var(--border);background:none;font-family:inherit;transition:all .12s}
+.itab:hover{color:var(--text);border-color:var(--border2)}
+.itab.on{background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.35);color:var(--teal)}
+.itab-panel{display:none}.itab-panel.on{display:block}
+
+/* Responsive */
+@media(max-width:780px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static}
+  .pillar-grid,.ac-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-tag">TAA Framework</div>
+    <div class="sb-logo-sub">Signal Reference v1.0</div>
+  </div>
+  <div class="sb-section">Signal Universe</div>
+  <div class="sb-link nav-group-pillar active" onclick="show('v-fundamentals',this)"><span class="sb-dot"></span>I. Fundamentals</div>
+  <div class="sb-link nav-group-pillar" onclick="show('v-momentum',this)"><span class="sb-dot"></span>II. Momentum</div>
+  <div class="sb-link nav-group-pillar" onclick="show('v-sentiment',this)"><span class="sb-dot"></span>III. Sentiment</div>
+  <div class="sb-link nav-group-pillar" onclick="show('v-valuation',this)"><span class="sb-dot"></span>IV. Valuation</div>
+  <div class="sb-section">Asset Classes</div>
+  <div class="sb-link nav-group-fi" onclick="show('v-matrix',this)"><span class="sb-dot" style="background:var(--blue)"></span>Full Signal Matrix</div>
+  <div class="sb-link nav-group-fi" onclick="show('v-fi',this)"><span class="sb-dot" style="background:var(--blue)"></span>Fixed Income</div>
+  <div class="sb-link nav-group-eq" onclick="show('v-eq',this)"><span class="sb-dot" style="background:var(--green)"></span>Equity</div>
+  <div class="sb-section">Scoring System</div>
+  <div class="sb-link" onclick="show('v-agg',this)"><span class="sb-dot" style="background:var(--amber2)"></span>Aggregation Logic</div>
+  <div class="sb-link" onclick="show('v-views',this)"><span class="sb-dot" style="background:var(--purple)"></span>Absolute vs Relative</div>
+  <div class="sb-spacer"></div>
+  <div class="sb-footer">
+    Based on Bloomberg/FRED data<br>
+    Excel: Dashboard_TAA_Inputs.xlsx
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ════════════════════════════════════════
+     PILLAR I: FUNDAMENTALS
+════════════════════════════════════════ -->
+<section class="view active" id="v-fundamentals">
+<div class="page-header">
+  <div class="page-title">Pillar I — <span>Fundamentals</span></div>
+  <div class="page-desc">Leading indicators of economic and corporate health. These signals lead markets by 1–6 months. They tell you <em>where the economy is going</em>, not where it's been. Use rolling 5-year z-scores for most; monthly PMI data needs only 60-month windows.</div>
+</div>
+
+<div class="info-box"><strong>Sign convention for Fixed Income:</strong> A strong fundamental signal (PMI rising, GDP revising up) is <span class="sign-pos">+</span> for equity but <span class="sign-neg">−</span> for duration (rates rise → bond prices fall). Multiply these signals by −1 before including them in FI pillar scores. Credit (IG/HY/EM) uses the equity sign since spread tightening = growth = positive.</div>
+
+<!-- PMI SERIES -->
+<div class="section-header">PMI Series</div>
+<div class="card pillar-F">
+<div class="card-header"><div class="card-title">Manufacturing &amp; Services PMI — Regional Coverage</div><span class="chip chip-teal">Monthly · Bloomberg</span></div>
+<table class="sig-table">
+<thead><tr><th>Series / Ticker</th><th>Region</th><th>Metrics to compute</th><th>Z-score window</th><th>Asset classes</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">ISM Manufacturing PMI</div><div class="ticker">NAPMPMI Index</div></td><td>US</td><td><div class="metric-box">Level z-score (60M)<br>Δ3M direction<br>4-Quadrant regime score<br>New Orders/Inventories ratio</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity +</div><div class="chip chip-blue">UST / STFI −</div></td></tr>
+<tr><td><div class="sig-name">ISM Services PMI</div><div class="ticker">NAPMNMI Index</div></td><td>US</td><td><div class="metric-box">Level z-score (60M)<br>Δ3M direction<br>Employment sub-index</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity +</div><div class="chip chip-blue">LT Treasuries −</div></td></tr>
+<tr><td><div class="sig-name">ISM New Orders / Inventories</div><div class="ticker">.ISM G Index</div></td><td>US</td><td><div class="metric-box">Ratio level z-score<br>&gt;1.0 = demand expanding faster than inventories<br>Leading indicator for ISM headline</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity ++</div><div class="chip chip-amber">US Corp +</div></td></tr>
+<tr><td><div class="sig-name">ISM Mfg Employment</div><div class="ticker">NAPMEMPL Index</div></td><td>US</td><td><div class="metric-box">Level z-score<br>Δ3M direction</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green">US Equity +</div></td></tr>
+<tr><td><div class="sig-name">ISM Mfg New Export Orders</div><div class="ticker">NAPMNEWO Index</div></td><td>US</td><td><div class="metric-box">Level z-score<br>Proxy for global demand</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity +</div><div class="chip chip-purple">EM Equity +</div></td></tr>
+<tr><td><div class="sig-name">Eurozone Manufacturing PMI</div><div class="ticker">MPMIEZMA Index</div></td><td>Eurozone</td><td><div class="metric-box">Level z-score (60M)<br>Δ3M direction<br>4-Quadrant regime</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">Eurozone EQ +</div><div class="chip chip-green">DM ex-US +</div></td></tr>
+<tr><td><div class="sig-name">Eurozone Services PMI</div><div class="ticker">MPMIEZSA Index</div></td><td>Eurozone</td><td><div class="metric-box">Level z-score<br>Δ3M direction</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green">Eurozone EQ +</div></td></tr>
+<tr><td><div class="sig-name">China Manufacturing PMI (Caixin)</div><div class="ticker">CPMINDX Index</div></td><td>China</td><td><div class="metric-box">Level z-score (60M)<br>Δ3M direction<br>4-Quadrant regime<br>New orders sub-index</div></td><td class="window-tag">60 months</td><td><div class="chip chip-purple" style="margin-bottom:3px">China EQ ++</div><div class="chip chip-purple" style="margin-bottom:3px">EM Equity +</div><div class="chip chip-orange">LT EM FI +</div></td></tr>
+<tr><td><div class="sig-name">China Services PMI (Caixin)</div><div class="ticker">MPMICNSA Index</div></td><td>China</td><td><div class="metric-box">Level z-score<br>Δ3M direction</div></td><td class="window-tag">60 months</td><td><div class="chip chip-purple">China EQ +</div></td></tr>
+<tr><td><div class="sig-name">Japan Manufacturing PMI (Jibun)</div><div class="ticker">MPMIJPMA Index</div></td><td>Japan</td><td><div class="metric-box">Level z-score<br>Δ3M direction</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green">Japan EQ +</div></td></tr>
+<tr><td><div class="sig-name">UK Manufacturing PMI</div><div class="ticker">MPMIGBMA Index</div></td><td>UK</td><td><div class="metric-box">Level z-score<br>Δ3M direction</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green">UK Equity +</div></td></tr>
+<tr><td><div class="sig-name">Global Manufacturing PMI</div><div class="ticker">MPMIGLMA Index</div></td><td>Global</td><td><div class="metric-box">Level z-score<br>Global growth regime</div></td><td class="window-tag">60 months</td><td><div class="chip chip-green" style="margin-bottom:3px">All Equity +</div><div class="chip chip-orange">LT EM FI +</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- SURPRISE INDEX -->
+<div class="section-header">Economic Surprise Series</div>
+<div class="card pillar-F">
+<div class="card-header"><div class="card-title">Citi Economic Surprise Index (CESI) — Regional</div><span class="chip chip-teal">Daily · Bloomberg</span></div>
+<div class="warn-box"><strong>Mean-reversion property:</strong> CESI mean-reverts strongly toward zero. When at extremes (pctile &gt; 85% or &lt; 15% over trailing 252 days), use a <em>contrarian</em> signal. In the middle range, use as a directional signal. Also useful: the <em>direction</em> of CESI (rising vs falling) captures momentum of surprises, which is more persistent than the level.</div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Region</th><th>Metrics</th><th>Z-window</th><th>Asset classes</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">CESI United States</div><div class="ticker">CESIUSD Index</div></td><td>US</td><td><div class="metric-box">Level z-score (252d)<br>Δ20d direction<br>Percentile (252d) for contrarian<br>if pctile&gt;85 → flip sign</div></td><td class="window-tag">252 days</td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity +</div><div class="chip chip-blue">UST/STFI − (inverted)</div></td></tr>
+<tr><td><div class="sig-name">CESI Eurozone</div><div class="ticker">CESIEUR Index</div></td><td>Eurozone</td><td><div class="metric-box">Level z-score · Δ20d</div></td><td class="window-tag">252 days</td><td><div class="chip chip-green">Eurozone / DM EQ +</div></td></tr>
+<tr><td><div class="sig-name">CESI China</div><div class="ticker">CESICNY Index</div></td><td>China</td><td><div class="metric-box">Level z-score · Δ20d</div></td><td class="window-tag">252 days</td><td><div class="chip chip-purple" style="margin-bottom:3px">China EQ +</div><div class="chip chip-purple">EM Equity +</div></td></tr>
+<tr><td><div class="sig-name">CESI Global</div><div class="ticker">CESIGL Index</div></td><td>Global</td><td><div class="metric-box">Background regime indicator<br>Level z-score</div></td><td class="window-tag">252 days</td><td><div class="chip chip-teal">All assets (context)</div></td></tr>
+<tr><td><div class="sig-name">CESI UK</div><div class="ticker">CESIGBP Index</div></td><td>UK</td><td><div class="metric-box">Level z-score · Δ20d</div></td><td class="window-tag">252 days</td><td><div class="chip chip-green">UK Equity +</div></td></tr>
+<tr><td><div class="sig-name">CESI Japan</div><div class="ticker">CESIJPY Index</div></td><td>Japan</td><td><div class="metric-box">Level z-score · Δ20d</div></td><td class="window-tag">252 days</td><td><div class="chip chip-green">Japan Equity +</div></td></tr>
+<tr><td><div class="sig-name">CESI Emerging Markets</div><div class="ticker">CESIEM Index</div></td><td>EM</td><td><div class="metric-box">Level z-score · Δ20d</div></td><td class="window-tag">252 days</td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity +</div><div class="chip chip-orange">LT EM FI +</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- GDP FORECASTS -->
+<div class="section-header">GDP Growth Forecasts</div>
+<div class="card pillar-F">
+<div class="card-header"><div class="card-title">Bloomberg Consensus GDP Forecasts — Current &amp; Next Year</div><span class="chip chip-teal">Daily · Bloomberg ECGD</span></div>
+<div class="info-box"><strong>Construction:</strong> Blend current-year and next-year forecasts with time-varying weights: <code>w_current = month/12</code>, so January gives 8%/92% current/next while December gives 100%/0%. The <strong>revision</strong> (month-over-month change in the consensus) is more predictive than the level — revisions capture the momentum of analyst expectations.</div>
+<table class="sig-table">
+<thead><tr><th>Region</th><th>Tickers (26/27)</th><th>Metrics</th><th>Asset classes (+)</th></tr></thead>
+<tbody>
+<tr><td>United States</td><td><div class="ticker">ECGDUS 26 · ECGDUS 27</div></td><td><div class="metric-box">Blended forecast level<br>Δ1M revision (more important!)<br>z-score revision (36M window)</div></td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity +</div><div class="chip chip-blue">UST/STFI −</div></td></tr>
+<tr><td>Eurozone</td><td><div class="ticker">ECGDEU 26 · ECGDEU 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-green">Eurozone EQ +</div></td></tr>
+<tr><td>Developed Markets</td><td><div class="ticker">ECGDD1 26 · ECGDD1 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-green">DM ex-US EQ +</div></td></tr>
+<tr><td>Emerging Markets</td><td><div class="ticker">ECGDM1 26 · ECGDM1 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity +</div><div class="chip chip-orange">LT EM FI +</div></td></tr>
+<tr><td>China</td><td><div class="ticker">ECGDCN 26 · ECGDCN 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-purple">China EQ ++</div></td></tr>
+<tr><td>Japan</td><td><div class="ticker">ECGDJP 26 · ECGDJP 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-green">Japan Equity +</div></td></tr>
+<tr><td>LatAm</td><td><div class="ticker">ECGDR4 26 · ECGDR4 27</div></td><td><div class="metric-box">Blended forecast · Δ1M revision</div></td><td><div class="chip chip-purple">EM Equity (LatAm weight) +</div></td></tr>
+<tr><td>Global</td><td><div class="ticker">ECGDWO 26 · ECGDWO 27</div></td><td><div class="metric-box">Background global growth signal</div></td><td><div class="chip chip-teal">All risk assets (context)</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- EARNINGS -->
+<div class="section-header">Corporate Fundamentals — Earnings</div>
+<div class="card pillar-F">
+<div class="card-header"><div class="card-title">Forward EPS Growth &amp; Earnings Surprise</div><span class="chip chip-teal">Daily · Bloomberg BEST fields</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Bloomberg field</th><th>Metrics</th><th>Asset classes</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">US Forward EPS Growth</div><div class="ticker">SPX Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score (252d)<br>Δ20d revision<br>Earnings Revision Ratio: (upgrades−downgrades)/total</div></td><td><div class="chip chip-green">US Equity ++</div></td></tr>
+<tr><td><div class="sig-name">Eurozone Forward EPS Growth</div><div class="ticker">MXEMU Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score · Δ20d revision</div></td><td><div class="chip chip-green">Eurozone EQ +</div></td></tr>
+<tr><td><div class="sig-name">MSCI EM Forward EPS Growth</div><div class="ticker">MXEF Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score · Δ20d revision</div></td><td><div class="chip chip-purple">EM Equity ++</div></td></tr>
+<tr><td><div class="sig-name">MSCI World Forward EPS Growth</div><div class="ticker">MXWO Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score · global context</div></td><td><div class="chip chip-green">DM ex-US EQ +</div></td></tr>
+<tr><td><div class="sig-name">China Forward EPS Growth</div><div class="ticker">MXCN Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score · Δ20d revision</div></td><td><div class="chip chip-purple">China EQ ++</div></td></tr>
+<tr><td><div class="sig-name">Japan Forward EPS Growth</div><div class="ticker">MXJP Index</div></td><td><div class="ticker">BEST_EPS_GRO</div></td><td><div class="metric-box">Level z-score · Δ20d revision</div></td><td><div class="chip chip-green">Japan EQ +</div></td></tr>
+<tr><td><div class="sig-name">US Earnings Beat %</div><div class="ticker">BEst US Beat%</div></td><td><div class="ticker">Computed</div></td><td><div class="metric-box">&gt;65%: +2 · 55-65%: +1 · &lt;50%: −1<br>z-score rolling 60M</div></td><td><div class="chip chip-green">US Equity +</div></td></tr>
+<tr><td><div class="sig-name">EM / DM Earnings Beat %</div><div class="ticker">By region</div></td><td><div class="ticker">Computed</div></td><td><div class="metric-box">Same logic: z-score 60M</div></td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity +</div><div class="chip chip-green">DM EQ +</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- INFLATION -->
+<div class="section-header">Inflation &amp; Central Bank Policy</div>
+<div class="card pillar-F">
+<div class="card-header"><div class="card-title">Inflation Expectations &amp; Real Rates</div><span class="chip chip-amber">Daily · FRED</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Source/Ticker</th><th>Metrics</th><th>Asset classes</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">5Y Breakeven Inflation</div><div class="ticker">T5YIE (FRED)</div></td><td>FRED</td><td><div class="metric-box">Level z-score (252*5 days)<br>Δ20d direction<br>Level vs Fed target (2.0%)</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Treasuries − (inflation erodes)</div><div class="chip chip-green">MM + (higher rates stay longer)</div></td></tr>
+<tr><td><div class="sig-name">10Y Breakeven Inflation</div><div class="ticker">T10YIE (FRED)</div></td><td>FRED</td><td><div class="metric-box">Level z-score · Δ20d direction</div></td><td><div class="chip chip-blue">LT Treasuries − (amplified)</div></td></tr>
+<tr><td><div class="sig-name">US Core PCE YoY</div><div class="ticker">PCEPILFE (FRED)</div></td><td>FRED/Monthly</td><td><div class="metric-box">Level z-score (60M)<br>vs 2% target: above = bearish duration</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Treasuries −</div><div class="chip chip-amber">US Corp mixed</div></td></tr>
+<tr><td><div class="sig-name">Fed Funds Rate</div><div class="ticker">FDTR (BBG/Hoja2)</div></td><td>Bloomberg</td><td><div class="metric-box">Level vs r* (neutral ~2.5%)<br>Direction (hiking/cutting cycle)<br>Real Fed Funds = FF − Core CPI</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Treasuries: high FF = bearish</div><div class="chip chip-teal">MM: high FF = positive carry</div></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     PILLAR II: MOMENTUM
+════════════════════════════════════════ -->
+<section class="view" id="v-momentum">
+<div class="page-header">
+  <div class="page-title">Pillar II — <span>Momentum</span></div>
+  <div class="page-desc">Price trends and spread dynamics. These signals exploit the persistence of returns across asset classes. A key insight: for multi-asset TAA, the <strong>12-1 month price momentum</strong> (skip last month) is the single highest-IC signal. Spread momentum for fixed income mirrors price momentum for equity.</div>
+</div>
+
+<div class="section-header">Price Momentum — Equity Indices</div>
+<div class="card pillar-M">
+<div class="card-header"><div class="card-title">Total Return Indices — Available in Excel (Sheet: TR)</div><span class="chip chip-amber">Daily · Bloomberg</span></div>
+<div class="info-box"><strong>For every TR index, compute these 7 metrics:</strong><br>
+(1) ret_1M = pct_change(21) | (2) ret_3M = pct_change(63) | (3) ret_6M = pct_change(126) | (4) ret_12_1M = price.shift(21).pct_change(231) | (5) ma_dist = (SMA50 − SMA200)/SMA200 | (6) rsi_14 = RSI(14) | (7) range_pos = (price − 52w_low)/(52w_high − 52w_low)</div>
+<table class="sig-table">
+<thead><tr><th>Ticker</th><th>Index</th><th>Asset Class</th><th>Composite momentum score</th></tr></thead>
+<tbody>
+<tr><td><div class="ticker">SPXT Index TR</div></td><td>S&P 500 Total Return</td><td><div class="chip chip-green">US Equity</div></td><td><div class="metric-box">w: 12-1M(40%) + 3M(25%) + MA(20%) + RSI(15%)</div></td></tr>
+<tr><td><div class="ticker">SPTRSGX Index TR</div></td><td>S&P 500 Growth TR</td><td><div class="chip chip-green">US Growth</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">SPTRSVX Index TR</div></td><td>S&P 500 Value TR</td><td><div class="chip chip-green">US Value</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">SPXQUT Index TR</div></td><td>S&P 500 Quality TR</td><td><div class="chip chip-green">US Quality</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">M0EFHUSD Index TR</div></td><td>MSCI EAFE USD Hdg</td><td><div class="chip chip-green">DM ex-US</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">NDDUWI Index TR</div></td><td>MSCI World Net TR</td><td><div class="chip chip-green">DM (Global)</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">NDUEEGF Index TR</div></td><td>MSCI EM Net TR</td><td><div class="chip chip-purple">EM Equity</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">M1CXBRV Index TR</div></td><td>MSCI EM ex China TR</td><td><div class="chip chip-purple">EM ex-China</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">NDEUCHF Index TR</div></td><td>MSCI China TR</td><td><div class="chip chip-purple">China Equity</div></td><td><div class="metric-box">Same 7 metrics</div></td></tr>
+<tr><td><div class="ticker">S5INFT, S5ENRS, S5UTIL</div></td><td>S&P 500 Tech/Energy/Util</td><td><div class="chip chip-green">US Sectors</div></td><td><div class="metric-box">Same 7 metrics per sector</div></td></tr>
+<tr><td><div class="ticker">S5INDU, S5HLTH, S5MATR</div></td><td>S&P 500 Ind/Health/Mat</td><td><div class="chip chip-green">US Sectors</div></td><td><div class="metric-box">Same 7 metrics per sector</div></td></tr>
+<tr><td><div class="ticker">S5CONS, S5TELS, S5RLST</div></td><td>S&P 500 Staples/Comm/RE</td><td><div class="chip chip-green">US Sectors</div></td><td><div class="metric-box">Same 7 metrics per sector</div></td></tr>
+<tr><td><div class="ticker">S5COND, S5FINL</div></td><td>S&P 500 Disc/Financials</td><td><div class="chip chip-green">US Sectors</div></td><td><div class="metric-box">Same 7 metrics per sector</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Price Momentum — Fixed Income Indices</div>
+<div class="card pillar-M">
+<div class="card-header"><div class="card-title">Fixed Income TR Indices — Available in Excel (Sheet: Hoja2)</div><span class="chip chip-amber">Daily · Bloomberg</span></div>
+<table class="sig-table">
+<thead><tr><th>Ticker</th><th>Index</th><th>Asset Class</th><th>Key momentum metrics</th></tr></thead>
+<tbody>
+<tr><td><div class="ticker">BFU5TRUU Index</div></td><td>Bloomberg US Treasury 1-5Y TR</td><td><div class="chip chip-blue">Short-Term FI</div></td><td><div class="metric-box">ret_1M, ret_3M, ret_12_1M<br>MA50/MA200 distance<br>RSI(14)</div></td></tr>
+<tr><td><div class="ticker">LT03TRUU Index</div></td><td>Bloomberg US Treasury 1-3Y TR</td><td><div class="chip chip-teal">MM / STFI</div></td><td><div class="metric-box">ret_1M, ret_3M<br>MA50/MA200 distance</div></td></tr>
+<tr><td><div class="ticker">I13282US Index</div></td><td>ICE BofA 1-3Y US Treasury</td><td><div class="chip chip-blue">Short-Term FI</div></td><td><div class="metric-box">Same as above</div></td></tr>
+<tr><td><div class="ticker">I26729US Index</div></td><td>Bloomberg US Aggregate</td><td><div class="chip chip-blue">LT US Corp proxy</div></td><td><div class="metric-box">ret_1M, ret_3M, ret_6M, ret_12_1M<br>MA50/MA200 distance · RSI(14)</div></td></tr>
+<tr><td><div class="ticker">BSGVTRUU Index</div></td><td>Bloomberg Global Govt Bond TR</td><td><div class="chip chip-blue">LT Treasuries</div></td><td><div class="metric-box">ret_1M, ret_3M, ret_12_1M<br>MA50/MA200 distance · RSI(14)</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Spread Momentum — OAS &amp; CDS</div>
+<div class="card pillar-M">
+<div class="card-header"><div class="card-title">OAS / CDS Momentum — Sign convention: spread TIGHTENING = positive for credit</div><span class="chip chip-amber">Daily · FRED + Bloomberg</span></div>
+<div class="warn-box"><strong>Sign inversion rule:</strong> OAS and CDS are spreads — when they <em>fall</em> (tighten), that's positive for credit asset classes. So: <code>z_spread_momentum = −1 × zscore(OAS_change)</code>. For US Treasuries, OAS widening = credit stress = flight to quality = <em>positive</em> for UST, so use the spread widening directly (no sign inversion) as a UST momentum signal.</div>
+<table class="sig-table">
+<thead><tr><th>Ticker</th><th>Series</th><th>Metrics to compute</th><th>Asset classes (sign)</th></tr></thead>
+<tbody>
+<tr><td><div class="ticker">BAMLC0A4CBBB (FRED)</div></td><td>ICE BofA BBB US Corp OAS</td><td><div class="metric-box">Δ1M = diff(21) in bps<br>Δ3M = diff(63)<br>Δ6M = diff(126)<br>z_mom = −1 × zscore(Δ1M, 5Y)<br>+ −1 × zscore(Δ3M, 5Y)</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">STFI −inv: tightening=+</div><div class="chip chip-amber">LT US Corp +</div></td></tr>
+<tr><td><div class="ticker">BAMLH0A0HYM2 (FRED)</div></td><td>ICE BofA US HY OAS</td><td><div class="metric-box">Same: Δ1M/3M/6M z-scores<br>z_mom = −1 × zscore(Δ)</div></td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity proxy (risk conditions)</div><div class="chip chip-amber">LT US Corp +</div></td></tr>
+<tr><td><div class="ticker">BAMLEM2BRRBBBCRPIOAS (FRED)</div></td><td>ICE BofA EM BBB OAS</td><td><div class="metric-box">Same: Δ1M/3M/6M z-scores<br>z_mom = −1 × zscore(Δ)</div></td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity (conditions) +</div><div class="chip chip-orange">LT EM FI +</div></td></tr>
+<tr><td><div class="ticker">BAMLEMRLCRPILAOAS (FRED)</div></td><td>ICE BofA LatAm EM Corp OAS</td><td><div class="metric-box">Same: Δ1M/3M/6M z-scores</div></td><td><div class="chip chip-orange">LT EM FI (LatAm) +</div></td></tr>
+<tr><td><div class="ticker">IBOXUMAE Index (BBG)</div></td><td>CDX NA IG 5Y (price-based)</td><td><div class="metric-box">If price: standard ret_1M/3M<br>If spread: −1 × zscore(Δ)</div></td><td><div class="chip chip-amber" style="margin-bottom:3px">LT US Corp (IG conditions)</div><div class="chip chip-blue">STFI (credit proxy)</div></td></tr>
+<tr><td><div class="ticker">IBOXHYAE Index (BBG)</div></td><td>CDX NA HY 5Y (price-based)</td><td><div class="metric-box">If price: standard ret_1M/3M<br>Risk appetite barometer</div></td><td><div class="chip chip-green">US Equity (risk appetite)</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Rate Momentum — US Treasury Yields</div>
+<div class="card pillar-M">
+<div class="card-header"><div class="card-title">Yield Changes — Available in Excel (Sheet: TSY)</div><span class="chip chip-amber">Daily · Bloomberg</span></div>
+<div class="info-box"><strong>For FI price momentum, use the TR index directly.</strong> But yield changes give additional signal about the rate-move momentum: falling yields = bond prices rising. So: <code>z_yield_mom = −1 × zscore(yield_change)</code> for duration assets.</div>
+<table class="sig-table">
+<thead><tr><th>Ticker</th><th>Series</th><th>Metrics</th><th>Asset classes (sign)</th></tr></thead>
+<tbody>
+<tr><td><div class="ticker">GT10 @BGN Govt (TSY sheet)</div></td><td>US 10Y Treasury Yield</td><td><div class="metric-box">Δ1M yield change (bps)<br>Δ3M, Δ6M yield change<br>z_mom = −1 × zscore(Δ1M, 252*5)<br>Direction: falling 10Y → +z for duration</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Treasuries +</div><div class="chip chip-blue">LT US Corp +</div></td></tr>
+<tr><td><div class="ticker">GT02 @BGN Govt (TSY sheet)</div></td><td>US 2Y Treasury Yield</td><td><div class="metric-box">Δ1M yield change<br>z_mom = −1 × zscore(Δ1M, 252*5)</div></td><td><div class="chip chip-blue">STFI +</div></td></tr>
+<tr><td><div class="ticker">Term Spread (computed)</div></td><td>10Y − 2Y (from TSY)</td><td><div class="metric-box">Δ1M spread change<br>Steepening trend = regime signal</div></td><td><div class="chip chip-blue">All FI (regime context)</div></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     PILLAR III: SENTIMENT
+════════════════════════════════════════ -->
+<section class="view" id="v-sentiment">
+<div class="page-header">
+  <div class="page-title">Pillar III — <span>Sentiment</span></div>
+  <div class="page-desc">Market-implied fear, positioning, and liquidity conditions. Most sentiment signals are <strong>contrarian</strong> — extreme fear (high VIX, high PCR) is often a buy signal for equity; extreme complacency (low VIX) is a sell signal. This pillar has the highest information ratio at turning points but is the noisiest in normal regimes.</div>
+</div>
+
+<div class="warn-box"><strong>Key sentiment signals currently TBD in Excel:</strong> VIX, MOVE, TED spread, PCR, USD strength. These need to be added from FRED (free) or Bloomberg before this pillar is operational. Without sentiment, cap pillar weight at 0% and redistribute to other pillars.</div>
+
+<div class="section-header">Volatility Regime</div>
+<div class="card pillar-S">
+<div class="card-header"><div class="card-title">Volatility Indices — Equity &amp; Fixed Income Vol</div><span class="chip chip-purple">Daily · FRED / Bloomberg</span></div>
+<div class="info-box"><strong>Non-linear scoring:</strong> VIX is non-normal. Use percentile rank (5Y window), not raw z-score. The contrarian signal activates at extremes: VIX &gt; 80th pctile = begin buying equity (fear = opportunity); VIX &lt; 20th pctile = trim equity (complacency). For Fixed Income: MOVE index follows the same logic.</div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Ticker</th><th>Source</th><th>Metrics &amp; thresholds</th><th>Asset class signal</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">CBOE VIX Index</div><div class="sig-sub">S&P 500 30-day implied vol</div></td><td><div class="ticker">VIXCLS (FRED)</div></td><td>FRED (free)</td><td><div class="metric-box">pctile_5Y = rank(VIX, 5Y window)<br>score: &gt;90% = +2 (contrarian buy)<br>&gt;75% = +1 · 25–75% = 0<br>&lt;25% = −1 · &lt;10% = −2<br>Also: VIX/VIX3M ratio (term structure)</div></td><td><div class="chip chip-green" style="margin-bottom:3px">US/DM/EM Equity: contrarian +</div><div class="chip chip-blue">UST/STFI: flight to quality +</div></td></tr>
+<tr><td><div class="sig-name">ICE BofA MOVE Index</div><div class="sig-sub">UST options implied vol</div></td><td><div class="ticker">MOVE Index (BBG)</div></td><td>Bloomberg</td><td><div class="metric-box">pctile_5Y = rank(MOVE, 5Y window)<br>MOVE &gt; 120: reduce all FI carry<br>MOVE &gt; 150: crisis override → neutral all<br>MOVE &lt; 70: favorable carry environment → +1</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">All FI: high MOVE = risk-off</div><div class="chip chip-green">Equity: MOVE high = systemic risk</div></td></tr>
+<tr><td><div class="sig-name">VSTOXX Index</div><div class="sig-sub">Euro Stoxx 50 implied vol</div></td><td><div class="ticker">V2X Index (BBG)</div></td><td>Bloomberg</td><td><div class="metric-box">pctile_5Y · contrarian scoring</div></td><td><div class="chip chip-green">Eurozone EQ: contrarian +</div></td></tr>
+<tr><td><div class="sig-name">VIX Term Structure</div><div class="sig-sub">VIX/VIX3M ratio</div></td><td><div class="ticker">Computed</div></td><td>FRED</td><td><div class="metric-box">ratio &gt; 1.0: backwardation (panic) → +1<br>ratio &lt; 0.85: contango (complacency) → −1</div></td><td><div class="chip chip-green">All Equity: contrarian signal</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Funding &amp; Liquidity</div>
+<div class="card pillar-S">
+<div class="card-header"><div class="card-title">Financial Conditions &amp; Funding Stress</div><span class="chip chip-purple">Daily · FRED / Bloomberg</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Ticker</th><th>Metrics</th><th>Signal (for equity: stress = negative)</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">TED Spread</div><div class="sig-sub">LIBOR 3M − T-Bill 3M (funding stress)</div></td><td><div class="ticker">TEDRATE (FRED)</div></td><td><div class="metric-box">z-score 5Y · direction Δ20d<br>High = funding stress → sign negative for equity<br>sign positive for UST (safe haven)</div></td><td><div class="chip chip-green" style="margin-bottom:3px">Equity: −</div><div class="chip chip-teal">MM/STFI: + (safe haven demand)</div></td></tr>
+<tr><td><div class="sig-name">USD Strength (DXY)</div><div class="sig-sub">Dollar Index — critical for EM</div></td><td><div class="ticker">DXY Index / DTWEXBGS (FRED)</div></td><td><div class="metric-box">z-score 5Y · Δ20d direction<br>Strong USD (high z) = headwind for EM<br>Weak USD (low z) = tailwind for EM</div></td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity: −1 × z (USD up = EM down)</div><div class="chip chip-orange">LT EM FI: −1 × z</div></td></tr>
+<tr><td><div class="sig-name">EMBI Spread (EM sovereign)</div><div class="sig-sub">Proxy for EM systemic risk</div></td><td><div class="ticker">BAMLHE00EHY2Y (FRED)</div></td><td><div class="metric-box">Level z-score 5Y<br>High spread = EM stress → negative for EM</div></td><td><div class="chip chip-purple" style="margin-bottom:3px">EM Equity: −</div><div class="chip chip-orange">LT EM FI: −</div></td></tr>
+<tr><td><div class="sig-name">GS US Financial Conditions Index</div></td><td><div class="ticker">GSFCI Index (BBG)</div></td><td><div class="metric-box">Level z-score 5Y · Δ20d<br>Tighter = negative for equity/credit</div></td><td><div class="chip chip-green" style="margin-bottom:3px">US Equity: −</div><div class="chip chip-amber">LT US Corp: −</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Positioning &amp; Options</div>
+<div class="card pillar-S">
+<div class="card-header"><div class="card-title">Investor Positioning &amp; Options Sentiment — All contrarian signals</div><span class="chip chip-purple">Weekly · Various</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Source</th><th>Metrics</th><th>Asset class signal</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">CBOE Equity Put/Call Ratio (10d MA)</div></td><td>FRED: CPCE</td><td><div class="metric-box">10d moving average<br>z-score 252d<br>&gt;1.1 average: contrarian buy equity<br>&lt;0.7 average: contrarian sell equity</div></td><td><div class="chip chip-green">All Equity: contrarian +</div></td></tr>
+<tr><td><div class="sig-name">AAII Bull-Bear Spread</div></td><td>AAII.com (weekly)</td><td><div class="metric-box">Spread = Bull% − Bear%<br>z-score 104w (2Y)<br>Extreme bullish (&gt;+30%) → contrarian sell<br>Extreme bearish (&lt;−20%) → contrarian buy</div></td><td><div class="chip chip-green">US Equity: −1 × z (contrarian)</div></td></tr>
+<tr><td><div class="sig-name">CFTC COT: S&P 500 Net Speculative</div></td><td>CFTC / Quandl</td><td><div class="metric-box">Net speculative positions (large traders)<br>z-score 52w<br>Extreme net long → crowded → sell signal</div></td><td><div class="chip chip-green">US Equity: −1 × z (contrarian)</div></td></tr>
+<tr><td><div class="sig-name">CFTC COT: UST 10Y Net Speculative</div></td><td>CFTC / Quandl</td><td><div class="metric-box">Net speculative positions<br>Extreme net short → potential squeeze → buy UST</div></td><td><div class="chip chip-blue">LT Treasuries: −1 × z (contrarian)</div></td></tr>
+<tr><td><div class="sig-name">SKEW Index</div><div class="sig-sub">Tail risk in S&P 500 options</div></td><td><div class="ticker">SKEWX (FRED)</div></td><td><div class="metric-box">Level z-score 252d<br>High SKEW = institutions buying protection<br>→ mild bearish signal for equity</div></td><td><div class="chip chip-green">US Equity: mild − signal</div></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     PILLAR IV: VALUATION
+════════════════════════════════════════ -->
+<section class="view" id="v-valuation">
+<div class="page-header">
+  <div class="page-title">Pillar IV — <span>Valuation</span></div>
+  <div class="page-desc">Long-term anchor signals. Valuation has a low information ratio in the short run (assets can stay expensive/cheap for years) but high information ratio over 3–5 year horizons. Use as a <strong>conviction filter</strong>: valuation confirms or contradicts the other three pillars. The Equity Risk Premium is the most important cross-asset valuation signal.</div>
+</div>
+
+<div class="section-header">Equity Valuation</div>
+<div class="card pillar-V">
+<div class="card-header"><div class="card-title">Forward P/E — Available in Excel (Sheet: PE)</div><span class="chip chip-blue">Daily · Bloomberg</span></div>
+<div class="info-box"><strong>Use percentile rank (10Y rolling window), not raw z-score for P/E.</strong> P/E is right-skewed and non-stationary. A pctile &lt; 20% = cheap; &gt; 80% = expensive. Then convert to a score: <code>pe_score = −2 + 4×(1 − pctile)</code> maps [0,1] → [+2, −2] with sign inversion (cheap = positive).</div>
+<table class="sig-table">
+<thead><tr><th>Index</th><th>Ticker</th><th>Asset Class</th><th>Institutional thresholds (approx.)</th></tr></thead>
+<tbody>
+<tr><td>S&P 500</td><td><div class="ticker">SPXT Index PE (Hoja2)</div></td><td><div class="chip chip-green">US Equity</div></td><td><div class="metric-box">&lt;15x cheap · 15–20x fair · &gt;22x expensive</div></td></tr>
+<tr><td>MSCI EAFE USD Hdg</td><td><div class="ticker">M0EFHUSD Index PE</div></td><td><div class="chip chip-green">DM ex-US</div></td><td><div class="metric-box">&lt;13x cheap · 13–17x fair · &gt;19x expensive</div></td></tr>
+<tr><td>MSCI EM</td><td><div class="ticker">NDUEEGF Index PE</div></td><td><div class="chip chip-purple">EM Equity</div></td><td><div class="metric-box">&lt;10x cheap · 10–13x fair · &gt;15x expensive</div></td></tr>
+<tr><td>MSCI China</td><td><div class="ticker">NDEUCHF Index PE</div></td><td><div class="chip chip-purple">China Equity</div></td><td><div class="metric-box">&lt;9x cheap · 9–12x fair · &gt;14x expensive</div></td></tr>
+<tr><td>MSCI EM ex China</td><td><div class="ticker">M1CXBRV Index PE</div></td><td><div class="chip chip-purple">EM ex-China</div></td><td><div class="metric-box">&lt;10x cheap · 10–13x fair</div></td></tr>
+<tr><td>S&P 500 Growth</td><td><div class="ticker">SPTRSGX Index PE</div></td><td><div class="chip chip-green">US Growth</div></td><td><div class="metric-box">Relative: P/E Growth / P/E Value ratio z-score</div></td></tr>
+<tr><td>S&P 500 Value</td><td><div class="ticker">SPTRSVX Index PE</div></td><td><div class="chip chip-green">US Value</div></td><td><div class="metric-box">Relative: P/E Value / P/E Market z-score</div></td></tr>
+<tr><td>S&P 500 Sectors (11)</td><td><div class="ticker">S5INFT, S5ENRS, etc. PE</div></td><td><div class="chip chip-green">US Sectors</div></td><td><div class="metric-box">Percentile vs sector's own history (10Y)</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card pillar-V" style="margin-top:12px">
+<div class="card-header"><div class="card-title">Equity Risk Premium (ERP) — Key Cross-Asset Valuation Signal</div><span class="chip chip-blue">Daily · Computed</span></div>
+<div class="code-block"><span class="cm"># ERP formula (needs TIPS yields from FRED)</span>
+<span class="var">earnings_yield</span> = <span class="num">1</span> / <span class="var">forward_pe</span> * <span class="num">100</span>  <span class="cm"># percent</span>
+<span class="var">real_yield_10y</span> = <span class="var">DFII10</span>  <span class="cm"># TIPS 10Y (FRED: DFII10)</span>
+
+<span class="var">erp</span> = <span class="var">earnings_yield</span> - <span class="var">real_yield_10y</span>
+<span class="cm"># ERP > 4%:  +2 (equities very attractive vs bonds)</span>
+<span class="cm"># ERP 2–4%:  +1 to 0 (proportional)</span>
+<span class="cm"># ERP 1–2%:  -1</span>
+<span class="cm"># ERP < 1%:  -2 (equities expensive vs bonds)</span>
+<span class="cm"># ERP < 0:   extreme caution</span>
+
+<span class="var">z_erp</span> = <span class="fn">rolling_zscore</span>(<span class="var">erp</span>, window=<span class="num">252</span>*<span class="num">10</span>)  <span class="cm"># 10Y window for ERP</span></div>
+</div>
+
+<div class="section-header">Fixed Income Valuation</div>
+<div class="card pillar-V">
+<div class="card-header"><div class="card-title">Yield Levels &amp; Term Premium — Available in Excel (TSY sheet)</div><span class="chip chip-blue">Daily · Bloomberg</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Ticker</th><th>Metrics</th><th>Asset class signal</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">US 10Y Treasury Yield</div></td><td><div class="ticker">GT10 @BGN Govt</div></td><td><div class="metric-box">pctile_10Y = rank(GT10, 10Y rolling)<br>z-score 10Y<br>Real yield = GT10 − 10Y breakeven</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Tsy: high yield = attractive carry</div><div class="chip chip-teal">MM: high yield = short rates higher</div></td></tr>
+<tr><td><div class="sig-name">US 2Y Treasury Yield</div></td><td><div class="ticker">GT02 @BGN Govt</div></td><td><div class="metric-box">pctile_10Y · z-score 10Y<br>Real 2Y = GT02 − 5Y breakeven</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">STFI: high 2Y = attractive carry</div><div class="chip chip-teal">MM: high 2Y = cash yield attractive</div></td></tr>
+<tr><td><div class="sig-name">Term Spread (10Y − 2Y)</div></td><td><div class="ticker">Computed (TSY sheet)</div></td><td><div class="metric-box">Level z-score 10Y<br>Inverted (&lt;0): recession risk but bullish duration<br>Steep (&gt;150 bps): bearish duration</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">LT Tsy: inverted = OW (rate cuts ahead)</div><div class="chip chip-blue">STFI: steep = favorable carry front-end</div></td></tr>
+<tr><td><div class="sig-name">TIPS 10Y Real Yield</div></td><td><div class="ticker">DFII10 (FRED)</div></td><td><div class="metric-box">Level vs 0%: positive = real return<br>pctile_10Y · z-score 10Y<br>&gt;2.0%: very attractive in real terms</div></td><td><div class="chip chip-blue">LT Tsy: high real yield = very attractive</div></td></tr>
+<tr><td><div class="sig-name">TIPS 5Y Real Yield</div></td><td><div class="ticker">DFII5 (FRED)</div></td><td><div class="metric-box">Level vs 0% · pctile_10Y</div></td><td><div class="chip chip-blue">STFI: real yield attractiveness</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card pillar-V" style="margin-top:12px">
+<div class="card-header"><div class="card-title">OAS Valuation — Available in Excel (OAS sheet, ~26 years of data)</div><span class="chip chip-blue">Daily · FRED</span></div>
+<table class="sig-table">
+<thead><tr><th>Ticker</th><th>Series</th><th>Metrics &amp; thresholds</th><th>Asset class signal</th></tr></thead>
+<tbody>
+<tr><td><div class="ticker">BAMLC0A4CBBB</div></td><td>BBB US Corp OAS</td><td><div class="metric-box">pctile_5Y and pctile_10Y<br>&lt;100 bps: expensive · 100–180: fair · &gt;180: cheap<br>OAS/Duration ratio (add duration data)</div></td><td><div class="chip chip-blue" style="margin-bottom:3px">STFI: BBB spread level</div><div class="chip chip-amber">LT US Corp: valuation anchor</div></td></tr>
+<tr><td><div class="ticker">BAMLH0A0HYM2</div></td><td>US HY OAS</td><td><div class="metric-box">pctile_5Y and pctile_10Y<br>&lt;300 bps: expensive · 300–500: fair · &gt;500: cheap<br>HY/IG ratio = z-score</div></td><td><div class="chip chip-amber">LT US Corp (proxy credit cycle)</div></td></tr>
+<tr><td><div class="ticker">BAMLEM2BRRBBBCRPIOAS</div></td><td>EM BBB Corp OAS</td><td><div class="metric-box">pctile_5Y · level thresholds<br>&lt;150: expensive · 150–250: fair · &gt;250: cheap</div></td><td><div class="chip chip-orange">LT EM FI: valuation anchor</div></td></tr>
+<tr><td><div class="ticker">BAMLEMRLCRPILAOAS</div></td><td>LatAm Corp OAS</td><td><div class="metric-box">pctile_5Y · level thresholds</div></td><td><div class="chip chip-orange">LT EM FI (LatAm component)</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card pillar-V" style="margin-top:12px">
+<div class="card-header"><div class="card-title">Money Market Valuation</div><span class="chip chip-blue">Daily · FRED</span></div>
+<table class="sig-table">
+<thead><tr><th>Series</th><th>Ticker</th><th>Metrics</th><th>Signal</th></tr></thead>
+<tbody>
+<tr><td><div class="sig-name">Fed Funds Effective Rate</div></td><td><div class="ticker">FEDFUNDS (FRED)</div></td><td><div class="metric-box">Level vs neutral rate r* (~2.5%)<br>Real FF = FF − Core CPI<br>Positive real FF = cash is attractive</div></td><td><div class="chip chip-teal">MM: positive real rate = OW cash</div></td></tr>
+<tr><td><div class="sig-name">3M T-Bill Yield</div></td><td><div class="ticker">DTB3 (FRED)</div></td><td><div class="metric-box">Level z-score 10Y<br>Real 3M yield = 3M T-bill − CPI</div></td><td><div class="chip chip-teal">MM: high real yield = attractive</div></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     FULL SIGNAL MATRIX
+════════════════════════════════════════ -->
+<section class="view" id="v-matrix">
+<div class="page-header">
+  <div class="page-title">Full <span>Signal Matrix</span></div>
+  <div class="page-desc">Complete mapping: every signal → every asset class. Signs: <span class="sign-pos">+</span> positive correlation (signal up = bullish for AC), <span class="sign-neg">−</span> negative (signal up = bearish), <span class="sign-con">C</span> contrarian (use at extremes only), <span class="sign-na">·</span> not applicable.</div>
+</div>
+<div class="matrix-wrap">
+<table class="matrix-table">
+<thead>
+<tr>
+  <th>Signal</th>
+  <th>Pillar</th>
+  <th style="color:#7dd3fc">Money Mkt</th>
+  <th style="color:#7dd3fc">STFI</th>
+  <th style="color:#7dd3fc">LT Tsy</th>
+  <th style="color:#fbbf24">LT US Corp</th>
+  <th style="color:#fb923c">LT EM FI</th>
+  <th style="color:#86efac">US Equity</th>
+  <th style="color:#86efac">US Growth</th>
+  <th style="color:#86efac">US Value</th>
+  <th style="color:#86efac">DM ex-US</th>
+  <th style="color:#86efac">Eurozone</th>
+  <th style="color:#c4b5fd">EM Equity</th>
+  <th style="color:#c4b5fd">China EQ</th>
+</tr>
+</thead>
+<tbody id="matrix-body"></tbody>
+</table>
+</div>
+<div style="display:flex;gap:16px;margin-top:10px;font-size:11px;flex-wrap:wrap">
+  <span><span class="sign-pos">+</span> = positive (signal↑ → bullish)</span>
+  <span><span class="sign-neg">−</span> = negative (signal↑ → bearish for AC)</span>
+  <span><span class="sign-con">C</span> = contrarian at extremes</span>
+  <span><span class="sign-na">·</span> = not applicable / minimal relevance</span>
+  <span style="color:var(--text3)">++/−− = primary signal · +/− = secondary</span>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     FIXED INCOME ASSET CLASSES
+════════════════════════════════════════ -->
+<section class="view" id="v-fi">
+<div class="page-header">
+  <div class="page-title">Fixed Income — <span>Signal Blueprint</span></div>
+  <div class="page-desc">Four FI asset classes with their specific pillar compositions. Note: for all FI, macroeconomic growth signals are <strong>inverted</strong> (strong growth → higher rates → bond prices fall). Credit (Corp + EM) is the exception for the spread component: spread tightening driven by growth is positive.</div>
+</div>
+
+<div id="fi-content"></div>
+</section>
+
+<!-- ════════════════════════════════════════
+     EQUITY ASSET CLASSES
+════════════════════════════════════════ -->
+<section class="view" id="v-eq">
+<div class="page-header">
+  <div class="page-title">Equity — <span>Signal Blueprint</span></div>
+  <div class="page-desc">Equity asset classes with sub-class detail. US Equity includes style tilts (Growth vs Value vs Quality) and sector rotation. All signals are signed positively with respect to equity performance.</div>
+</div>
+
+<div id="eq-content"></div>
+</section>
+
+<!-- ════════════════════════════════════════
+     AGGREGATION
+════════════════════════════════════════ -->
+<section class="view" id="v-agg">
+<div class="page-header">
+  <div class="page-title">Aggregation <span>Logic</span></div>
+  <div class="page-desc">Step-by-step process from raw series to composite z-score. This is the engine that runs every time you update the data.</div>
+</div>
+
+<div class="agg-step">
+  <div class="agg-num" style="background:rgba(45,212,191,.12);color:var(--teal)">1</div>
+  <div class="agg-content">
+    <div class="agg-title">Normalize each series → z-score</div>
+    <div class="agg-desc">Every raw series becomes a rolling z-score. Window varies by signal type: 60 months for monthly PMI, 252×5 days for daily spread/price signals, 252×10 days for valuation signals. Always winsorize at ±3σ. Use EWMA (λ=0.95) as the production default — it handles regime breaks naturally.</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">rolling_zscore</span>(<span class="var">s</span>, window, ewma=<span class="kw">True</span>, lam=<span class="num">0.95</span>):
+    <span class="kw">if</span> ewma:
+        mu = <span class="var">s</span>.ewm(span=window).mean()
+        sigma = <span class="var">s</span>.ewm(span=window).std()
+    <span class="kw">else</span>:
+        mu = <span class="var">s</span>.rolling(window).mean()
+        sigma = <span class="var">s</span>.rolling(window).std()
+    <span class="kw">return</span> (<span class="var">s</span> - mu).div(sigma).clip(-<span class="num">3</span>, <span class="num">3</span>)</div>
+  </div>
+</div>
+
+<div class="agg-step">
+  <div class="agg-num" style="background:rgba(227,179,65,.12);color:var(--amber2)">2</div>
+  <div class="agg-content">
+    <div class="agg-title">Apply sign conventions before aggregating</div>
+    <div class="agg-desc">Some signals must be inverted before entering FI pillars. Growth/PMI are positive for equity but negative for duration. Spread changes are inverted (tightening = positive for credit). Contrarian sentiment signals are inverted at extremes.</div>
+    <div class="code-block"><span class="cm"># For FIXED INCOME (duration): macro signals inverted</span>
+<span class="var">z_pmi_fi</span>    = <span class="num">-1</span> * <span class="var">z_pmi_ism</span>
+<span class="var">z_gdp_fi</span>    = <span class="num">-1</span> * <span class="var">z_gdp_revision_us</span>
+<span class="var">z_cesi_fi</span>   = <span class="num">-1</span> * <span class="var">z_cesi_us</span>
+
+<span class="cm"># For CREDIT: spread tightening is positive</span>
+<span class="var">z_oas_mom</span>   = <span class="num">-1</span> * <span class="fn">rolling_zscore</span>(<span class="var">oas_change_1m</span>)
+
+<span class="cm"># For SENTIMENT (contrarian at extremes):</span>
+<span class="var">vix_pctile</span>  = <span class="var">VIX</span>.rolling(<span class="num">252</span>*<span class="num">5</span>).rank(pct=<span class="kw">True</span>)
+<span class="var">z_vix_eq</span>    = np.where(<span class="var">vix_pctile</span>&gt;<span class="num">0.85</span>, <span class="num">+1.5</span>,
+               np.where(<span class="var">vix_pctile</span>&lt;<span class="num">0.15</span>, <span class="num">-1.5</span>,
+               <span class="num">-1</span>*<span class="fn">rolling_zscore</span>(<span class="var">VIX</span>)))</div>
+  </div>
+</div>
+
+<div class="agg-step">
+  <div class="agg-num" style="background:rgba(139,148,158,.12);color:var(--text2)">3</div>
+  <div class="agg-content">
+    <div class="agg-title">Aggregate within each pillar</div>
+    <div class="agg-desc">For each pillar, compute a weighted average of its signals. The weights reflect each signal's typical information content for that asset class and pillar. Then re-normalize the pillar score as a z-score in its own history (prevents pillar with more signals from dominating).</div>
+    <div class="code-block"><span class="cm"># Example: Pillar I (Fundamentals) for US Equity</span>
+<span class="var">pillar_F_us</span> = (
+    <span class="num">0.35</span> * <span class="var">z_pmi_composite_us</span>   +  <span class="cm"># ISM Mfg+Services avg</span>
+    <span class="num">0.25</span> * <span class="var">z_cesi_us</span>             +  <span class="cm"># Surprise index</span>
+    <span class="num">0.20</span> * <span class="var">z_gdp_revision_us</span>    +  <span class="cm"># GDP forecast change</span>
+    <span class="num">0.15</span> * <span class="var">z_eps_growth_us</span>      +  <span class="cm"># EPS growth z-score</span>
+    <span class="num">0.05</span> * <span class="var">z_eps_beat_us</span>          <span class="cm"># Beat %</span>
+)
+<span class="cm"># Re-normalize: prevents compounding across iterations</span>
+<span class="var">Z_F_us</span> = <span class="fn">rolling_zscore</span>(<span class="var">pillar_F_us</span>, window=<span class="num">252</span>).clip(-<span class="num">3</span>,<span class="num">3</span>)</div>
+  </div>
+</div>
+
+<div class="agg-step">
+  <div class="agg-num" style="background:rgba(88,166,255,.12);color:var(--blue)">4</div>
+  <div class="agg-content">
+    <div class="agg-title">Combine pillars → composite z-score</div>
+    <div class="agg-desc">Weighted average of the 4 re-normalized pillar scores. Weights differ by asset class: equity uses more momentum, fixed income uses more valuation. The final composite is the primary decision variable.</div>
+    <div class="code-block"><span class="cm"># Pillar weights by asset class</span>
+<span class="var">weights</span> = {
+    'MM':   {'F':<span class="num">0.10</span>,'M':<span class="num">0.15</span>,'S':<span class="num">0.25</span>,'V':<span class="num">0.50</span>},  <span class="cm"># mostly carry/valuation</span>
+    'STFI': {'F':<span class="num">0.20</span>,'M':<span class="num">0.25</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.35</span>},
+    'LTT':  {'F':<span class="num">0.25</span>,'M':<span class="num">0.25</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.30</span>},
+    'LTCO': {'F':<span class="num">0.20</span>,'M':<span class="num">0.30</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.30</span>},
+    'LTEM': {'F':<span class="num">0.25</span>,'M':<span class="num">0.30</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.25</span>},
+    'USE':  {'F':<span class="num">0.25</span>,'M':<span class="num">0.30</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.25</span>},
+    'DM':   {'F':<span class="num">0.25</span>,'M':<span class="num">0.30</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.25</span>},
+    'EM':   {'F':<span class="num">0.25</span>,'M':<span class="num">0.30</span>,'S':<span class="num">0.20</span>,'V':<span class="num">0.25</span>},
+}
+
+<span class="var">Z_composite</span> = sum(<span class="var">weights</span>[ac][p] * <span class="var">Z_pillar</span>[p] <span class="kw">for</span> p <span class="kw">in</span> 'FMSV')</div>
+  </div>
+</div>
+
+<div class="agg-step">
+  <div class="agg-num" style="background:rgba(188,140,255,.12);color:var(--purple)">5</div>
+  <div class="agg-content">
+    <div class="agg-title">Pillar agreement check</div>
+    <div class="agg-desc">Count how many pillars agree on direction. This multiplier prevents high-conviction calls when only 1 pillar is driving the signal. It's the quality filter of the system.</div>
+    <div class="code-block"><span class="var">directions</span> = [np.sign(<span class="var">Z_pillar</span>[p]) <span class="kw">for</span> p <span class="kw">in</span> 'FMSV' <span class="kw">if</span> abs(<span class="var">Z_pillar</span>[p]) &gt; <span class="num">0.25</span>]
+<span class="var">majority_dir</span> = max(set(<span class="var">directions</span>), key=<span class="var">directions</span>.count)
+<span class="var">n_agree</span>  = sum(<span class="num">1</span> <span class="kw">for</span> d <span class="kw">in</span> <span class="var">directions</span> <span class="kw">if</span> d == <span class="var">majority_dir</span>)
+
+<span class="cm"># Conviction cap by pillar agreement</span>
+<span class="cm"># 4/4 agree → full conviction  |  3/4 → 80%  |  2/4 → 50%  |  1/4 → 0%</span>
+<span class="var">conviction_mult</span> = {<span class="num">4</span>:<span class="num">1.0</span>, <span class="num">3</span>:<span class="num">0.8</span>, <span class="num">2</span>:<span class="num">0.5</span>, <span class="num">1</span>:<span class="num">0.0</span>}[<span class="var">n_agree</span>]</div>
+  </div>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     ABSOLUTE VS RELATIVE VIEWS
+════════════════════════════════════════ -->
+<section class="view" id="v-views">
+<div class="page-header">
+  <div class="page-title">Absolute vs Relative <span>Views</span></div>
+  <div class="page-desc">The composite z-score feeds into two view types. Most institutional TAA systems weight the relative view more heavily (60–70%) than the absolute view, since the benchmark already captures some absolute valuation through its own rebalancing.</div>
+</div>
+
+<div class="section-header">Absolute View — Z-composite vs its own history</div>
+<div class="card">
+<div class="info-box"><strong>Absolute view answers:</strong> "Is this asset class attractive on its own merits, compared to its own history?" Z_composite > 0 means the asset is above its own historical average quality. You can simultaneously hold absolute OW positions in multiple asset classes if all have positive composites.</div>
+<table class="conviction-table">
+<thead><tr><th>Z-composite range</th><th>Absolute conviction</th><th>Max tilt vs SAA</th><th>Python code</th></tr></thead>
+<tbody>
+<tr><td style="color:var(--green2);font-family:'IBM Plex Mono',monospace;font-weight:600">&gt; +1.5</td><td><span class="chip chip-green">HIGH OVERWEIGHT</span></td><td style="color:var(--green2)">+3.0% to +5.0%</td><td><div class="ticker">full tilt × conviction_mult</div></td></tr>
+<tr><td style="color:var(--green);font-family:'IBM Plex Mono',monospace">&gt; +0.75</td><td><span class="chip chip-green" style="opacity:.7">MEDIUM OVERWEIGHT</span></td><td style="color:var(--green)">+1.5% to +3.0%</td><td><div class="ticker">50% tilt × conviction_mult</div></td></tr>
+<tr><td style="color:var(--text3);font-family:'IBM Plex Mono',monospace">−0.75 to +0.75</td><td><span class="chip chip-gray">NEUTRAL</span></td><td>0%</td><td><div class="ticker">no tilt</div></td></tr>
+<tr><td style="color:var(--red);font-family:'IBM Plex Mono',monospace">&lt; −0.75</td><td><span class="chip chip-red" style="opacity:.7">MEDIUM UNDERWEIGHT</span></td><td style="color:var(--red)">−1.5% to −3.0%</td><td><div class="ticker">50% tilt × conviction_mult</div></td></tr>
+<tr><td style="color:var(--red2);font-family:'IBM Plex Mono',monospace;font-weight:600">&lt; −1.5</td><td><span class="chip chip-red">HIGH UNDERWEIGHT</span></td><td style="color:var(--red2)">−3.0% to −5.0%</td><td><div class="ticker">full tilt × conviction_mult</div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section-header">Relative View — Cross-sectional ranking within universe</div>
+<div class="card">
+<div class="info-box"><strong>Relative view answers:</strong> "Which asset class do I prefer over the others?" Normalize composite scores cross-sectionally: subtract the universe mean, divide by universe standard deviation. This creates a relative ranking where the best asset has z_rel &gt; 0 and the worst has z_rel &lt; 0, even if both have positive absolute scores.</div>
+<div class="code-block"><span class="cm"># Step 1: collect all composites for the universe at date t</span>
+<span class="var">composites</span> = {ac: <span class="var">Z_composite</span>[ac] <span class="kw">for</span> ac <span class="kw">in</span> universe}
+
+<span class="cm"># Step 2: cross-sectional normalization</span>
+<span class="var">mu_cs</span>   = np.mean(list(<span class="var">composites</span>.values()))
+<span class="var">std_cs</span>  = np.std(list(<span class="var">composites</span>.values()))
+<span class="var">Z_rel</span>   = {ac: (<span class="var">composites</span>[ac] - <span class="var">mu_cs</span>) / <span class="var">std_cs</span> <span class="kw">for</span> ac <span class="kw">in</span> <span class="var">composites</span>}
+
+<span class="cm"># Step 3: combine absolute and relative views</span>
+<span class="var">alpha</span> = <span class="num">0.35</span>  <span class="cm"># 35% absolute, 65% relative (institutional standard)</span>
+<span class="var">Z_final</span> = {ac: <span class="var">alpha</span>*<span class="var">composites</span>[ac] + (<span class="num">1</span>-<span class="var">alpha</span>)*<span class="var">Z_rel</span>[ac] <span class="kw">for</span> ac <span class="kw">in</span> <span class="var">composites</span>}
+
+<span class="cm"># Step 4: tilt = Z_final × max_tilt × conviction_mult</span>
+<span class="var">tilt</span> = {ac: <span class="fn">np.clip</span>(<span class="var">Z_final</span>[ac] * <span class="var">max_tilt</span> * <span class="var">conv_mult</span>[ac], -<span class="var">max_tilt</span>, <span class="var">max_tilt</span>)
+         <span class="kw">for</span> ac <span class="kw">in</span> <span class="var">composites</span>}</div>
+</div>
+
+<div class="section-header">Practical example: how OW equity / UW FI emerges</div>
+<div class="card">
+<div class="agg-desc" style="font-size:13px;line-height:1.7">
+Suppose at date T you compute these composite z-scores:<br><br>
+<strong>Money Market:</strong> Z=+0.3 · <strong>STFI:</strong> Z=+0.5 · <strong>LT Treasuries:</strong> Z=−0.2 · <strong>LT US Corp:</strong> Z=+0.4 · <strong>LT EM:</strong> Z=+0.6<br>
+<strong>US Equity:</strong> Z=+1.4 · <strong>DM ex-US:</strong> Z=+0.9 · <strong>EM Equity:</strong> Z=+1.8<br><br>
+Cross-sectional mean = +0.71 · std = +0.61<br><br>
+<strong>Relative z-scores:</strong> MM=−0.67 · STFI=−0.34 · LT Tsy=−1.49 · Corp=−0.51 · LT EM=−0.18 · <strong>US Eq=+1.13 · DM=+0.31 · EM Eq=+1.77</strong><br><br>
+<strong>Result:</strong> "OW EM Equity (highest), moderate OW US Equity and DM, UW Long Treasuries and MM in relative terms" — even though MM and Corp have <em>positive absolute</em> z-scores, they are below the universe average, so they get underweighted relative to equity. This is exactly how "OW equity / UW FI" calls are generated in practice.
+</div>
+</div>
+
+<div class="section-header">Special rule: regime override</div>
+<div class="card">
+<div class="warn-box"><strong>Crisis override (hard rule):</strong> If VIX &gt; 80th percentile AND MOVE &gt; 80th percentile simultaneously → force all conviction multipliers to 0 → all tilts become 0 (neutral). This prevents the signal engine from fighting a systemic flight-to-quality event. The override lifts when both return below their 70th percentiles.</div>
+<div class="code-block"><span class="var">crisis_flag</span> = (
+    (<span class="var">vix_pctile</span> &gt; <span class="num">0.80</span>) &amp;
+    (<span class="var">move_pctile</span> &gt; <span class="num">0.80</span>)
+)
+<span class="cm"># Apply to all tilts:</span>
+<span class="var">final_tilt</span> = <span class="var">raw_tilt</span> * (~<span class="var">crisis_flag</span>).astype(int)</div>
+</div>
+</section>
+
+</main>
+</div>
+
+<script>
+function show(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── Signal matrix data ──────────────────────────────────────────────────────
+const matrixData = [
+  // [signal, pillar, MM, STFI, LTT, LTCO, LTEM, USE, USG, USV, DM, EZ, EM, CN]
+  ['ISM Mfg PMI level+dir','F','·','−','−−','++','+'  ,'++'  ,'+','++'  ,'·','·','·','·'],
+  ['ISM New Orders/Inv','F','·','−','−−','+'  ,'·'  ,'++'  ,'+','+'  ,'·','·','·','·'],
+  ['Eurozone Mfg PMI','F','·','·','·','·','·'  ,'·'  ,'·','·'  ,'+'  ,'++'  ,'·','·'],
+  ['China Mfg PMI (Caixin)','F','·','·','·','·','++'  ,'·'  ,'·','·'  ,'·','·','++'  ,'++'  ],
+  ['Japan Mfg PMI','F','·','·','·','·','·'  ,'·'  ,'·','·'  ,'+'  ,'·'  ,'·','·'],
+  ['UK Mfg PMI','F','·','·','·','·','·'  ,'·'  ,'·','·'  ,'+'  ,'·'  ,'·','·'],
+  ['Citi Surprise US','F','+','−','−','+'  ,'·'  ,'++'  ,'+','++'  ,'·','·','·','·'],
+  ['Citi Surprise EUR','F','·','·','·','·','·'  ,'·'  ,'·','·'  ,'++'  ,'++'  ,'·','·'],
+  ['Citi Surprise EM','F','·','·','·','·','+'  ,'·'  ,'·','·'  ,'·','·','++'  ,'+'  ],
+  ['US GDP revision','F','·','−','−−','+'  ,'·'  ,'++'  ,'+','+'  ,'·','·','·','·'],
+  ['EM GDP revision','F','·','·','·','·','++'  ,'·'  ,'·','·'  ,'·','·','++'  ,'+'  ],
+  ['US Fwd EPS growth','F','·','·','·','++'  ,'·'  ,'++'  ,'++'  ,'+'  ,'·','·','·','·'],
+  ['EM Fwd EPS growth','F','·','·','·','·','++'  ,'·'  ,'·','·'  ,'·','·','++'  ,'++'  ],
+  ['US Earnings Beat%','F','·','·','·','·','·'  ,'++'  ,'+','++'  ,'·','·','·','·'],
+  ['5Y Breakeven inflation','F','+','·','−−','·','·'  ,'·'  ,'−','·'  ,'·','·','·','·'],
+  ['Price mom 12-1M (equity)','M','·','·','·','·','·'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ],
+  ['MA50 vs MA200 distance','M','·','·','·','·','·'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ],
+  ['RSI(14) equity','M','·','·','·','·','·'  ,'C'  ,'C','C'  ,'C','C','C','C'],
+  ['FI TR price momentum','M','++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'·','·','·','·','·','·','·'],
+  ['OAS Δ1M/3M (tightening=+)','M','·','+'  ,'+'  ,'++'  ,'++'  ,'+'  ,'·','+'  ,'·','·','+'  ,'·'],
+  ['CDS IG/HY (price mom)','M','·','+'  ,'+'  ,'++'  ,'+'  ,'++'  ,'+','+'  ,'·','·','·','·'],
+  ['Yield Δ 10Y (falling=+)','M','·','+'  ,'++'  ,'++'  ,'·','·','·','·','·','·','·','·'],
+  ['USD DXY (weak USD=+)','S','·','·','·','·','++'  ,'·'  ,'·','·'  ,'+'  ,'·'  ,'++'  ,'++'  ],
+  ['VIX percentile (contrarian)','S','·','+'  ,'++'  ,'·','·'  ,'C'  ,'C','C'  ,'C','C','C','C'],
+  ['MOVE index (high=bad FI)','S','·','·','−','−','−'  ,'·'  ,'·','·'  ,'·','·','·','·'],
+  ['TED Spread (high=bad eq)','S','++'  ,'+'  ,'+'  ,'−','−'  ,'−'  ,'−','−'  ,'−','−','−−','−'],
+  ['PCR put/call (contrarian)','S','·','·','·','·','·'  ,'C'  ,'C','C'  ,'C','C','C','C'],
+  ['AAII Bull-Bear (contrarian)','S','·','·','·','·','·'  ,'C'  ,'C','C'  ,'·','·','·','·'],
+  ['EMBI Spread (high=bad EM)','S','·','·','+'  ,'·','−−'  ,'·'  ,'·','·'  ,'·','·','−−','−'],
+  ['P/E percentile (low=cheap)','V','·','·','·','·','·'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ],
+  ['ERP (EY minus real yield)','V','·','·','·','·','·'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ,'++'  ],
+  ['P/E relative vs US','V','·','·','·','·','·'  ,'·'  ,'·','·'  ,'++'  ,'++'  ,'++'  ,'++'  ],
+  ['OAS level (high=cheap)','V','++'  ,'++'  ,'+'  ,'++'  ,'++'  ,'·','·','·','·','·','·','·'],
+  ['10Y yield (high=carry)','V','++'  ,'++'  ,'++'  ,'++'  ,'+'  ,'−'  ,'−−','·'  ,'·','·','·','·'],
+  ['Term spread 10Y-2Y','V','+'  ,'++'  ,'+'  ,'+'  ,'·','·','−','+'  ,'·','·','·','·'],
+  ['TIPS real yield (high=+)','V','+'  ,'+'  ,'++'  ,'+'  ,'·','−'  ,'−−','·'  ,'·','·','·','·'],
+];
+
+function signHtml(s) {
+  if (!s || s === '·') return '<span class="sign-na">·</span>';
+  if (s.startsWith('+')) return `<span class="sign-pos">${s}</span>`;
+  if (s.startsWith('-') || s.startsWith('−')) return `<span class="sign-neg">${s.replace('-','−')}</span>`;
+  if (s === 'C') return `<span class="sign-con">C</span>`;
+  return s;
+}
+function cellClass(s) {
+  if (!s || s === '·') return 'mc-na';
+  if (s === '++') return 'mc-strong-pos';
+  if (s === '+') return 'mc-pos';
+  if (s === '--' || s === '−−') return 'mc-strong-neg';
+  if (s === '-' || s === '−') return 'mc-neg';
+  if (s === 'C') return '';
+  return 'mc-neutral';
+}
+
+const pillarChip = {F:'chip-teal',M:'chip-amber',S:'chip-purple',V:'chip-blue'};
+const pillarName = {F:'Fund.',M:'Mom.',S:'Sent.',V:'Val.'};
+
+const mb = document.getElementById('matrix-body');
+if (mb) {
+  mb.innerHTML = matrixData.map(row => {
+    const [sig, pil, ...vals] = row;
+    return `<tr><td style="font-weight:500">${sig}</td><td><span class="chip ${pillarChip[pil]}">${pillarName[pil]}</span></td>` +
+      vals.map((v,i) => {
+        const cc = cellClass(v);
+        return `<td class="${cc}">${signHtml(v)}</td>`;
+      }).join('') + '</tr>';
+  }).join('');
+}
+
+// ── FI content ──────────────────────────────────────────────────────────────
+const fiAcs = [
+  {
+    id:'MM', name:'Money Market', sub:'T-bills, repo, commercial paper',
+    color:'var(--teal)',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (10%)', note:'Macro is mostly context here — primarily used for regime detection, not direct signal.',
+          signals:[
+            {n:'Fed Policy Rate (FF vs r*)',d:'High real FF = cash yield attractive; FF above neutral = restrictive = MM rates stay high',s:'+',w:'40%'},
+            {n:'US Core CPI / PCE YoY',d:'Inflation above target = Fed holds rates higher = positive for MM carry',s:'+',w:'30%'},
+            {n:'5Y Breakeven Inflation',d:'Rising breakeven = Fed can\'t cut → positive for MM rates',s:'+',w:'30%'},
+          ]},
+      M: {color:'amber', title:'Momentum (15%)', note:'MM instruments don\'t have trending returns, so momentum is limited.',
+          signals:[
+            {n:'3M T-bill yield direction',d:'Rising 3M yield = positive momentum for cash',s:'+',w:'60%'},
+            {n:'LT03TRUU price momentum',d:'Secondary FI TR signal for positioning',s:'+',w:'40%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (25%)', note:'Flight to safety is the primary driver of MM demand.',
+          signals:[
+            {n:'TED Spread level',d:'High TED = funding stress = demand for cash/safety → OW MM',s:'+',w:'35%'},
+            {n:'VIX level (percentile)',d:'High VIX = risk-off = demand for cash equivalents',s:'+',w:'35%'},
+            {n:'MOVE Index',d:'High bond vol = prefer cash over duration',s:'+',w:'30%'},
+          ]},
+      V: {color:'blue', title:'Valuation / Carry (50%)', note:'The dominant signal for MM is simply: is the real short-term rate positive and attractive?',
+          signals:[
+            {n:'Real 3M T-bill rate',d:'3M yield − CPI. Positive and high = MM very attractive. Main signal.',s:'+',w:'40%'},
+            {n:'3M T-bill yield percentile (10Y)',d:'Is the nominal yield high vs history?',s:'+',w:'30%'},
+            {n:'Fed Funds vs neutral (r*)',d:'FF > r* (2.5%) = policy restrictive = MM attractive vs duration',s:'+',w:'30%'},
+          ]},
+    }
+  },
+  {
+    id:'STFI', name:'Short-Term Fixed Income (USD)', sub:'1–5Y US Treasuries + IG credit',
+    color:'var(--blue)',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (20%) — INVERTED for growth/cycle signals',
+          note:'Growth/PMI signals are inverted: strong growth → rates rise → STFI price falls. Exception: credit fundamentals are direct (growth = tighter spreads = positive for carry).',
+          signals:[
+            {n:'ISM Mfg PMI direction (INVERTED)',d:'PMI accelerating → rates rise → STFI price falls. Sign: −1 × z_pmi',s:'−',w:'30%'},
+            {n:'Citi US Surprise (INVERTED)',d:'Positive surprises → rate repricing upward → −1 × z_cesi',s:'−',w:'25%'},
+            {n:'US GDP revision (INVERTED)',d:'Upward GDP revision → rates rise. Sign: −1 × z_gdp_revision',s:'−',w:'25%'},
+            {n:'5Y Breakeven inflation (INVERTED)',d:'Rising inflation expectations → nominal rates up → −1 × z_breakeven',s:'−',w:'20%'},
+          ]},
+      M: {color:'amber', title:'Momentum (25%)',
+          note:'Use the TR index price directly (not yield). Falling prices = negative momentum. OAS tightening on the short-end credits is additional carry signal.',
+          signals:[
+            {n:'BFU5TRUU TR price momentum (1/3/12M)',d:'12-1M momentum most predictive; weighted avg of horizons',s:'+',w:'45%'},
+            {n:'GT02 yield change (falling=+)',d:'z_yield_mom = −1 × zscore(Δ2Y_yield_1M)',s:'+',w:'25%'},
+            {n:'BBB OAS momentum (tightening=+)',d:'z_oas = −1 × zscore(ΔBAMLC0A4CBBB, 1M)',s:'+',w:'30%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          note:'Flight to quality (VIX, MOVE, TED) are positive for UST/STFI. USD strength is neutral for STFI.',
+          signals:[
+            {n:'VIX percentile (flight to quality)',d:'High VIX = demand for safe assets → OW STFI',s:'+',w:'35%'},
+            {n:'MOVE Index (−) above threshold',d:'MOVE > 120: reduce duration risk; below 80: favorable carry',s:'C',w:'35%'},
+            {n:'TED Spread (flight to safety)',d:'High TED = demand for T-bills and short UST',s:'+',w:'30%'},
+          ]},
+      V: {color:'blue', title:'Valuation / Carry (35%)',
+          note:'Carry is the primary valuation signal for STFI. The 2Y yield level and real yield determine attractiveness.',
+          signals:[
+            {n:'2Y Treasury yield level (pctile 10Y)',d:'High 2Y yield = attractive carry. Main valuation signal.',s:'+',w:'35%'},
+            {n:'TIPS 5Y real yield',d:'Real yield > 1.5% = very attractive; < 0% = unattractive',s:'+',w:'25%'},
+            {n:'BBB OAS level (pctile 5Y)',d:'High OAS = credit component cheap = higher total yield',s:'+',w:'20%'},
+            {n:'Yield curve shape (10Y−2Y)',d:'Inverted: high short-end yield vs long end = favorable STFI carry',s:'+',w:'20%'},
+          ]},
+    }
+  },
+  {
+    id:'LTT', name:'LT US Treasuries', sub:'7–30Y duration, BSGVTRUU benchmark',
+    color:'#60a5fa',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%) — STRONGLY INVERTED',
+          note:'All macro growth signals are inverted and amplified for long duration. Inflation signals are doubly negative (higher inflation = higher nominal rates + lower real value).',
+          signals:[
+            {n:'ISM PMI composite (INVERTED)',d:'PMI Quadrant 3/4 (slowdown/contraction) → bullish duration',s:'−',w:'30%'},
+            {n:'US GDP revision (INVERTED)',d:'Downward revisions → rate cut pricing → duration rally',s:'−',w:'25%'},
+            {n:'10Y Breakeven inflation (INVERTED)',d:'Rising breakevens = most bearish signal for nominal UST',s:'−−',w:'25%'},
+            {n:'Citi US Surprise (INVERTED)',d:'Negative surprises → rate cut pricing → duration bullish',s:'−',w:'20%'},
+          ]},
+      M: {color:'amber', title:'Momentum (25%)',
+          note:'Long UST have significant price momentum. Duration sells off in trending rate rise environments and rallies in risk-off.',
+          signals:[
+            {n:'BSGVTRUU TR price momentum (1/3/12M)',d:'12-1M skip: most predictive for duration assets',s:'+',w:'45%'},
+            {n:'GT10 yield change (falling=+)',d:'z = −1 × zscore(Δ10Y_yield_1M/3M)',s:'+',w:'30%'},
+            {n:'BBB OAS widening (flight to quality)',d:'When credit widens rapidly → flight to quality = UST rally',s:'+',w:'25%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          note:'VIX and MOVE are positive for UST. High fear → flight to quality. CFTC net short UST (contrarian) also matters.',
+          signals:[
+            {n:'VIX percentile (flight to quality)',d:'Crisis signal: VIX > 80th pctile = strong buy UST',s:'+',w:'35%'},
+            {n:'CFTC UST 10Y net speculative (contrarian)',d:'Extreme net short = crowded = potential squeeze = buy UST',s:'C',w:'35%'},
+            {n:'MOVE Index (regime)',d:'MOVE > 150: override to neutral. MOVE < 70: carry environment',s:'C',w:'30%'},
+          ]},
+      V: {color:'blue', title:'Valuation (30%)',
+          note:'10Y yield level, real yield, and term premium are the anchors. The most powerful signal is when real yields are very high (TIPS > 2%) + curve inverted.',
+          signals:[
+            {n:'TIPS 10Y real yield (DFII10)',d:'Real yield > 2.0% = duration very attractive. Primary signal.',s:'+',w:'40%'},
+            {n:'10Y nominal yield percentile (10Y window)',d:'High pctile = high nominal yield = better carry',s:'+',w:'30%'},
+            {n:'Term spread 10Y−2Y (inverted=bullish)',d:'Deeply inverted curve = recession/rate-cut signal = OW duration',s:'+',w:'30%'},
+          ]},
+    }
+  },
+  {
+    id:'LTCO', name:'LT US Corporate', sub:'IG credit, 5–10Y, US Corp BBB/HY',
+    color:'#fbbf24',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (20%)',
+          note:'Corp credit has a dual nature: duration component (rates) + spread component (credit quality). For the SPREAD driver, macro growth is positive. For the DURATION driver, growth is negative. The spread effect typically dominates in IG over the short run.',
+          signals:[
+            {n:'US EPS growth (direct sign)',d:'Strong earnings = tighter spreads = positive for IG credit',s:'+',w:'30%'},
+            {n:'ISM PMI composite (net: slight +)',d:'Expansion = tighter spreads. But rising rates offset. Net mild positive.',s:'+',w:'25%'},
+            {n:'US Earnings Beat% ',d:'High beat rate = credit quality improving = tighter spreads',s:'+',w:'25%'},
+            {n:'US GDP revision (net: slight +)',d:'Upward revision = stronger balance sheets = tighter spreads. But also rates rise.',s:'+',w:'20%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          note:'OAS tightening momentum is the primary signal. Price momentum of TR index is secondary.',
+          signals:[
+            {n:'I26729US TR price momentum',d:'12-1M, 3M, 1M returns. Most predictive horizon: 3M.',s:'+',w:'30%'},
+            {n:'BBB OAS Δ1M/3M (tightening=+)',d:'z = −1 × zscore(Δ OAS). Primary spread momentum signal.',s:'+',w:'35%'},
+            {n:'CDX IG 5Y momentum (IBOXUMAE)',d:'IG CDS market as real-time credit conditions gauge',s:'+',w:'20%'},
+            {n:'GT10 yield change (falling=+)',d:'Duration component: falling 10Y = positive for IG price',s:'+',w:'15%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          note:'Credit-specific sentiment: VIX is mildly negative for IG spreads but flight to quality from HY benefits IG.',
+          signals:[
+            {n:'VIX level (mild negative for spreads)',d:'Rising VIX → credit spread widening. But IG benefits vs HY.',s:'−',w:'35%'},
+            {n:'GS US Financial Conditions Index',d:'Tighter conditions → wider spreads → negative for IG',s:'−',w:'35%'},
+            {n:'CDX HY vs IG relative (risk appetite)',d:'HY outperforming IG = risk-on = tighter IG spreads',s:'+',w:'30%'},
+          ]},
+      V: {color:'blue', title:'Valuation (30%)',
+          note:'OAS level is the primary valuation signal. BBB OAS > 180 bps = cheap; < 100 bps = rich.',
+          signals:[
+            {n:'BBB OAS level percentile (5Y/10Y)',d:'Main valuation anchor for IG corporate spread component',s:'+',w:'40%'},
+            {n:'HY-IG spread ratio (credit cycle)',d:'Ratio > 4x = HY expensive, rotate to IG = IG attractive relatively',s:'+',w:'25%'},
+            {n:'TIPS 10Y real yield level',d:'Duration component valuation: real yield attractiveness',s:'+',w:'20%'},
+            {n:'OAS/Duration (carry per unit of rate risk)',d:'Spread earned per year of duration: > 20 bps = attractive',s:'+',w:'15%'},
+          ]},
+    }
+  },
+  {
+    id:'LTEM', name:'LT EM Fixed Income', sub:'EMBI + EM corporate (hard currency)',
+    color:'var(--orange)',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%)',
+          note:'EM fixed income is driven by EM growth fundamentals, China activity, and commodity cycles. All growth signals have POSITIVE sign (unlike DM duration) because EM FI spread component dominates over duration.',
+          signals:[
+            {n:'EM GDP growth revision (direct)',d:'Upward EM GDP revision = tighter EMBI spreads = positive',s:'+',w:'30%'},
+            {n:'China Mfg PMI (Caixin)',d:'China is engine of EM growth. PMI expansion = positive for EM FI',s:'+',w:'25%'},
+            {n:'EM EPS growth / Earnings surprise',d:'Corporate fundamentals of EM issuers',s:'+',w:'25%'},
+            {n:'Citi EM Surprise Index',d:'Positive EM surprises = risk appetite for EM debt',s:'+',w:'20%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          note:'EM OAS tightening momentum + EM equity momentum (leading indicator) + USD weakness momentum.',
+          signals:[
+            {n:'EM BBB OAS Δ1M/3M (BAMLEM, tightening=+)',d:'Primary spread momentum. z = −1 × zscore(ΔOAS)',s:'+',w:'30%'},
+            {n:'LatAm OAS momentum (BAMLEMRLA)',d:'LatAm-specific spread momentum',s:'+',w:'20%'},
+            {n:'MSCI EM equity momentum (leading)',d:'EM equity often leads EM credit by 1–3 months',s:'+',w:'25%'},
+            {n:'USD DXY momentum (weak USD=+)',d:'Dollar weakening = EM assets rally = EM FI spread tightens',s:'+',w:'25%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          note:'EM-specific sentiment: USD strength is the #1 headwind, EMBI levels proxy sovereign risk.',
+          signals:[
+            {n:'USD DXY strength (inverted)',d:'Strong USD = EM capital outflows = EM FI negative. z = −1 × z_DXY',s:'−',w:'30%'},
+            {n:'EMBI sovereign spread level',d:'Widening EMBI = systemic EM sovereign stress = negative',s:'−',w:'30%'},
+            {n:'VIX (flight from risk)',d:'High VIX = exit EM assets = negative',s:'−',w:'20%'},
+            {n:'EM fund flows (ICI/Bloomberg)',d:'Strong EM inflows = positive sentiment signal',s:'+',w:'20%'},
+          ]},
+      V: {color:'blue', title:'Valuation (25%)',
+          note:'Spread level (EMBI + EM corp OAS) is the primary anchor. EM real yield vs DM is a key relative value signal.',
+          signals:[
+            {n:'EM BBB OAS level percentile (BAMLEM)',d:'High OAS = cheap EM credit. > 250 bps = attractive.',s:'+',w:'35%'},
+            {n:'LatAm OAS level (BAMLEMRLA)',d:'LatAm-specific credit cheapness',s:'+',w:'20%'},
+            {n:'EM real yield vs DM real yield spread',d:'EM yields - DM yields - EMBI sovereign spread = EM excess real yield',s:'+',w:'25%'},
+            {n:'10Y breakeven (INVERTED for USD EM)',d:'US inflation = USD appreciation risk = negative for USD-denominated EM',s:'−',w:'20%'},
+          ]},
+    }
+  },
+];
+
+const eqAcs = [
+  {
+    id:'USE', name:'US Equity (Broad)', sub:'S&P 500 / Russell 3000 benchmark',
+    color:'var(--green)',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%)',
+          signals:[
+            {n:'ISM Mfg PMI composite (level + dir)',d:'PMI 4-quadrant regime. Quadrant 1/2 → OW equity. Weight: 35%',s:'+',w:'35%'},
+            {n:'Citi US Surprise Index (CESIUSD)',d:'Positive surprises (within 15–85 pctile) = bullish. Contrarian at extremes.',s:'+',w:'25%'},
+            {n:'US GDP revision (upward=+)',d:'Consensus GDP rising = earnings forecast uplift',s:'+',w:'20%'},
+            {n:'US Fwd EPS growth + revision',d:'EPS growth > 10% and rising = high conviction bull signal',s:'+',w:'15%'},
+            {n:'US Earnings Beat %',d:'>65% beat rate = strong corporate delivery',s:'+',w:'5%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          signals:[
+            {n:'SPXT 12-1M price momentum',d:'Cross-sectional + time-series. Highest IC single signal.',s:'+',w:'40%'},
+            {n:'SPXT MA50 vs MA200 distance',d:'Golden cross = +1. Distance z-score = trend confirmation.',s:'+',w:'25%'},
+            {n:'RSI(14) on SPXT',d:'Continuous signal (RSI-50)/50. Contrarian at extremes >80/<20.',s:'C',w:'20%'},
+            {n:'HY OAS momentum (tightening=+)',d:'Credit conditions leading equity by ~2-4 weeks',s:'+',w:'15%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          signals:[
+            {n:'VIX percentile (contrarian)',d:'VIX > 80%ile = buy signal. VIX < 20%ile = sell signal.',s:'C',w:'35%'},
+            {n:'Put/Call ratio 10d avg (contrarian)',d:'PCR > 1.1 = fear = contrarian buy. PCR < 0.7 = sell.',s:'C',w:'25%'},
+            {n:'AAII Bull-Bear spread (contrarian)',d:'+30% net bulls = sell. −20% net bulls = buy.',s:'C',w:'20%'},
+            {n:'CFTC S&P 500 net speculative (contrarian)',d:'Extreme net long = crowded = fade',s:'C',w:'20%'},
+          ]},
+      V: {color:'blue', title:'Valuation (25%)',
+          signals:[
+            {n:'SPXT Forward P/E percentile (10Y)',d:'pctile < 20% = cheap. pctile > 80% = expensive. Score: −2 + 4*(1−pctile)',s:'+',w:'35%'},
+            {n:'ERP = Earnings Yield − TIPS 10Y real yield',d:'ERP > 4% = strongly OW equity vs bonds. Primary cross-asset signal.',s:'+',w:'35%'},
+            {n:'P/E US vs DM (relative)',d:'US P/E / EAFE P/E z-score. High ratio = US expensive = reduce tilt',s:'−',w:'20%'},
+            {n:'Shiller CAPE (10Y avg earnings)',d:'Long-run anchor. > 35x = expensive territory. Use as 10% weight cap.',s:'+',w:'10%'},
+          ]},
+    }
+  },
+  {
+    id:'DM', name:'DM ex-US Equity', sub:'MSCI EAFE (Europe + Japan + Australasia)',
+    color:'#4ade80',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%)',
+          signals:[
+            {n:'Eurozone Mfg PMI (MPMIEZMA)',d:'Eurozone is ~60% of EAFE. PMI regime drives DM ex-US earnings',s:'+',w:'30%'},
+            {n:'Citi Eurozone Surprise (CESIEUR)',d:'European data surprises = direct signal for Eurozone/EAFE equity',s:'+',w:'25%'},
+            {n:'Japan Mfg PMI + Citi JPY Surprise',d:'Japan ~20% of EAFE. Secondary signal.',s:'+',w:'15%'},
+            {n:'DM GDP revision (ECGDD1)',d:'DM growth consensus rising = positive for EAFE earnings',s:'+',w:'20%'},
+            {n:'MSCI World Fwd EPS growth + DM Beat%',d:'DM earnings breadth and trend',s:'+',w:'10%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          signals:[
+            {n:'M0EFHUSD TR momentum (12-1M, 3M)',d:'EAFE price momentum. Primary signal. USD-hedged removes currency noise.',s:'+',w:'40%'},
+            {n:'EAFE MA50 vs MA200 distance',d:'Trend confirmation via moving average spread',s:'+',w:'25%'},
+            {n:'DM vs US relative return (3M/6M)',d:'Is DM outperforming US? Momentum in relative space = regime signal.',s:'+',w:'20%'},
+            {n:'RSI(14) on M0EFHUSD',d:'Contrarian at extremes',s:'C',w:'15%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          signals:[
+            {n:'VIX + VSTOXX (global risk-off)',d:'Both high = global risk-off = UW DM ex-US equity',s:'C',w:'40%'},
+            {n:'EUR/USD momentum (weak USD = +)',d:'USD weakness = DM returns better in USD terms',s:'+',w:'30%'},
+            {n:'European ETF fund flows',d:'Strong inflows to European equities = bullish signal',s:'+',w:'30%'},
+          ]},
+      V: {color:'blue', title:'Valuation (25%)',
+          signals:[
+            {n:'EAFE Forward P/E percentile (10Y)',d:'M0EFHUSD PE percentile. Threshold: < 13x cheap, > 19x expensive',s:'+',w:'35%'},
+            {n:'EAFE ERP = EAFE EY − 10Y UST',d:'DM earnings yield vs bond yield. Higher than US ERP = more attractive.',s:'+',w:'30%'},
+            {n:'P/E DM vs US (relative cheapness)',d:'EAFE P/E / S&P P/E z-score. Low = DM cheap vs US = bullish DM.',s:'+',w:'25%'},
+            {n:'DM Dividend yield vs US dividend yield',d:'DM typically 50–100 bps higher div yield than US = carry advantage',s:'+',w:'10%'},
+          ]},
+    }
+  },
+  {
+    id:'EM', name:'Emerging Markets Equity (Broad)', sub:'MSCI EM — NDUEEGF benchmark',
+    color:'#c4b5fd',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%)',
+          signals:[
+            {n:'China Mfg PMI (Caixin CPMINDX)',d:'China = 30%+ of MSCI EM. China PMI is the dominant EM fundamental signal.',s:'+',w:'30%'},
+            {n:'Citi EM Surprise Index (CESIEM)',d:'Broad EM economic surprises. Moderate range (not extreme contrarian).',s:'+',w:'25%'},
+            {n:'EM GDP revision (ECGDM1)',d:'EM growth consensus change. Upward revision = bullish EM earnings',s:'+',w:'20%'},
+            {n:'MSCI EM Fwd EPS growth (MXEF)',d:'EM earnings growth trend. > 10% = positive signal',s:'+',w:'15%'},
+            {n:'EM Earnings Beat%',d:'EM delivery vs estimates',s:'+',w:'10%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          signals:[
+            {n:'NDUEEGF TR momentum (12-1M, 3M)',d:'MSCI EM price momentum. Primary signal.',s:'+',w:'35%'},
+            {n:'M1CXBRV (EM ex China) momentum',d:'EM ex-China breadth check. Both confirming = high conviction.',s:'+',w:'20%'},
+            {n:'NDEUCHF (China) momentum',d:'China equity momentum — often diverges from broad EM',s:'+',w:'15%'},
+            {n:'EM BBB OAS momentum (BAMLEM, tightening=+)',d:'EM credit conditions leading EM equity by 2–4 weeks',s:'+',w:'20%'},
+            {n:'USD DXY momentum (weak USD=+)',d:'Dollar weakness = EM equity bull case. Very high correlation with EM performance.',s:'+',w:'10%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          signals:[
+            {n:'USD DXY level (strong USD = negative)',d:'The #1 headwind for EM equity. z_DXY sign inverted: high USD = bad EM',s:'−',w:'30%'},
+            {n:'VIX percentile (contrarian)',d:'High VIX = risk-off = EM equity suffers most (high beta to global risk)',s:'C',w:'25%'},
+            {n:'EMBI sovereign spread (negative)',d:'EM sovereign stress is directly negative for EM equity',s:'−',w:'25%'},
+            {n:'EM ETF fund flows',d:'Institutional positioning in EM: strong inflows = bull signal',s:'+',w:'20%'},
+          ]},
+      V: {color:'blue', title:'Valuation (25%)',
+          signals:[
+            {n:'MSCI EM Forward P/E percentile (10Y)',d:'NDUEEGF PE percentile. < 10x very cheap, > 14x expensive.',s:'+',w:'30%'},
+            {n:'EM vs US P/E ratio (relative cheapness)',d:'EM P/E / S&P P/E z-score. Historically EM trades at 25–35% discount.',s:'+',w:'25%'},
+            {n:'EM ERP = EM EY − 10Y UST − EMBI spread',d:'EM risk-adjusted ERP. Accounts for sovereign risk premium.',s:'+',w:'25%'},
+            {n:'EM BBB OAS level (BAMLEM)',d:'EM credit cheap = better financing conditions = positive for EM equity',s:'+',w:'20%'},
+          ]},
+    }
+  },
+  {
+    id:'CN', name:'China Equity', sub:'MSCI China — NDEUCHF benchmark',
+    color:'#f87171',
+    pillars: {
+      F: {color:'teal', title:'Fundamentals (25%)',
+          signals:[
+            {n:'Caixin Manufacturing PMI (CPMINDX)',d:'Primary China activity signal. Level > 50 + direction rising = maximum bullish.',s:'++',w:'35%'},
+            {n:'Caixin Services PMI (MPMICNSA)',d:'China consumer and services economy. Services > 50% of GDP.',s:'+',w:'20%'},
+            {n:'China GDP forecast (ECGDCN)',d:'Bloomberg consensus China GDP. Revision direction is key.',s:'+',w:'20%'},
+            {n:'Citi China Surprise (CESICNY)',d:'China economic data vs expectations',s:'+',w:'15%'},
+            {n:'China EPS growth (MXCN BEST_EPS_GRO)',d:'MSCI China earnings growth trend and revision',s:'+',w:'10%'},
+          ]},
+      M: {color:'amber', title:'Momentum (30%)',
+          signals:[
+            {n:'NDEUCHF TR momentum (12-1M, 3M)',d:'China equity price momentum. Note: can diverge sharply from EM broad.',s:'++',w:'40%'},
+            {n:'NDEUCHF MA50 vs MA200',d:'China trend signal',s:'+',w:'25%'},
+            {n:'China vs EM ex-China relative return',d:'Is China outperforming or underperforming rest of EM?',s:'+',w:'20%'},
+            {n:'EM BBB OAS / China credit conditions',d:'EM credit as financial conditions proxy for China equity',s:'+',w:'15%'},
+          ]},
+      S: {color:'purple', title:'Sentiment (20%)',
+          signals:[
+            {n:'USD/CNY direction (weak CNY = bad)',d:'CNY weakness = risk for Chinese equities (capital flight signal)',s:'−',w:'30%'},
+            {n:'EMBI / China sovereign spreads',d:'China CDS or EMBI component for sovereign risk',s:'−',w:'30%'},
+            {n:'VIX (global risk-off)',d:'China is highest beta within EM to global risk-off events',s:'C',w:'40%'},
+          ]},
+      V: {color:'blue', title:'Valuation (25%)',
+          signals:[
+            {n:'MSCI China Forward P/E percentile',d:'NDEUCHF PE percentile. China often trades < 10x = cheap. < 8x = very cheap.',s:'+',w:'35%'},
+            {n:'China vs US P/E relative discount',d:'China P/E / S&P P/E. Historically 35–55% discount. Narrowing = less attractive.',s:'+',w:'30%'},
+            {n:'China ERP (China EY − UST 10Y − China risk)',d:'Risk-adjusted ERP accounting for geopolitical/political risk',s:'+',w:'25%'},
+            {n:'China BBB OAS (EM BBB proxy)',d:'Financing conditions for Chinese corporates',s:'+',w:'10%'},
+          ]},
+    }
+  },
+];
+
+function buildAcSection(acs, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const pillarColors = {F:'--teal',M:'--amber2',S:'--purple',V:'--blue'};
+  const pillarFullName = {F:'Fundamentals',M:'Momentum',S:'Sentiment',V:'Valuation'};
+  container.innerHTML = acs.map(ac => `
+    <div style="margin-bottom:32px">
+      <div class="section-header" style="color:${ac.color}">${ac.name} <span style="font-size:12px;font-weight:400;color:var(--text3)">${ac.sub}</span></div>
+      <div class="pillar-grid">
+        ${Object.entries(ac.pillars).map(([pk, pv]) => `
+          <div class="pillar-card" style="border-top:2px solid var(${pillarColors[pk]})">
+            <div class="pillar-card-header">
+              <span class="pillar-card-title" style="color:var(${pillarColors[pk]})">${pv.title}</span>
+            </div>
+            ${pv.note ? `<div style="padding:8px 14px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);line-height:1.5">${pv.note}</div>` : ''}
+            <div class="pillar-card-body">
+              ${pv.signals.map(sig => `
+                <div class="signal-row">
+                  <div>
+                    <div class="sig-row-name">${sig.n}</div>
+                    <div class="sig-row-desc">${sig.d}</div>
+                  </div>
+                  <div class="sig-row-sign">${signHtml(sig.s)}</div>
+                  <div class="sig-row-wt">${sig.w}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+buildAcSection(fiAcs, 'fi-content');
+buildAcSection(eqAcs, 'eq-content');
+</script>
+</body>
+</html>
