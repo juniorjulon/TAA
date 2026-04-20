@@ -1,0 +1,13 @@
+,label,group,Z_F,Z_M,Z_S,Z_V,Z_composite,n_agree,conviction_mult,conviction,abs_tilt_%,Z_relative,rel_tilt_%,final_tilt_%
+money_market,Money Market,FI,1.532,-0.01,2.511,-0.023,0.768,2,0.5,MEDIUM OW,0.5,-0.092,0.0,0.18
+short_term_fi,Short-Term FI,FI,-0.498,0.064,2.189,1.225,0.783,2,0.5,MEDIUM OW,0.75,-0.065,0.0,0.26
+lt_treasuries,LT Treasuries,FI,-0.498,-0.209,2.332,0.598,0.469,2,0.5,NEUTRAL,0.0,-0.632,0.0,0.0
+lt_us_corp,LT US Corporate,FI,0.112,0.253,0.186,2.642,0.928,2,0.5,MEDIUM OW,0.75,0.197,0.0,0.26
+lt_em_fi,LT EM Fixed Income,FI,0.018,1.358,-3.0,3.0,0.562,2,0.5,NEUTRAL,0.0,-0.464,0.0,0.0
+us_equity,US Equity,EQ,0.273,0.664,1.583,0.539,0.719,4,1.0,NEUTRAL,0.0,-0.181,0.0,0.0
+us_growth,US Growth,EQ,0.273,0.539,1.583,1.853,1.036,4,1.0,MEDIUM OW,1.5,0.391,0.0,0.52
+us_value,US Value,EQ,0.273,0.785,1.583,-0.329,0.512,3,0.8,NEUTRAL,0.0,-0.554,0.0,0.0
+dm_equity,DM ex-US Equity,EQ,-1.313,-0.045,1.55,-1.516,-0.411,2,0.5,NEUTRAL,0.0,-2.22,-2.0,-1.3
+em_equity,EM Equity,EQ,0.018,1.179,3.0,2.549,1.596,3,0.8,HIGH OW,3.2,1.402,1.6,2.16
+em_xchina,EM ex-China,EQ,0.018,1.179,3.0,3.0,1.708,3,0.8,HIGH OW,2.4,1.604,2.4,2.4
+china_equity,China Equity,EQ,1.607,-0.796,2.988,1.593,1.159,3,0.8,MEDIUM OW,1.2,0.613,0.0,0.42

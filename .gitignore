@@ -1,0 +1,21 @@
+# PyCharm / IntelliJ
+.idea/
+*.iml
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Research folder

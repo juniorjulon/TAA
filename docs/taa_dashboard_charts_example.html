@@ -1,0 +1,617 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.dash{display:flex;min-height:620px;background:#0B1220;color:#E2E8F0;border-radius:10px;overflow:hidden;font-size:13px}
+.sidebar{width:190px;background:#111C2E;border-right:1px solid #1E2E47;flex-shrink:0;display:flex;flex-direction:column}
+.sidebar-logo{padding:14px 16px;border-bottom:1px solid #1E2E47;display:flex;align-items:center;gap:8px}
+.logo-r{background:#C41230;color:#fff;font-weight:700;font-size:13px;padding:3px 7px;border-radius:4px;letter-spacing:1px}
+.logo-sub{color:#6B7A99;font-size:11px}
+.nav-sect{padding:10px 12px 4px;color:#6B7A99;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.nav-item{padding:7px 16px;cursor:pointer;color:#A0AABB;font-size:12px;display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:#1E2E47;color:#E2E8F0}
+.nav-item.active{background:#1E2E4799;color:#E2E8F0;border-left-color:#C41230}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:#C41230;flex-shrink:0}
+.nav-dot-b{width:6px;height:6px;border-radius:50%;background:#3A7BD5;flex-shrink:0}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.topbar{padding:12px 18px;border-bottom:1px solid #1E2E47;background:#111C2E;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:13px;font-weight:500;color:#E2E8F0}
+.topbar-sub{font-size:11px;color:#6B7A99}
+.badge{background:#C4123020;color:#E8354A;border:1px solid #C4123040;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:500}
+.content{padding:14px;flex:1;overflow-y:auto}
+.panel{display:none}
+.panel.active{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:#162236;border:1px solid #1E2E47;border-radius:8px;padding:10px 12px}
+.kpi-label{font-size:10px;color:#6B7A99;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.kpi-val{font-size:20px;font-weight:500}
+.kpi-sub{font-size:10px;color:#6B7A99;margin-top:2px}
+.kpi-val.up{color:#22C55E} .kpi-val.dn{color:#E8354A} .kpi-val.yel{color:#F0B429} .kpi-val.bl{color:#3A7BD5}
+.row2{display:grid;gap:10px;margin-bottom:14px}
+.row2.c2{grid-template-columns:1fr 1fr}
+.row2.c12{grid-template-columns:1fr 2fr}
+.row2.c21{grid-template-columns:2fr 1fr}
+.card{background:#162236;border:1px solid #1E2E47;border-top:2px solid #C41230;border-radius:8px;padding:12px}
+.card.blue{border-top-color:#3A7BD5}
+.card.green{border-top-color:#22C55E}
+.card.yel{border-top-color:#F0B429}
+.card-title{font-size:11px;color:#A0AABB;margin-bottom:10px;font-weight:500;display:flex;align-items:center;gap:6px}
+.card-title-dot{width:6px;height:6px;border-radius:50%}
+.red-dot{background:#C41230} .blue-dot{background:#3A7BD5} .green-dot{background:#22C55E}
+.chart-wrap{position:relative;width:100%}
+.ctrl-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.pill{padding:3px 10px;border-radius:20px;border:1px solid #1E2E47;background:#0B1220;color:#6B7A99;cursor:pointer;font-size:11px;transition:all .15s}
+.pill.active{background:#C4123020;border-color:#C41230;color:#E8354A}
+.pill.blue.active{background:#3A7BD520;border-color:#3A7BD5;color:#3A7BD5}
+select{background:#1E2E47;border:1px solid #2A3E5A;color:#E2E8F0;font-size:11px;padding:4px 8px;border-radius:5px;cursor:pointer}
+.band-info{display:flex;gap:14px;font-size:10px;color:#6B7A99;margin-top:8px;flex-wrap:wrap}
+.band-dot{display:inline-block;width:18px;height:2px;border-radius:1px;vertical-align:middle;margin-right:4px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:#1E2E47;color:#A0AABB;padding:6px 8px;text-align:left;font-weight:500}
+.tbl td{padding:5px 8px;border-bottom:1px solid #1A2A40;color:#E2E8F0}
+.tbl tr:last-child td{border-bottom:none}
+.cell-up{color:#22C55E} .cell-dn{color:#E8354A} .cell-yel{color:#F0B429}
+.gc{background:#22C55E20;color:#22C55E;padding:1px 6px;border-radius:3px;font-size:10px}
+.dc{background:#E8354A20;color:#E8354A;padding:1px 6px;border-radius:3px;font-size:10px}
+.sub-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.stab{padding:4px 12px;border-radius:5px;border:1px solid #1E2E47;color:#6B7A99;cursor:pointer;font-size:11px;transition:all .15s}
+.stab.active{background:#C4123015;border-color:#C41230;color:#E8354A}
+.stab-b.active{background:#3A7BD515;border-color:#3A7BD5;color:#3A7BD5}
+hr{border:none;border-top:1px solid #1E2E47;margin:8px 0}
+</style>
+
+<div class="dash">
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-r">RIMAC</span>
+    <span class="logo-sub">TAA Dashboard</span>
+  </div>
+  <div class="nav-sect">I. Momentum</div>
+  <div class="nav-item active" onclick="show('mom-roll',this)"><span class="nav-dot"></span>Rolling Returns</div>
+  <div class="nav-item" onclick="show('mom-ma',this)"><span class="nav-dot"></span>Moving Averages</div>
+  <div class="nav-item" onclick="show('mom-rsi',this)"><span class="nav-dot"></span>RSI 14d / 30d</div>
+  <div style="margin:6px 12px;border-top:1px solid #1E2E47"></div>
+  <div class="nav-sect">II. Valuation</div>
+  <div class="nav-item" onclick="show('val-pe-abs',this)"><span class="nav-dot-b"></span>P/E Absolute</div>
+  <div class="nav-item" onclick="show('val-pe-rel',this)"><span class="nav-dot-b"></span>P/E Relative</div>
+  <div class="nav-item" onclick="show('val-oas',this)"><span class="nav-dot-b"></span>OAS</div>
+  <div class="nav-item" onclick="show('val-yld',this)"><span class="nav-dot-b"></span>Yield Curve</div>
+  <div style="flex:1"></div>
+  <div style="padding:10px 14px;font-size:10px;color:#6B7A99;border-top:1px solid #1E2E47">
+    <span style="color:#C41230">●</span> Investment Management<br>
+    <span style="margin-left:8px">Última actualización: 31 Mar 2026</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="panel-title">Momentum — Rolling Returns</div>
+      <div class="topbar-sub">Total Return Index (TR Index) · Período activo: <span id="period-lbl">3M</span></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="badge">Live data</div>
+      <div style="font-size:11px;color:#6B7A99">261 obs · 2025-04-01 → 2026-03-31</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- PANEL: Rolling Returns -->
+  <div class="panel active" id="mom-roll">
+    <div class="ctrl-row">
+      <span style="font-size:11px;color:#6B7A99">Período:</span>
+      <span class="pill active" onclick="setPeriod(this,'1M')">1M</span>
+      <span class="pill" onclick="setPeriod(this,'3M')">3M</span>
+      <span class="pill" onclick="setPeriod(this,'6M')">6M</span>
+      <span class="pill" onclick="setPeriod(this,'12M')">12M</span>
+      <span style="margin-left:auto;font-size:10px;color:#6B7A99">Ventana: últimos 180 días</span>
+    </div>
+    <div class="row2 c2">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>DM vs EM</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="c-dm-em"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>Growth vs Value</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="c-gv"></canvas></div>
+      </div>
+    </div>
+    <div class="row2 c2">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>World vs DM ex US</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="c-ww"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>EM ex China vs China</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="c-ec"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot blue-dot"></span>Comparador libre — retornos acumulados por período
+        <select id="free-sel" style="margin-left:auto" onchange="updateFreeChart()">
+          <option value="sectors">Sectores S&P 500</option>
+          <option value="global">Global / Regional</option>
+        </select>
+      </div>
+      <div class="chart-wrap" style="height:160px"><canvas id="c-free"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PANEL: Moving Averages -->
+  <div class="panel" id="mom-ma">
+    <div class="row2 c21">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>Equity — Distancia a MA 50d / MA 200d</div>
+        <table class="tbl">
+          <thead><tr><th>Activo</th><th>Último</th><th>Δ MA50%</th><th>Δ MA200%</th><th>Cross</th><th>RSI 14</th></tr></thead>
+          <tbody id="ma-table"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>Δ MA200 — Todos los activos</div>
+        <div class="chart-wrap" style="height:320px"><canvas id="c-ma-bar"></canvas></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title"><span class="card-title-dot green-dot"></span>OAS — Serie histórica + MA 50 / MA 200
+        <select style="margin-left:auto">
+          <option>US Corp HY</option><option>US Corp BBB (IG)</option><option>EM BBB</option><option>LatAm EM</option>
+        </select>
+      </div>
+      <div class="chart-wrap" style="height:180px"><canvas id="c-oas-ma"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PANEL: RSI -->
+  <div class="panel" id="mom-rsi">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">RSI &gt; 70</div><div class="kpi-val dn">3</div><div class="kpi-sub">Sobrecompra</div></div>
+      <div class="kpi"><div class="kpi-label">RSI &lt; 30</div><div class="kpi-val yel">1</div><div class="kpi-sub">Sobreventa</div></div>
+      <div class="kpi"><div class="kpi-label">RSI 50–70</div><div class="kpi-val up">9</div><div class="kpi-sub">Alcista</div></div>
+      <div class="kpi"><div class="kpi-label">RSI 30–50</div><div class="kpi-val bl">7</div><div class="kpi-sub">Bajista</div></div>
+    </div>
+    <div class="row2 c21">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot red-dot"></span>RSI 14d vs RSI 30d — Todos los activos</div>
+        <div class="chart-wrap" style="height:340px"><canvas id="c-rsi-bars"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>Serie RSI histórica
+          <select style="margin-left:auto"><option>S&P 500 Growth</option><option>MSCI World</option><option>MSCI EM</option></select>
+        </div>
+        <div class="chart-wrap" style="height:340px"><canvas id="c-rsi-ts"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: PE Absolute -->
+  <div class="panel" id="val-pe-abs">
+    <div class="row2 c2">
+      <div class="card blue">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>Global / Regional — P/E Forward</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="c-pe-global"></canvas></div>
+      </div>
+      <div class="card blue">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>Sectores S&P 500 — P/E Forward (actual)</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="c-pe-sectors"></canvas></div>
+      </div>
+    </div>
+    <div class="card blue" style="margin-top:10px">
+      <div class="card-title"><span class="card-title-dot blue-dot"></span>P/E Forward actual — todos los activos (ranking)</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="c-pe-all"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PANEL: PE Relative -->
+  <div class="panel" id="val-pe-rel">
+    <div class="ctrl-row">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:#6B7A99;width:80px">Numerador (A)</span>
+          <select id="pe-a" onchange="updatePeRel()"><option value="IT">S&P 500 IT</option><option value="Energy">S&P 500 Energy</option><option value="EM">MSCI EM</option><option value="Growth">S&P 500 Growth</option></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:#6B7A99;width:80px">Denominador (B)</span>
+          <select id="pe-b" onchange="updatePeRel()"><option value="Market">US Market</option><option value="ACWI">MSCI ACWI</option><option value="Value">S&P 500 Value</option></select>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-left:20px">
+        <span style="font-size:10px;color:#6B7A99">Ventana histórica</span>
+        <input type="range" min="60" max="261" value="200" id="pe-lb" oninput="document.getElementById('pe-lb-val').textContent=this.value+' días';updatePeRel()" style="width:140px">
+        <span id="pe-lb-val" style="font-size:10px;color:#F0B429">200 días</span>
+      </div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;gap:3px;font-size:10px">
+        <div><span class="band-dot" style="background:#3A7BD5;display:inline-block"></span><span style="color:#3A7BD5">Ratio P/E(A)/P/E(B)×100</span></div>
+        <div><span class="band-dot" style="background:#F0B429;display:inline-block"></span><span style="color:#F0B429">Media (ventana)</span></div>
+        <div><span class="band-dot" style="border-top:2px dashed #6B7A99;display:inline-block;background:none"></span><span style="color:#6B7A99">±1σ bandas dinámicas</span></div>
+      </div>
+    </div>
+    <div class="card blue">
+      <div class="card-title" id="pe-rel-title"><span class="card-title-dot blue-dot"></span>P/E Relativo con Bandas Dinámicas — S&P 500 IT / US Market</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-pe-rel"></canvas></div>
+      <div id="pe-rel-stats" class="band-info"></div>
+    </div>
+    <div class="card blue" style="margin-top:10px">
+      <div class="card-title"><span class="card-title-dot blue-dot"></span>Heatmap — Sectores S&P 500 vs US Market (Z-score de ratio)</div>
+      <div class="chart-wrap" style="height:140px"><canvas id="c-pe-heatmap"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PANEL: OAS -->
+  <div class="panel" id="val-oas">
+    <div class="ctrl-row">
+      <span style="font-size:11px;color:#6B7A99">Ventana:</span>
+      <span class="pill blue active stab-b" onclick="setOasLb(2,this)">2A</span>
+      <span class="pill blue stab-b" onclick="setOasLb(5,this)">5A</span>
+      <span class="pill blue stab-b" onclick="setOasLb(10,this)">10A</span>
+      <span class="pill blue stab-b" onclick="setOasLb(26,this)">Máx</span>
+    </div>
+    <div class="row2 c2">
+      <div class="card blue">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>US Corp — IG (BBB) vs HY</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-oas-hy"></canvas></div>
+      </div>
+      <div class="card blue">
+        <div class="card-title"><span class="card-title-dot blue-dot"></span>EM BBB vs LatAm EM</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-oas-em"></canvas></div>
+      </div>
+    </div>
+    <div class="card blue" style="margin-top:10px">
+      <div class="card-title"><span class="card-title-dot blue-dot"></span>OAS con Bandas ±1σ — US Corp HY (ventana activa)</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="c-oas-bands"></canvas></div>
+      <div class="band-info">
+        <span><span class="band-dot" style="background:#14B8A6;display:inline-block"></span><span style="color:#14B8A6">HY OAS</span></span>
+        <span><span class="band-dot" style="background:#F0B429;display:inline-block"></span><span style="color:#F0B429">Media</span></span>
+        <span><span class="band-dot" style="border-top:1px dashed #6B7A99;display:inline-block;background:none"></span><span style="color:#6B7A99">±1σ</span></span>
+        <span style="margin-left:auto;color:#E8354A;font-weight:500">Actual: 3.28% &nbsp;·&nbsp; Media: 4.51% &nbsp;·&nbsp; Percentil: 31%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: Yield Curve -->
+  <div class="panel" id="val-yld">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Treasury 10Y</div><div class="kpi-val yel">4.32%</div><div class="kpi-sub">+2bps vs ayer</div></div>
+      <div class="kpi"><div class="kpi-label">Treasury 2Y</div><div class="kpi-val yel">3.80%</div><div class="kpi-sub">−1bps vs ayer</div></div>
+      <div class="kpi"><div class="kpi-label">Spread 10Y−2Y</div><div class="kpi-val up">+52 bps</div><div class="kpi-sub">Empinada</div></div>
+      <div class="kpi"><div class="kpi-label">Señal Curva</div><div class="kpi-val up">Bullish</div><div class="kpi-sub">Spread &gt; 50bps</div></div>
+    </div>
+    <div class="row2 c2">
+      <div class="card yel">
+        <div class="card-title"><span class="card-title-dot" style="background:#F0B429"></span>Spread 10Y−2Y — histórico (bps)</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-yld-spread"></canvas></div>
+      </div>
+      <div class="card yel">
+        <div class="card-title"><span class="card-title-dot" style="background:#F0B429"></span>Niveles — 10Y vs 2Y</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-yld-levels"></canvas></div>
+      </div>
+    </div>
+    <div class="row2 c2" style="margin-top:10px">
+      <div class="card yel">
+        <div class="card-title"><span class="card-title-dot" style="background:#F0B429"></span>Distribución histórica del spread</div>
+        <div class="chart-wrap" style="height:140px"><canvas id="c-yld-hist"></canvas></div>
+      </div>
+      <div class="card yel">
+        <div class="card-title"><span class="card-title-dot" style="background:#F0B429"></span>Estadísticas (ventana activa)</div>
+        <table class="tbl">
+          <tbody>
+            <tr><td style="color:#6B7A99">Actual</td><td class="cell-up">+52 bps</td></tr>
+            <tr><td style="color:#6B7A99">Mínimo histórico</td><td class="cell-dn">−107 bps</td></tr>
+            <tr><td style="color:#6B7A99">Máximo histórico</td><td class="cell-up">+148 bps</td></tr>
+            <tr><td style="color:#6B7A99">Media</td><td>+14 bps</td></tr>
+            <tr><td style="color:#6B7A99">% obs. invertidas</td><td class="cell-yel">31.4%</td></tr>
+            <tr><td style="color:#6B7A99">Señal</td><td class="cell-up">Empinada (Bullish)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CHARTS={};
+const BG='#162236',GRID='#1E2E47',TEXT='#6B7A99',
+  RED='#E8354A',BLUE='#3A7BD5',GREEN='#22C55E',
+  YEL='#F0B429',TEAL='#14B8A6',MUTED='#6B7A99',ORG='#F97316';
+
+function rw(n,start,vol,drift=0){
+  const a=[start];
+  for(let i=1;i<n;i++) a.push(+(a[i-1]+drift+(Math.random()-.5)*vol*2).toFixed(2));
+  return a;
+}
+function seeded(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+function srw(n,start,vol,drift,seed){
+  const r=seeded(seed);const a=[start];
+  for(let i=1;i<n;i++) a.push(+(a[i-1]+drift+(r()-.5)*vol*2).toFixed(2));
+  return a;
+}
+function dateRange(n){
+  const d=new Date('2025-07-01'),a=[];
+  for(let i=0;i<n;i++){a.push(d.toLocaleDateString('es-PE',{month:'short',day:'numeric'}));d.setDate(d.getDate()+1);}
+  return a;
+}
+function datesLong(n,yearsBack){
+  const d=new Date();d.setFullYear(d.getFullYear()-yearsBack);const a=[];
+  for(let i=0;i<n;i++){a.push(d.toLocaleDateString('es-PE',{month:'short',year:'2-digit'}));d.setDate(d.getDate()+Math.round(yearsBack*365/n));}
+  return a;
+}
+function chartOpts(type,labels,datasets,extra={}){
+  return{type,data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E2E47',titleColor:TEXT,bodyColor:'#E2E8F0',borderColor:GRID,borderWidth:1}},
+    scales:{x:{ticks:{color:TEXT,maxTicksLimit:6,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}},
+            y:{ticks:{color:TEXT,maxTicksLimit:5,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}}},
+    ...extra
+  }};
+}
+function line(id,labels,datasets,extra={}){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  const c=document.getElementById(id);if(!c)return;
+  CHARTS[id]=new Chart(c,chartOpts('line',labels,datasets,extra));
+}
+function bar(id,labels,datasets,extra={}){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  const c=document.getElementById(id);if(!c)return;
+  CHARTS[id]=new Chart(c,chartOpts('bar',labels,datasets,extra));
+}
+function hbar(id,labels,datasets,extra={}){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  const c=document.getElementById(id);if(!c)return;
+  CHARTS[id]=new Chart(c,{type:'bar',data:{labels,datasets},options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}},
+            y:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}}},
+    ...extra
+  }});
+}
+function ds(label,data,color,dash=false,fill=false,fillColor='transparent'){
+  return{label,data,borderColor:color,backgroundColor:fill?fillColor+'40':'transparent',
+    borderWidth:dash?1.5:2,borderDash:dash?[5,3]:[],pointRadius:0,pointHoverRadius:3,
+    tension:0.3,fill:fill};
+}
+
+const N=180;const DT=dateRange(N);
+
+function initRolling(){
+  const dm=srw(N,2,1.5,0.01,1);const em=srw(N,-1,2.5,-0.02,2);
+  const gr=srw(N,5,2,0.03,3);const val=srw(N,1,1.5,0.0,4);
+  const wld=srw(N,3,1.2,0.015,5);const eafe=srw(N,1,1.8,0.005,6);
+  const exch=srw(N,2,2.2,-0.01,7);const china=srw(N,-3,3,-0.03,8);
+  line('c-dm-em',DT,[ds('MSCI World (DM)',dm,BLUE),ds('MSCI EM',em,RED)]);
+  line('c-gv',DT,[ds('Growth',gr,TEAL),ds('Value',val,YEL)]);
+  line('c-ww',DT,[ds('MSCI World',wld,BLUE),ds('DM ex US',eafe,ORG)]);
+  line('c-ec',DT,[ds('EM ex China',exch,GREEN),ds('China',china,RED)]);
+  updateFreeChart();
+}
+
+function updateFreeChart(){
+  const sel=document.getElementById('free-sel')?.value;
+  let labels,datasets;
+  const cols=[RED,BLUE,GREEN,YEL,TEAL,ORG,'#A78BFA','#EC4899','#64748B','#06B6D4','#84CC16'];
+  if(sel==='sectors'){
+    const secs=['IT','Energy','Util','Indu','Health','Materials','Staples','Telecom','RE','Disc','Financials'];
+    datasets=secs.map((s,i)=>ds(s,srw(N,secs.indexOf(s)%2===0?3:-1,2,0.01,i+10),cols[i]));
+  } else {
+    const gl=['MSCI World','MSCI ACWI','S&P Value','S&P Growth','EAFE','MSCI EM'];
+    datasets=gl.map((s,i)=>ds(s,srw(N,i%3===0?4:-2,2,0.01,i+20),cols[i]));
+  }
+  line('c-free',DT,datasets);
+}
+
+function initMA(){
+  const assets=[
+    ['MSCI World',5842,2.4,5.1,'Golden',58],
+    ['MSCI ACWI',539,1.9,4.3,'Golden',55],
+    ['S&P 500 Growth',12356,3.1,-1.2,'Death',72],
+    ['S&P 500 Value',12084,0.8,2.9,'Golden',48],
+    ['MSCI EAFE',1300,-0.4,-2.1,'Death',45],
+    ['MSCI EM',765,-1.2,0.8,'Death',42],
+    ['MSCI China',606,-2.8,-4.5,'Death',38],
+    ['S&P 500 IT',5187,4.2,8.1,'Golden',74],
+    ['S&P 500 Energy',975,-3.1,-5.8,'Death',29],
+    ['S&P 500 Health',1741,1.1,3.2,'Golden',52],
+    ['S&P 500 Finls',834,2.7,4.8,'Golden',61],
+  ];
+  const tbody=document.getElementById('ma-table');
+  tbody.innerHTML=assets.map(([n,p,d50,d200,cross,rsi])=>{
+    const c50=d50>=0?'cell-up':'cell-dn',c200=d200>=0?'cell-up':'cell-dn';
+    const cs=cross==='Golden'?'gc':'dc';
+    const cr=rsi>70?'cell-dn':rsi<30?'cell-yel':rsi>=50?'cell-up':'';
+    return`<tr><td>${n}</td><td>${p.toLocaleString()}</td><td class="${c50}">${d50>0?'+':''}${d50}%</td><td class="${c200}">${d200>0?'+':''}${d200}%</td><td><span class="${cs}">${cross} ✕</span></td><td class="${cr}">${rsi}</td></tr>`;
+  }).join('');
+  const names=assets.map(a=>a[0].replace('S&P 500 ',''));
+  const vals=assets.map(a=>a[3]);
+  const cols=vals.map(v=>v>=0?GREEN+'CC':RED+'CC');
+  hbar('c-ma-bar',names,[{label:'Δ MA200%',data:vals,backgroundColor:cols,borderColor:'transparent',borderRadius:3,barPercentage:0.7}]);
+  const oasN=300,oasDates=datesLong(oasN,4);
+  const oasPx=srw(oasN,5.2,0.8,-0.05,99);
+  const ma50=oasPx.map((_,i)=>i>=49?oasPx.slice(i-49,i+1).reduce((a,b)=>a+b)/50:null);
+  const ma200=oasPx.map((_,i)=>i>=199?oasPx.slice(i-199,i+1).reduce((a,b)=>a+b)/200:null);
+  line('c-oas-ma',oasDates,[ds('HY OAS',oasPx,TEAL),ds('MA 50',ma50,YEL,true),ds('MA 200',RED,ma200,true)]);
+}
+
+function initRSI(){
+  const assets=['IT','Energy','Util','Indu','Health','Materi.','Staples','Telecom','RE','Disc','Finls','MSCI World','MSCI EM','Growth','Value','EAFE','China'];
+  const r14=[74,28,55,62,51,45,58,67,44,71,63,56,41,72,49,47,37];
+  const r30=[68,33,52,59,48,42,55,63,41,66,60,53,44,67,46,44,40];
+  const cols14=r14.map(v=>v>70?RED:v<30?YEL:v>=50?GREEN:MUTED);
+  hbar('c-rsi-bars',assets,[
+    {label:'RSI 14d',data:r14,backgroundColor:cols14,borderColor:'transparent',barPercentage:0.5,borderRadius:2},
+    {label:'RSI 30d',data:r30,backgroundColor:BLUE+'60',borderColor:'transparent',barPercentage:0.5,borderRadius:2}
+  ],{plugins:{legend:{display:true,labels:{color:TEXT,font:{size:10},boxWidth:10}}},layout:{padding:{right:30}}});
+  const rsiN=180;
+  const rsiDates=dateRange(rsiN);
+  const rsiVals=srw(rsiN,58,8,0,77);
+  line('c-rsi-ts',rsiDates,[
+    ds('RSI 14d',rsiVals,YEL),
+    {label:'OB70',data:Array(rsiN).fill(70),borderColor:RED,borderWidth:1,borderDash:[5,3],pointRadius:0,fill:{target:{value:100},above:RED+'20'}},
+    {label:'OS30',data:Array(rsiN).fill(30),borderColor:YEL,borderWidth:1,borderDash:[5,3],pointRadius:0,fill:{target:{value:0},below:YEL+'20'}},
+    {label:'Mid50',data:Array(rsiN).fill(50),borderColor:MUTED+'80',borderWidth:1,borderDash:[3,3],pointRadius:0}
+  ],{scales:{y:{min:0,max:100,ticks:{color:TEXT,font:{size:10},callback:v=>[0,30,50,70,100].includes(v)?v+'':''}}},plugins:{legend:{display:false}}});
+}
+
+function initPeAbs(){
+  const glbL=['MSCI World','MSCI ACWI','S&P Value','S&P Quality','S&P Growth','EAFE','MSCI EM','EM ex CN','China'];
+  const glbV=[22.8,21.8,18.5,22.0,22.2,13.4,11.6,11.7,11.4];
+  const sL=['IT','Finls','Health','Indu','Disc','Staples','Telecom','Materi.','Util','Energy','RE'];
+  const sV=[21.5,14.8,17.8,25.2,24.3,22.2,19.5,19.6,18.9,18.8,35.6];
+  const gcols=glbV.map((_,i)=>[BLUE,TEAL,GREEN,YEL,ORG,RED,BLUE,TEAL,GREEN][i]);
+  bar('c-pe-global',glbL,[{label:'P/E Forward',data:glbV,backgroundColor:gcols.map(c=>c+'99'),borderColor:gcols,borderWidth:1,borderRadius:3}]);
+  const scols=sV.map(v=>v>25?RED+'CC':v>20?YEL+'CC':GREEN+'CC');
+  bar('c-pe-sectors',sL,[{label:'P/E',data:sV,backgroundColor:scols,borderColor:'transparent',borderRadius:3}]);
+  bar('c-pe-all',[...glbL,...sL],[{label:'P/E',data:[...glbV,...sV],backgroundColor:[...gcols,...sV.map(v=>v>25?RED:v>20?YEL:GREEN)].map(c=>c+'80'),borderColor:'transparent',borderRadius:2}],
+    {scales:{x:{ticks:{font:{size:9},maxRotation:35}}}});
+}
+
+let peRelChart=null;
+const peSeriesData={};
+const peN=200;
+const peDates=dateRange(peN);
+function genPeSeries(ka,kb){
+  const key=ka+kb;
+  if(peSeriesData[key]) return peSeriesData[key];
+  const baseMap={IT:21.5,Energy:18.8,EM:11.6,Growth:22.2,Market:20.8,ACWI:21.8,Value:18.5};
+  const noiseA=srw(peN,baseMap[ka]||20,0.5,0.01,ka.charCodeAt(0));
+  const noiseB=srw(peN,baseMap[kb]||20,0.3,0.005,kb.charCodeAt(0)*2);
+  peSeriesData[key]={a:noiseA,b:noiseB,ratio:noiseA.map((v,i)=>+(v/noiseB[i]*100).toFixed(2))};
+  return peSeriesData[key];
+}
+function updatePeRel(){
+  const ka=document.getElementById('pe-a')?.value||'IT';
+  const kb=document.getElementById('pe-b')?.value||'Market';
+  const lb=parseInt(document.getElementById('pe-lb')?.value||200);
+  const s=genPeSeries(ka,kb);
+  const ratio=s.ratio.slice(-lb);
+  const mu=ratio.reduce((a,b)=>a+b)/ratio.length;
+  const std=Math.sqrt(ratio.map(v=>(v-mu)**2).reduce((a,b)=>a+b)/ratio.length);
+  const last=ratio[ratio.length-1];
+  const dates=peDates.slice(-lb);
+  document.getElementById('pe-rel-title').innerHTML=`<span class="card-title-dot blue-dot"></span>P/E Relativo con Bandas Dinámicas — ${ka} / ${kb}`;
+  document.getElementById('pe-rel-stats').innerHTML=
+    `<span><span style="color:#3A7BD5">Actual: <b>${last.toFixed(1)}%</b></span></span>
+     <span><span style="color:#F0B429">Media: <b>${mu.toFixed(1)}%</b></span></span>
+     <span><span style="color:#6B7A99">+1σ: <b>${(mu+std).toFixed(1)}%</b></span></span>
+     <span><span style="color:#6B7A99">−1σ: <b>${(mu-std).toFixed(1)}%</b></span></span>
+     <span style="margin-left:auto;color:${last>mu+std?RED:last<mu-std?YEL:GREEN}">
+       Z-score: <b>${((last-mu)/std).toFixed(2)}</b></span>`;
+  if(CHARTS['c-pe-rel']) CHARTS['c-pe-rel'].destroy();
+  CHARTS['c-pe-rel']=new Chart(document.getElementById('c-pe-rel'),{
+    type:'line',
+    data:{labels:dates,datasets:[
+      {label:ka+'/'+kb,data:ratio,borderColor:BLUE,borderWidth:2.5,pointRadius:0,tension:0.3,fill:false},
+      {label:'Media',data:Array(lb).fill(mu),borderColor:YEL,borderWidth:2,borderDash:[],pointRadius:0,fill:false},
+      {label:'+1σ',data:Array(lb).fill(mu+std),borderColor:MUTED,borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:'+1'},
+      {label:'−1σ',data:Array(lb).fill(mu-std),borderColor:MUTED,borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        annotation:{annotations:{pt:{type:'point',xValue:dates[dates.length-1],yValue:last,radius:7,backgroundColor:RED,borderColor:'#fff',borderWidth:1.5}}}},
+      scales:{x:{ticks:{color:TEXT,maxTicksLimit:6,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}},
+              y:{ticks:{color:TEXT,maxTicksLimit:5,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}}}}
+  });
+  const sects=['IT','Finls','Health','Indu','Disc','Staples','Telecom','Materi.','Util','Energy','RE'];
+  const zscores=sects.map((_,i)=>(Math.random()*4-2).toFixed(2)*1);
+  const hcols=zscores.map(z=>z>1?GREEN+CC:z<-1?RED+'CC':YEL+'CC');
+  const CC='CC';
+  if(CHARTS['c-pe-heatmap']) CHARTS['c-pe-heatmap'].destroy();
+  CHARTS['c-pe-heatmap']=new Chart(document.getElementById('c-pe-heatmap'),{
+    type:'bar',data:{labels:sects,datasets:[{label:'Z-score',data:zscores,
+      backgroundColor:zscores.map(z=>z>1?GREEN+'CC':z<-1?RED+'CC':YEL+'99'),
+      borderColor:'transparent',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}},
+              y:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID},title:{display:true,text:'Z-score vs US Market',color:TEXT,font:{size:10}}}}}
+  });
+}
+
+function initOAS(){
+  const oasN=200,oD=datesLong(oasN,8);
+  const hyD=srw(oasN,6.5,1.2,-0.03,31);
+  const igD=srw(oasN,1.8,0.3,-0.01,32);
+  const emD=srw(oasN,2.8,0.5,-0.015,33);
+  const laD=srw(oasN,4.2,0.8,-0.02,34);
+  line('c-oas-hy',oD,[ds('US Corp HY',hyD,RED),ds('US Corp BBB (IG)',igD,BLUE)]);
+  line('c-oas-em',oD,[ds('EM BBB',emD,TEAL),ds('LatAm EM',laD,ORG)]);
+  const mu=hyD.reduce((a,b)=>a+b)/hyD.length;
+  const std=Math.sqrt(hyD.map(v=>(v-mu)**2).reduce((a,b)=>a+b)/hyD.length);
+  line('c-oas-bands',oD,[
+    ds('HY OAS',hyD,TEAL,false,true,TEAL),
+    {label:'Media',data:Array(oasN).fill(mu),borderColor:YEL,borderWidth:2,borderDash:[],pointRadius:0,fill:false},
+    {label:'+1σ',data:Array(oasN).fill(mu+std),borderColor:MUTED,borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false},
+    {label:'−1σ',data:Array(oasN).fill(mu-std),borderColor:MUTED,borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false},
+  ]);
+}
+
+function initYield(){
+  const yN=250,yD=datesLong(yN,8);
+  const sprd=srw(yN,50,25,-0.2,51);
+  const y10=srw(yN,4.0,0.3,0.001,52);
+  const y2=y10.map((v,i)=>+(v-sprd[i]/100).toFixed(3));
+  const cols=sprd.map(v=>v>=0?GREEN+'60':RED+'60');
+  if(CHARTS['c-yld-spread']) CHARTS['c-yld-spread'].destroy();
+  CHARTS['c-yld-spread']=new Chart(document.getElementById('c-yld-spread'),{
+    type:'line',data:{labels:yD,datasets:[
+      {label:'Spread',data:sprd,borderColor:BLUE,borderWidth:2,pointRadius:0,tension:0.3,
+       fill:{target:{value:0},above:GREEN+'25',below:RED+'25'}},
+      {label:'0',data:Array(yN).fill(0),borderColor:MUTED+'80',borderWidth:1,borderDash:[4,3],pointRadius:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:TEXT,maxTicksLimit:6,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}},
+              y:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}}}}});
+  line('c-yld-levels',yD,[ds('10Y',y10,YEL),ds('2Y',y2,BLUE,true)]);
+  const mu=sprd.reduce((a,b)=>a+b)/sprd.length;
+  if(CHARTS['c-yld-hist']) CHARTS['c-yld-hist'].destroy();
+  CHARTS['c-yld-hist']=new Chart(document.getElementById('c-yld-hist'),{
+    type:'bar',data:{labels:Array.from({length:15},(_,i)=>Math.round(-120+i*20)),
+      datasets:[{label:'Freq',data:[2,3,5,8,12,18,25,30,22,15,10,7,4,3,2],
+        backgroundColor:BLUE+'80',borderColor:'transparent',borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      annotation:{annotations:{
+        mu:{type:'line',xMin:mu,xMax:mu,borderColor:YEL,borderWidth:2,label:{display:true,content:'Media',font:{size:10},color:YEL,backgroundColor:'transparent',position:'start'}},
+        cur:{type:'line',xMin:52,xMax:52,borderColor:RED,borderWidth:2,label:{display:true,content:'Actual',font:{size:10},color:RED,backgroundColor:'transparent',position:'end'}}
+      }}},
+      scales:{x:{ticks:{color:TEXT,font:{size:9},maxRotation:0},grid:{color:GRID+'60'},border:{color:GRID}},
+              y:{ticks:{color:TEXT,font:{size:10}},grid:{color:GRID+'60'},border:{color:GRID}}}}});
+}
+
+function show(panelId,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById(panelId);
+  if(panel) panel.classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={
+    'mom-roll':'Momentum — Rolling Returns',
+    'mom-ma':'Momentum — Moving Averages',
+    'mom-rsi':'Momentum — RSI 14d / 30d',
+    'val-pe-abs':'Valuation — P/E Absolute',
+    'val-pe-rel':'Valuation — P/E Relative',
+    'val-oas':'Valuation — OAS (Credit Spreads)',
+    'val-yld':'Valuation — Yield Curve'
+  };
+  document.getElementById('panel-title').textContent=titles[panelId]||'';
+}
+function setPeriod(el,p){
+  document.querySelectorAll('.ctrl-row .pill').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('period-lbl').textContent=p;
+}
+function setOasLb(y,el){
+  document.querySelectorAll('#val-oas .ctrl-row .pill').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initRolling();initMA();initRSI();initPeAbs();updatePeRel();initOAS();initYield();
+});
+setTimeout(()=>{
+  try{initRolling();initMA();initRSI();initPeAbs();updatePeRel();initOAS();initYield();}catch(e){}
+},600);
+</script>
