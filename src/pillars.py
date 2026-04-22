@@ -130,25 +130,30 @@ def pillar_fundamentals(asset_class: str, data: dict,
             return None
         return v
 
-    pmi_us    = _e("pmi_us")
-    pmi_ez    = _e("pmi_ez")
-    pmi_china = _e("pmi_china")
-    cesi_us   = _e("cesi_us")
-    cesi_ez   = _e("cesi_ez")
-    cesi_china= _e("cesi_china")
-    cesi_em   = _e("cesi_em")
-    gdp_us    = _e("gdp_us")
-    gdp_em    = _e("gdp_em")
-    gdp_dm    = _e("gdp_dm")
-    gdp_eu    = _e("gdp_eu")
-    gdp_china = _e("gdp_china")
-    eps_us    = _e("eps_us")
-    eps_em    = _e("eps_em")
-    eps_world = _e("eps_world")
-    eps_eafe  = _e("eps_eafe")
-    eps_china = _e("eps_china")
-    bkev_5y   = _e("breakeven_5y")
-    bkev_10y  = _e("breakeven_10y")
+    pmi_us     = _e("pmi_us")
+    pmi_ez     = _e("pmi_ez")
+    pmi_china  = _e("pmi_china")
+    pmi_japan  = _e("pmi_japan")
+    pmi_global = _e("pmi_global")
+    cesi_us    = _e("cesi_us")
+    cesi_ez    = _e("cesi_ez")
+    cesi_china = _e("cesi_china")
+    cesi_em    = _e("cesi_em")
+    gdp_us     = _e("gdp_us")
+    gdp_em     = _e("gdp_em")
+    gdp_dm     = _e("gdp_dm")
+    gdp_eu     = _e("gdp_eu")
+    gdp_china  = _e("gdp_china")
+    gdp_japan  = _e("gdp_japan")
+    eps_us     = _e("eps_us")
+    eps_em     = _e("eps_em")
+    eps_world  = _e("eps_world")
+    eps_eafe   = _e("eps_eafe")
+    eps_china  = _e("eps_china")
+    eps_japan  = _e("eps_japan")
+    bkev_5y    = _e("breakeven_5y")
+    bkev_10y   = _e("breakeven_10y")
+    real_ff    = _e("real_ff")
 
     fi = data.get("fi_px", pd.DataFrame())
     fed_rate = _get(fi, "fedrate")
@@ -169,12 +174,18 @@ def pillar_fundamentals(asset_class: str, data: dict,
 
     elif asset_class == "dm_equity":
         signals = {
-            "pmi_ez":   pmi_ez,
-            "cesi_ez":  cesi_ez,
-            "gdp_dm":   gdp_dm,
-            "eps_eafe": eps_eafe if eps_eafe is not None else eps_world,
+            "pmi_ez":    pmi_ez,
+            "cesi_ez":   cesi_ez,
+            "gdp_dm":    gdp_dm,
+            "eps_eafe":  eps_eafe if eps_eafe is not None else eps_world,
+            "pmi_japan": pmi_japan,
+            "gdp_japan": gdp_japan,
+            "eps_japan": eps_japan,
         }
-        weights = {"pmi_ez": 0.35, "cesi_ez": 0.30, "gdp_dm": 0.20, "eps_eafe": 0.15}
+        weights = {
+            "pmi_ez": 0.25, "cesi_ez": 0.25, "gdp_dm": 0.15,
+            "eps_eafe": 0.15, "pmi_japan": 0.10, "gdp_japan": 0.05, "eps_japan": 0.05,
+        }
 
     elif asset_class in ("em_equity", "em_xchina"):
         signals = {
@@ -207,12 +218,13 @@ def pillar_fundamentals(asset_class: str, data: dict,
         weights = {"pmi": 0.30, "cesi": 0.25, "gdp": 0.25, "bkev": 0.20, "fed": 0.00}
 
     elif asset_class == "money_market":
-        # For MM: high rates & tight money = positive carry (DON'T invert)
+        # For MM: high real rates and tight money = positive carry (DON'T invert)
         signals = {
-            "bkev": bkev_5y,   # high inflation = Fed must hold rates high = good for MM
-            "fed":  fed_z,     # high Fed rate = high MM yield = positive
+            "real_ff": real_ff,  # positive real FF = tight policy = MM yield attractive
+            "bkev":    bkev_5y,  # high inflation forces Fed to hold rates high
+            "fed":     fed_z,    # high nominal rate = high MM yield
         }
-        weights = {"bkev": 0.40, "fed": 0.60}
+        weights = {"real_ff": 0.50, "bkev": 0.25, "fed": 0.25}
 
     # ── Fixed Income (CREDIT): growth slightly positive (spread tightening) ─
     elif asset_class == "lt_us_corp":
@@ -439,12 +451,21 @@ def pillar_sentiment(asset_class: str, data: dict,
         return v
 
     # External signals (Bloomberg/FRED, may be proxy)
-    vix_s  = _e("vix")
-    move_s = _e("move")
-    ted_s  = _e("ted")
-    dxy_s  = _e("dxy")
-    embi_s = _e("embi")
-    pcr_s  = _e("pcr")
+    vix_s    = _e("vix")
+    move_s   = _e("move")
+    ted_s    = _e("ted")
+    dxy_s    = _e("dxy")    # already ewma z-scored in main.py
+    embi_s   = _e("embi")
+    pcr_s    = _e("pcr")
+    aaii_s   = _e("aaii")   # already ewma z-scored in main.py; contrarian
+    fci_s    = _e("fci")    # already ewma z-scored in main.py; tight = headwind
+    vstoxx_s = _e("vstoxx") # raw VSTOXX level (like VIX); z-scored below
+
+    # Z-score raw volatility indices that arrive un-normalised
+    vstoxx_z = (ewma_zscore(vstoxx_s, span=WINDOWS["medium"])
+                if vstoxx_s is not None else None)
+    move_z   = (ewma_zscore(move_s, span=WINDOWS["medium"])
+                if move_s is not None else None)
 
     # Internal fallback proxies from OAS/CDS
     oas_hy   = _get(oas, "oas_hy")
@@ -497,10 +518,11 @@ def pillar_sentiment(asset_class: str, data: dict,
     elif asset_class == "lt_treasuries":
         signals = {
             "vix_fi":  vix_fi,
+            "move":    move_z,    # bond vol: high MOVE → stress → flight to UST quality
             "ted":     ted_sig,
             "stress":  hy_safe_haven,
         }
-        weights = {"vix_fi": 0.40, "ted": 0.30, "stress": 0.30}
+        weights = {"vix_fi": 0.35, "move": 0.20, "ted": 0.25, "stress": 0.20}
 
     elif asset_class == "lt_us_corp":
         # Credit stress is BAD for IG corporate spreads (invert)
@@ -514,47 +536,48 @@ def pillar_sentiment(asset_class: str, data: dict,
 
     elif asset_class == "lt_em_fi":
         signals = {
-            "dxy":      (-ewma_zscore(dxy_s, span=WINDOWS["medium"])
-                         if dxy_s is not None else None),  # strong USD = bad for EM
-            "embi":     embi_sig,          # EM sovereign stress
+            "dxy":       (-dxy_s) if dxy_s is not None else None,  # USD already z-scored; strong USD = EM headwind
+            "embi":      embi_sig,
             "em_stress": _inv(em_stress_sig),
-            "vix_eq":   _inv(vix_eq),
+            "vix_eq":    _inv(vix_eq),
         }
         weights = {"dxy": 0.30, "embi": 0.30, "em_stress": 0.20, "vix_eq": 0.20}
 
     elif asset_class in ("us_equity", "us_growth", "us_value"):
         signals = {
-            "vix_eq":  vix_eq,      # contrarian: high VIX = buy signal
-            "pcr":     pcr_s,       # contrarian: high PCR = fear = buy
-            "cdx_hy":  cdx_hy_z,   # HY price momentum = risk appetite
-            "ted":     _inv(ted_sig),  # funding stress = bad for equity
+            "vix_eq": vix_eq,           # contrarian: high VIX = buy signal
+            "pcr":    pcr_s,            # contrarian: high PCR = fear = buy
+            "aaii":   _inv(aaii_s),     # contrarian: extreme bulls → sell; invert
+            "fci":    _inv(fci_s),      # tight financial conditions = equity headwind
+            "cdx_hy": cdx_hy_z,        # HY price momentum = risk appetite
+            "ted":    _inv(ted_sig),    # funding stress = bad for equity
         }
-        weights = {"vix_eq": 0.40, "pcr": 0.20, "cdx_hy": 0.25, "ted": 0.15}
+        weights = {"vix_eq": 0.30, "pcr": 0.15, "aaii": 0.20,
+                   "fci": 0.15, "cdx_hy": 0.15, "ted": 0.05}
 
     elif asset_class == "dm_equity":
         signals = {
             "vix_eq":  vix_eq,
+            "vstoxx":  vstoxx_z,   # European vol: high = fear = contrarian buy for DM
             "cdx_hy":  cdx_hy_z,
             "ted":     _inv(ted_sig),
         }
-        weights = {"vix_eq": 0.45, "cdx_hy": 0.35, "ted": 0.20}
+        weights = {"vix_eq": 0.30, "vstoxx": 0.25, "cdx_hy": 0.30, "ted": 0.15}
 
     elif asset_class in ("em_equity", "em_xchina"):
         signals = {
-            "dxy":      (-ewma_zscore(dxy_s, span=WINDOWS["medium"])
-                         if dxy_s is not None else None),
-            "embi":     embi_sig,
-            "vix_eq":   vix_eq,
+            "dxy":       (-dxy_s) if dxy_s is not None else None,  # USD z-scored; strong USD = EM headwind
+            "embi":      embi_sig,
+            "vix_eq":    vix_eq,
             "em_stress": _inv(em_stress_sig),
         }
         weights = {"dxy": 0.30, "embi": 0.25, "vix_eq": 0.25, "em_stress": 0.20}
 
     elif asset_class == "china_equity":
         signals = {
-            "dxy":      (-ewma_zscore(dxy_s, span=WINDOWS["medium"])
-                         if dxy_s is not None else None),
+            "dxy":       (-dxy_s) if dxy_s is not None else None,  # USD z-scored; strong USD = China headwind
             "em_stress": _inv(em_stress_sig),
-            "vix_eq":   vix_eq,
+            "vix_eq":    vix_eq,
         }
         weights = {"dxy": 0.35, "em_stress": 0.35, "vix_eq": 0.30}
 

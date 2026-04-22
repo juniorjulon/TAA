@@ -40,7 +40,7 @@ from pillars     import (pillar_fundamentals, pillar_momentum,
                           pillar_sentiment,    pillar_valuation)
 from scoring     import (composite_score, score_snapshot,
                           print_scorecard, apply_crisis_override)
-from config      import ASSET_CLASSES, OUTPUT_DIR
+from config      import ASSET_CLASSES, OUTPUT_DIR, MAX_FFILL_DAYS
 from signals     import ewma_zscore, rolling_zscore, pctile_rank, WINDOWS
 
 
@@ -52,20 +52,28 @@ from signals     import ewma_zscore, rolling_zscore, pctile_rank, WINDOWS
 
 def build_bloomberg_series(data: dict) -> dict:
     """
-    Build the external signals dict from data already in the Excel workbook.
+    Build the external signals dict from data in the Excel workbook (H1-H6 structure).
 
-    Most previously-Bloomberg-only signals are now available in the Excel:
-      - PMI (ISM, EZ, China, Japan, UK, Global)           → sheet F1/F2
-      - CESI (US, EUR, China, Global, EM, UK, Japan)      → sheet F1/F2
-      - GDP forecasts (US, DM, EM, EU, Japan, China, LatAm) → sheet F1/F2
-      - Forward EPS (US, World, EM, China, EAFE)          → sheet F3
-      - Breakeven inflation (5Y, 10Y)                      → sheet F3
-      - VIX, MOVE, PCR, SKEW, VSTOXX, TED proxy           → sheet 5
+    All signals now sourced from Excel — no Bloomberg API required:
+      Fundamentals   : PMI, CESI, GDP, Forward EPS                → H1/H2/H3
+      Inflation      : Breakeven 5Y/10Y, PCE YoY, CPI             → H5
+      Sentiment vol  : VIX, MOVE, VSTOXX, VIX3M, PCR, SKEW       → H5
+      Sentiment new  : DXY (USD Index, from 2011)                  → H5
+                       BFCIUS (Bloomberg US FCI, from 2011)        → H5
+                       Modern TED = 3M T-bill − SOFR (from 2018)  → H5 (computed in tsy)
+                       AAII Bull-Bear Spread (from 1987)           → AAII
+      EMBI proxy     : EM BBB OAS from OAS sheet (unchanged)
 
-    Not available in Excel (proxy fallback remains):
-      - DXY (USD index)    → proxy used in sentiment pillar
-      - EMBI sovereign OAS → replaced by EM BBB OAS (oas_em from OAS sheet)
-      - CFTC positioning   → not used
+    New signals wired in v2:
+      dxy        → EM FI, EM equity, EM ex-China, China equity sentiment
+      modern_ted → all AC sentiment (replaces dead BASPTDSP)
+      fci        → US equity/credit sentiment (FCI tight = headwind)
+      real_ff    → money market and STFI fundamentals (FDTR - PCE)
+      vstoxx     → DM equity sentiment (now wired, was loaded but unused)
+      aaii       → US equity sentiment (contrarian, now wired)
+      pmi_japan  → DM equity fundamentals (now wired)
+      gdp_japan  → DM equity fundamentals (now wired)
+      eps_japan  → DM equity fundamentals (now wired)
 
     Returns: dict of {signal_name: pd.Series} ready for pillar functions.
     """
@@ -74,9 +82,9 @@ def build_bloomberg_series(data: dict) -> dict:
     mkt  = data.get("mkt",  pd.DataFrame())
     tsy  = data.get("tsy",  pd.DataFrame())
     aaii = data.get("aaii", pd.DataFrame())
+    oas  = data.get("oas",  pd.DataFrame())
 
     def _s(df, col):
-        """Return df[col] if available, else empty Series."""
         if not df.empty and col in df.columns:
             s = df[col].dropna()
             return s if len(s) > 0 else pd.Series(dtype=float)
@@ -84,7 +92,6 @@ def build_bloomberg_series(data: dict) -> dict:
 
     # ── Fundamentals ─────────────────────────────────────────────────────────
 
-    # PMI: blend Manufacturing and Services where both available
     def _pmi_composite(mfg_col, svcs_col=None):
         mfg  = _s(f1, mfg_col)
         if svcs_col:
@@ -96,17 +103,16 @@ def build_bloomberg_series(data: dict) -> dict:
     pmi_us    = _pmi_composite("pmi_ism_mfg", "pmi_ism_svcs")
     pmi_ez    = _pmi_composite("pmi_ez_mfg",  "pmi_ez_svcs")
     pmi_china = _pmi_composite("pmi_china_mfg", "pmi_china_svcs")
-    pmi_japan = _s(f1, "pmi_japan_mfg")
+    pmi_japan = _s(f1, "pmi_japan_mfg")   # now wired into dm_equity fundamentals
     pmi_uk    = _s(f1, "pmi_uk_mfg")
+    pmi_global= _s(f1, "pmi_global_mfg")
 
-    # CESI: use z-score of direction (level is mean-reverting; Δ20d more useful)
     cesi_us    = _s(f1, "cesi_us")
     cesi_ez    = _s(f1, "cesi_ez")
     cesi_china = _s(f1, "cesi_china")
     cesi_em    = _s(f1, "cesi_em")
+    cesi_japan = _s(f1, "cesi_japan")
 
-    # GDP: blend current-year and next-year forecasts with time-varying weights
-    # w_cur = month/12 so Jan = 8% current, Dec = 100% current
     def _blended_gdp(cur_col, nxt_col):
         cur = _s(f1, cur_col)
         nxt = _s(f1, nxt_col)
@@ -114,86 +120,110 @@ def build_bloomberg_series(data: dict) -> dict:
             return nxt
         if nxt.dropna().empty:
             return cur
-        idx = cur.index.union(nxt.index)
-        cur = cur.reindex(idx).ffill()
-        nxt = nxt.reindex(idx).ffill()
+        idx   = cur.index.union(nxt.index)
+        cur   = cur.reindex(idx).ffill()
+        nxt   = nxt.reindex(idx).ffill()
         w_cur = pd.Series(idx.month / 12, index=idx)
         return w_cur * cur + (1 - w_cur) * nxt
 
-    gdp_us    = _blended_gdp("gdp_us_cur",  "gdp_us_nxt")
-    gdp_em    = _blended_gdp("gdp_em_cur",  "gdp_em_nxt")
-    gdp_dm    = _blended_gdp("gdp_dm_cur",  "gdp_dm_nxt")
-    gdp_eu    = _blended_gdp("gdp_eu_cur",  "gdp_eu_nxt")
-    gdp_japan = _blended_gdp("gdp_japan_cur", "gdp_japan_nxt")
+    gdp_us    = _blended_gdp("gdp_us_cur",    "gdp_us_nxt")
+    gdp_em    = _blended_gdp("gdp_em_cur",    "gdp_em_nxt")
+    gdp_dm    = _blended_gdp("gdp_dm_cur",    "gdp_dm_nxt")
+    gdp_eu    = _blended_gdp("gdp_eu_cur",    "gdp_eu_nxt")
+    gdp_japan = _blended_gdp("gdp_japan_cur", "gdp_japan_nxt")  # now wired
     gdp_china = _blended_gdp("gdp_china_cur", "gdp_china_nxt")
+    gdp_latam = _blended_gdp("gdp_latam_cur", "gdp_latam_nxt")
 
-    # EPS: use month-over-month change in forward EPS (revision more predictive)
     def _eps_revision(col):
         s = _s(f3, col)
         if s.dropna().empty:
             return pd.Series(dtype=float)
-        rev = s.pct_change(21)   # 1M % change = EPS revision
-        return ewma_zscore(rev, span=WINDOWS["medium"])
+        return ewma_zscore(s.pct_change(21), span=WINDOWS["medium"])
 
     eps_us    = _eps_revision("eps_fwd_us")
     eps_em    = _eps_revision("eps_fwd_em")
     eps_world = _eps_revision("eps_fwd_world")
     eps_china = _eps_revision("eps_fwd_china")
-    eps_japan = _eps_revision("eps_fwd_japan")
+    eps_japan = _eps_revision("eps_fwd_japan")  # now wired into dm_equity
     eps_eafe  = _eps_revision("eps_fwd_eafe")
+    eps_latam = _eps_revision("eps_fwd_latam")
 
-    # Breakeven inflation: z-score
-    bkev_5y  = ewma_zscore(_s(f3, "breakeven_5y"),  span=WINDOWS["vlong"]) \
-               if not _s(f3, "breakeven_5y").dropna().empty else pd.Series(dtype=float)
-    bkev_10y = ewma_zscore(_s(f3, "breakeven_10y"), span=WINDOWS["vlong"]) \
-               if not _s(f3, "breakeven_10y").dropna().empty else pd.Series(dtype=float)
+    # Breakeven inflation: now in mkt (H5), not f3
+    def _bkev(col):
+        s = _s(mkt, col)
+        if s.dropna().empty:
+            return pd.Series(dtype=float)
+        return ewma_zscore(s, span=WINDOWS["vlong"])
+
+    bkev_5y  = _bkev("breakeven_5y")
+    bkev_10y = _bkev("breakeven_10y")
+
+    # ── Real Fed Funds Rate (new) ─────────────────────────────────────────────
+    # PCE is monthly (ffilled), FDTR daily. real_ff = FDTR - PCE_YoY.
+    # When real_ff > 0: restrictive. Used in MM and STFI fundamentals.
+    fedrate = _s(tsy, "fedrate")
+    pce_yoy = _s(tsy, "pce_yoy")
+    real_ff = pd.Series(dtype=float)
+    if not fedrate.dropna().empty and not pce_yoy.dropna().empty:
+        idx = fedrate.index.union(pce_yoy.index)
+        ff  = fedrate.reindex(idx).ffill(limit=MAX_FFILL_DAYS)
+        pce = pce_yoy.reindex(idx).ffill(limit=35)  # monthly → ffill up to 35 days
+        real_ff = (ff - pce).clip(lower=-10, upper=15)
 
     # ── Sentiment ─────────────────────────────────────────────────────────────
 
-    # VIX — raw level; vix_score() in signals.py applies nonlinear scoring
     vix    = _s(mkt, "vix")
     move   = _s(mkt, "move")
-    vstoxx = _s(mkt, "vstoxx")
+    vstoxx = _s(mkt, "vstoxx")   # now wired into dm_equity sentiment
     pcr    = _s(mkt, "pcr")
-    skew   = _s(mkt, "skew")
 
-    # TED proxy: BASPTDSP basis swap spread (some NaN is OK; proxies fill gaps)
-    ted = _s(mkt, "ted")
+    # Modern TED = 3M T-bill − SOFR (computed in load_tsy); fallback: empty before 2018
+    modern_ted = _s(tsy, "modern_ted")
 
-    # AAII bull-bear spread as sentiment signal (z-scored; contrarian)
+    # DXY (USD Index): now in H5 from 2011. Positive = USD strong = EM headwind.
+    dxy_raw = _s(mkt, "dxy")
+    dxy_z   = (ewma_zscore(dxy_raw, span=WINDOWS["medium"])
+               if not dxy_raw.dropna().empty else pd.Series(dtype=float))
+
+    # Bloomberg US FCI (BFCIUS): positive = tight conditions = risk headwind.
+    fci_raw = _s(mkt, "fci")
+    fci_z   = (ewma_zscore(fci_raw, span=WINDOWS["medium"])
+               if not fci_raw.dropna().empty else pd.Series(dtype=float))
+
+    # AAII Bull-Bear Spread: z-scored, contrarian. High = euphoria = bearish equity.
     aaii_bb = _s(aaii, "aaii_bull_bear")
     aaii_z  = (ewma_zscore(aaii_bb, span=WINDOWS["xlarge"])
                if not aaii_bb.dropna().empty else pd.Series(dtype=float))
 
-    # EMBI proxy: use EM BBB OAS (user confirmed this replacement)
-    # Sentiment: high EM OAS = EM stress = negative for EM assets
-    oas = data.get("oas", pd.DataFrame())
+    # EMBI proxy: EM BBB OAS. High EM OAS = EM stress = negative for EM assets.
     embi_proxy = pd.Series(dtype=float)
     if not oas.empty and "oas_em" in oas.columns:
         em_oas = oas["oas_em"].dropna()
         if len(em_oas) > 0:
-            # High EM OAS = bad for EM; negative z-score convention
             embi_proxy = -ewma_zscore(em_oas, span=WINDOWS["xlarge"])
 
     return {
-        # PMI
+        # PMI composites
         "pmi_us":        pmi_us,
         "pmi_ez":        pmi_ez,
         "pmi_china":     pmi_china,
         "pmi_japan":     pmi_japan,
         "pmi_uk":        pmi_uk,
+        "pmi_global":    pmi_global,
         # CESI
         "cesi_us":       cesi_us,
         "cesi_ez":       cesi_ez,
         "cesi_china":    cesi_china,
         "cesi_em":       cesi_em,
-        # GDP
+        "cesi_japan":    cesi_japan,
+        # GDP blends
         "gdp_us":        gdp_us,
         "gdp_em":        gdp_em,
         "gdp_dm":        gdp_dm,
         "gdp_eu":        gdp_eu,
         "gdp_japan":     gdp_japan,
         "gdp_china":     gdp_china,
+        "gdp_latam":     gdp_latam,
         # EPS revisions
         "eps_us":        eps_us,
         "eps_em":        eps_em,
@@ -201,18 +231,24 @@ def build_bloomberg_series(data: dict) -> dict:
         "eps_china":     eps_china,
         "eps_japan":     eps_japan,
         "eps_eafe":      eps_eafe,
+        "eps_latam":     eps_latam,
         # Inflation
         "breakeven_5y":  bkev_5y,
         "breakeven_10y": bkev_10y,
-        # Sentiment (raw series — pillar_sentiment applies normalisation)
+        # Fundamentals — rate environment
+        "real_ff":       real_ff,        # Real Fed Funds = FDTR - PCE (new)
+        # Sentiment — volatility (raw levels, pillar_sentiment normalises)
         "vix":           vix,
         "move":          move,
-        "vstoxx":        vstoxx,
-        "ted":           ted,
-        "dxy":           pd.Series(dtype=float),  # not available in Excel
-        "embi":          embi_proxy,
+        "vstoxx":        vstoxx,         # now wired into dm_equity
+        # Sentiment — positioning / contrarian
         "pcr":           pcr,
-        "aaii":          aaii_z,
+        "aaii":          aaii_z,         # now wired into us_equity (contrarian)
+        # Sentiment — macro stress (new/restored)
+        "dxy":           dxy_z,          # USD strength z-score (new — was empty)
+        "fci":           fci_z,          # Bloomberg FCI z-score (new)
+        "ted":           modern_ted,     # Modern TED = tbill_3m - SOFR (replaces dead BASPTDSP)
+        "embi":          embi_proxy,     # EM BBB OAS proxy (unchanged)
     }
 
 

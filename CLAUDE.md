@@ -10,7 +10,86 @@ For insurance portfolios (Solvency II / NAIC RBC), tilts are capped at **±5%** 
 
 The authoritative signal specification is **`TAA_Signal_Reference.html`** (open in browser). This CLAUDE.md is the implementation guide derived from it.
 
+**Single source of truth for configuration**: `config/taa_config.xlsx` -- edit this file to add/modify signals, asset classes, or pillar weights, then run `python src/build_dashboard.py` to propagate changes into `index.html` and `src/config.py`.
+
 ---
+
+## Complete Run Guide
+
+### Script inventory
+
+| Script | What it does | Key output(s) |
+|---|---|---|
+| `src/seed_taa_config.py` | One-time seed -- creates `config/taa_config.xlsx` from scratch | `config/taa_config.xlsx` |
+| `src/build_dashboard.py` | Reads Excel, regenerates 5 JS blocks in `index.html` and 3 Python blocks in `src/config.py` | `index.html`, `src/config.py` |
+| `src/main.py` | Full TAA signal pipeline (data -> z-scores -> tilts) | `results/RUN_*/taa_scorecard.csv`, `taa_composite_series.csv`, `pillars_{ac}.csv` |
+| `src/chartbook_data.py` | Extracts signal-level time series from pipeline results | `results/chartbook_data.json` (~4.6 MB) |
+| `src/generate_dashboard.py` | Embeds CSVs + JSON into a standalone HTML dashboard | `dashboard.html` |
+| `src/generate_methodology_doc.py` | Generates the consolidated Word methodology reference | `docs/TAA_Methodology.docx` |
+| `src/test_build_layer.py` | 29-check health test for the config/build/doc layer | Exit 0 = all pass |
+
+### Full pipeline from scratch
+
+```
+Step 1 -- Edit config (if needed)
+    config/taa_config.xlsx
+    Sheets: AssetClasses, DataSeries, PillarWeights, PillarNotes, SignalMapping
+
+Step 2 -- Propagate config changes to code
+    python src/build_dashboard.py
+    -> index.html      5 JS blocks updated (SIG_MATRIX, AC_META, FI/EQ blueprints, PW)
+    -> src/config.py   3 Python blocks updated (ASSET_CLASSES, PILLAR_WEIGHTS, MAX_TILT_PCT)
+
+Step 3 -- Run TAA signal pipeline
+    python src/main.py
+    -> results/RUN_YYYYMMDD_HHMM/taa_scorecard.csv       latest z-scores + tilt per AC
+    -> results/RUN_YYYYMMDD_HHMM/taa_composite_series.csv full composite history
+    -> results/RUN_YYYYMMDD_HHMM/pillars_{ac}.csv         per-AC pillar history (x12)
+
+Step 4 -- Extract chartbook series
+    python src/chartbook_data.py
+    -> results/chartbook_data.json   5Y of every signal, used by dashboard charts
+
+Step 5 -- Regenerate dashboard HTML
+    python src/generate_dashboard.py
+    -> dashboard.html   standalone file, open in any browser on file://
+
+Step 6 -- Regenerate methodology Word doc (when methodology changes)
+    python src/generate_methodology_doc.py
+    -> docs/TAA_Methodology.docx
+
+Step 7 -- Health check (always run last)
+    python src/test_build_layer.py
+    Exit 0 = 29/29 checks passed
+    Exit 1 = list of failed checks printed
+```
+
+### Minimal weekly refresh (no config change)
+
+```bash
+python src/main.py                      # re-run signals on new market data
+python src/chartbook_data.py            # rebuild chartbook series
+python src/generate_dashboard.py        # refresh dashboard.html
+python src/test_build_layer.py          # confirm integrity
+```
+
+### When only config/taa_config.xlsx changes
+
+```bash
+python src/build_dashboard.py           # Excel -> index.html + src/config.py
+python src/generate_methodology_doc.py  # refresh Word doc
+python src/test_build_layer.py          # verify all 29 checks pass
+# Then re-run Steps 3-5 above to pick up new weights/signals in the pipeline
+```
+
+### First-time setup (empty repo)
+
+```bash
+python src/seed_taa_config.py           # creates config/taa_config.xlsx (run once)
+# Edit config/taa_config.xlsx as needed
+python src/build_dashboard.py           # push config into index.html + config.py
+python src/test_build_layer.py          # verify
+```
 
 ## System Architecture
 
@@ -75,19 +154,28 @@ ext['ted'] = fred.get_series('TEDRATE')
 
 ## Excel Input: `Dashboard_TAA_Inputs.xlsx`
 
-| Sheet | Rows | Content |
-|---|---|---|
-| `TR` | 261 (1Y) | Total Return indices: MSCI World, S&P sectors, etc. |
-| `PE` | 261 (1Y) | Forward P/E ratios (EAFE is all NaN, excluded) |
-| `OAS` | ~6,937 | ICE BofA OAS spreads: BBB, HY, EM BBB, LatAm |
-| `CDS` | ~3,648 | CDX IG spread (IBOXUMAE), CDX HY price (IBOXHYAE) |
-| `TSY` | ~6,563 | US 2Y and 10Y yields |
-| `Hoja2 Block B` | 6,848 (1999+) | Price levels: Fed rate, US Agg, ACWI, S&P styles, EM, FI indices |
-| `Hoja2 Block C` | 6,848 (1999+) | Earnings yields (ACWI, S&P, EM) and bond yields |
+Sheet structure updated April 2026: sheets renamed H1–H6, histories extended to 2010, new series added.
 
-**Critical**: Always use **Hoja2 Block B** for equity/FI momentum — it has 25 years of history. The TR sheet (261 rows) is too short for 12-1M momentum signals.
+| Sheet | Rows | Period | Content |
+|---|---|---|---|
+| `OAS` | ~6,937 | 1999–2026 | ICE BofA credit spreads: BBB, HY, EM BBB, LatAm |
+| `H4` | 3,991 | 2010–2026 | Forward P/E, EY, TR price levels (12 equity/FI indices) |
+| `H5` | 4,044 | 2010–2026 | VIX, MOVE, VSTOXX, CDX, Treasury yields, TIPS, DXY, BFCIUS (FCI), SOFRRATE, PCE YoY, Breakevens |
+| `H6` | 3,991 | 2010–2026 | MSCI World + S&P 11 sectors — Forward PE, EY, TR (36 cols) |
+| `H1` | 4,003 | 2010–2026 | ISM PMI (mfg/svcs/employment), CESI (US/EZ/China/Global), GDP (US/DM/EM/EU/World) |
+| `H2` | 3,960 | 2010–2026 | PMI (Japan/UK/Global), CESI (UK/Japan/EM), GDP (Japan/China/LatAm) |
+| `H3` | 3,991 | 2010–2026 | Forward EPS: US, World, EM, China, Japan, EAFE, LatAm |
+| `AAII` | 10,105 | 1987–2026 | AAII Bull/Bear weekly (resampled to daily via ffill) |
 
-`config.py:EXCEL_PATH` is hardcoded to `/mnt/user-data/uploads/Dashboard_TAA_Inputs.xlsx`. Update for local runs.
+**Key new series (April 2026):**
+- `DXY` (H5): USD Index from 2011 — wired into EM sentiment (strong USD = EM headwind)
+- `BFCIUS` (H5): Bloomberg US FCI from 2011 — wired into US equity/credit sentiment (tight = headwind)
+- `SOFRRATE` (H5): SOFR rate from 2018 — `modern_ted = tbill_3m − SOFR` (replaces defunct BASPTDSP)
+- `PCE CYOY` (H5): Core PCE monthly — `real_ff = FDTR − PCE` wired into money_market fundamentals
+- `Breakevens 5Y/10Y` (H5): moved from H3; wired into FI/equity fundamentals
+
+**Critical**: Always use **H4 TR columns** for equity/FI momentum — 15Y history from 2010.
+`config.py:EXCEL_PATH` resolves to `data/Dashboard_TAA_Inputs.xlsx` relative to the project root.
 
 ---
 
@@ -591,3 +679,162 @@ ext['cesi_us']  = bbg.bdh('CESIUSD Index', 'PX_LAST', '2000-01-01')['PX_LAST']
 - **EWMA vs rolling**: EWMA is default for daily signals. Rolling is only used for slow-moving valuation signals (P/E, ERP, real yield) where the 10Y window is intentional.
 - **Re-standardize after pillar aggregation**: `standardise_pillar()` is called after `_wavg()` in `pillars.py` to restore unit variance — do not remove this step.
 - **TR sheet is for sectors only**: The 261-row TR sheet is used for sector PE/TR analysis. For any momentum signal requiring 12-1M history (>261 rows), use Hoja2 Block B.
+
+---
+
+
+---
+
+## Configuration Management Layer (Added April 2026)
+
+A build layer was added to make the system **self-updating from a single Excel file**.
+The Excel is the only file a non-developer needs to edit to change signals, weights, or asset classes.
+
+### Files
+
+| File | Type | Purpose |
+|---|---|---|
+| `config/taa_config.xlsx` | **User-owned** | Single source of truth. 6 sheets: Instructions, AssetClasses, DataSeries, PillarWeights, PillarNotes, SignalMapping |
+| `src/seed_taa_config.py` | One-time seeder | Creates `taa_config.xlsx` from scratch. Run once on a new machine. |
+| `src/build_dashboard.py` | Build script | Reads Excel, regenerates machine-managed blocks in `index.html` and `src/config.py` |
+| `src/generate_methodology_doc.py` | Doc generator | Reads Excel, produces `docs/TAA_Methodology.docx` |
+| `src/test_build_layer.py` | Health check | 29 automated checks across all layer components |
+| `docs/TAA_Methodology.docx` | **Generated** | Consolidated methodology reference (do not edit manually) |
+
+### Excel sheet schema
+
+| Sheet | Columns | Purpose |
+|---|---|---|
+| `AssetClasses` | ac_id, full_label, short_label, group, benchmark, sub_description, color, max_tilt_pct | 12 ACs |
+| `DataSeries` | series_id, signal_name, ticker, source, frequency, pillar, transformation, window, notes | 89 signals |
+| `PillarWeights` | ac_id, F, M, S, V (each row sums to 1.0) | Pillar weights per AC |
+| `PillarNotes` | ac_id, pillar, note | Italic methodology note per (AC, pillar) card |
+| `SignalMapping` | ac_id, series_id, pillar, sign, weight_in_pillar, description_override | 180 signal-to-AC wires |
+
+### Build markers in index.html and src/config.py
+
+Machine-managed blocks are wrapped in `<<<BUILD:...>>>` comment markers. The build script
+replaces content between these markers; all code outside them is preserved.
+
+**index.html markers** (JS comment prefix `//`):
+```
+<<<BUILD:SIG_MATRIX_START>>>   ...  <<<BUILD:SIG_MATRIX_END>>>
+<<<BUILD:AC_META_START>>>      ...  <<<BUILD:AC_META_END>>>
+<<<BUILD:FI_BLUEPRINT_START>>> ...  <<<BUILD:FI_BLUEPRINT_END>>>
+<<<BUILD:EQ_BLUEPRINT_START>>> ...  <<<BUILD:EQ_BLUEPRINT_END>>>
+<<<BUILD:AC_LABEL_PW_START>>>  ...  <<<BUILD:AC_LABEL_PW_END>>>
+```
+
+**src/config.py markers** (Python comment prefix `#`):
+```
+<<<BUILD:PY_AC_UNIVERSE_START>>>    ...  <<<BUILD:PY_AC_UNIVERSE_END>>>
+<<<BUILD:PY_PILLAR_WEIGHTS_START>>> ...  <<<BUILD:PY_PILLAR_WEIGHTS_END>>>
+<<<BUILD:PY_MAX_TILT_START>>>       ...  <<<BUILD:PY_MAX_TILT_END>>>
+```
+
+### How to extend via Excel (preferred workflow)
+
+**Add a new signal:**
+1. Add a row in `DataSeries` with a unique `series_id`, ticker, source, pillar.
+2. Add rows in `SignalMapping` for each AC the signal applies to (set sign and weight).
+3. Run `python src/build_dashboard.py` and `python src/generate_methodology_doc.py`.
+4. Wire the signal into `src/pillars.py` for live computation (see "Extending the System" below).
+5. Run `python src/test_build_layer.py` to confirm all checks pass.
+
+**Add a new asset class:**
+1. Add a row in `AssetClasses` with a unique `ac_id` (snake_case).
+2. Add a row in `PillarWeights` with F+M+S+V = 1.0.
+3. Add `SignalMapping` rows so the AC has at least one signal per pillar.
+4. Run `python src/build_dashboard.py`.
+5. Add pillar logic branches for the new AC in `src/pillars.py`.
+6. Run `python src/test_build_layer.py`.
+
+**Change pillar weights:**
+1. Edit the relevant row in the `PillarWeights` sheet (keep F+M+S+V = 1.0).
+2. Run `python src/build_dashboard.py`.
+3. Re-run `python src/main.py` to recompute composites with new weights.
+
+---
+
+## Dashboard Layer (Added April 2026)
+
+Two new files were added on top of the signal pipeline to produce an interactive HTML dashboard.
+
+### New Files
+
+| File | Purpose |
+|---|---|
+| `src/chartbook_data.py` | Extracts signal-level time series from the pipeline and exports `results/chartbook_data.json` (~4.6 MB, ~5Y of history per series) |
+| `src/generate_dashboard.py` | Reads CSVs + chartbook JSON, embeds last 252 days of data inline, generates `dashboard.html` (~1.1 MB standalone file) |
+| `dashboard.html` | **Generated output** — open directly in any browser, no server required |
+
+### How to Regenerate the Dashboard
+
+```bash
+# Step 1: Run the signal pipeline (produces CSVs in results/RUN_YYYYMMDD_HHMM/)
+python src/main.py
+
+# Step 2: Extract chartbook-level series
+python src/chartbook_data.py
+# → results/chartbook_data.json
+
+# Step 3: Generate the standalone HTML dashboard
+python src/generate_dashboard.py
+# → dashboard.html  (open in browser)
+```
+
+If only `main.py` has been re-run, you must also re-run Steps 2 and 3 to refresh the dashboard.
+Update the `LATEST_RUN` constant in `src/generate_dashboard.py` if using a newer run directory.
+
+### Dashboard Structure (9 navigation items)
+
+```
+1. CHARTBOOK
+   I.  Fundamentals  — PMI levels, CESI, GDP revisions, EPS, breakevens
+                        grouped by region: US | Eurozone | China | Japan | EM
+   II. Momentum      — price momentum components per asset class
+                        metric checkboxes: Ret 1M / Ret 3M / Ret 6M / 12-1M / MA dist / RSI
+                        groups: US Equity | DM Equity | EM Equity | Fixed Income | Spreads
+   III. Sentiment    — VIX, MOVE, VSTOXX, TED, AAII Bull-Bear, PCR
+   IV. Valuation     — P/E absolute (6 indices) + Relative P/E (interactive A/B selector)
+                        ERP, OAS levels, yield curve, TIPS real yields
+
+2. TAA METHODOLOGY
+   Full Signal Matrix — pivot: signals × 12 asset classes with +/−/C/— sign badges
+   Fixed Income       — pillar weight bars + current Z-scores per FI AC
+   Equity             — same for 7 equity ACs
+
+3. TAA SIGNALS
+   Composite Scorecard — KPI row + full scorecard table + pillar bar chart + ranking chart
+                          + FI/EQ composite time series (1Y)
+   Signal Heatmap      — Z-score heatmap + F vs V scatter + M vs S scatter
+```
+
+### chartbook_data.json Schema
+
+```
+{
+  "meta":         { run_date, max_rows, description },
+  "fundamentals": { pmi, cesi, gdp_revision, earnings, inflation }
+                  each series: { dates[], values[], z[], pctile[] (where applicable) }
+  "momentum":     { equity: {ac: {ret_1m,ret_3m,ret_6m,ret_12_1m,ma_dist,rsi}},
+                    fi:     {ac: {..., yield_mom_1m, yield_mom_3m}},
+                    spreads:{oas_bbb,oas_hy,oas_em,oas_latam: {spread_mom_1m, spread_mom_3m}} }
+  "sentiment":    { volatility: {vix,move,vstoxx}, funding: {ted,embi},
+                    positioning: {aaii_bull_bear, pcr} }
+  "valuation":    { pe_absolute: {sp500,msci_acwi,msci_eafe,msci_em,...},
+                    pe_relative: {growth_vs_value,us_vs_em,dm_vs_us,...: {dates,ratio,z}},
+                    erp:         {us_equity,acwi,em_equity,china: {dates,values,z}},
+                    oas:         {bbb,hy,em,latam: {dates,values,z,pctile}},
+                    yields:      {usy_10y,usy_2y,tips_10y,tips_5y,term_spread,...} }
+}
+```
+
+### Key Implementation Notes
+
+- **All data embedded inline**: `dashboard.html` contains all data as `const` JS objects — no server or fetch calls needed. Works on `file://` protocol.
+- **Relative P/E**: `relative_pe()` in `signals.py:314` is already implemented and reused. The chartbook computes 8 pairs: growth_vs_value, value_vs_growth, us_vs_em, em_vs_us, dm_vs_us, china_vs_em, china_vs_us, em_vs_dm.
+- **Timeframe toggles**: Each chart card has 1M / 3M / 1Y buttons that slice the embedded series using `sliceTF(arr, n)` and call `chart.update()`. The full 252-day dataset is always in memory.
+- **Metric toggles (Momentum)**: Checkbox buttons per momentum component hide/show individual Chart.js datasets via `dataset.hidden`.
+- **OAS displayed in bps**: The OAS sheet stores spreads as decimal percent (1.53 = 153 bps). The dashboard multiplies by 100 before display.
+- **Design tokens**: `--brand:#C41230` (Rimac red), pillar colors: F=`#14B8A6`, M=`#F59E0B`, S=`#A855F7`, V=`#3A7BD5`. Dark theme `#0B1220` bg. Chart.js 4.4.1 + Space Grotesk font.

@@ -181,7 +181,34 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
 
 /* Scatter label */
 canvas{display:block}
-</style>
+
+/* Signal Blueprint (methodology FI/EQ) */
+.page-desc{font-size:12px;color:var(--text2);max-width:780px;line-height:1.6;margin-top:6px}
+.page-desc strong{color:var(--text);font-weight:600}
+.blueprint-block{margin-bottom:32px}
+.blueprint-header{font-size:15px;font-weight:600;letter-spacing:-.2px;
+  padding:0 0 10px;margin-bottom:14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.blueprint-header .sub{font-size:11px;font-weight:400;color:var(--text3)}
+.pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pillar-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pillar-card.pf{border-top:2px solid var(--pf)}
+.pillar-card.pm{border-top:2px solid var(--pm)}
+.pillar-card.ps{border-top:2px solid var(--ps)}
+.pillar-card.pv{border-top:2px solid var(--pv)}
+.pillar-card-head{padding:10px 14px;border-bottom:1px solid var(--border)}
+.pillar-card-title{font-size:12px;font-weight:600;letter-spacing:.3px}
+.pillar-note{padding:8px 14px;font-size:10px;color:var(--text3);line-height:1.5;
+  border-bottom:1px solid var(--border);font-style:italic}
+.signal-row{padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.04);
+  display:grid;grid-template-columns:1fr 28px 40px;gap:6px;align-items:start;transition:background .1s}
+.signal-row:last-child{border-bottom:none}
+.signal-row:hover{background:rgba(255,255,255,.02)}
+.sig-row-name{font-size:11.5px;font-weight:500;color:var(--text);margin-bottom:2px}
+.sig-row-desc{font-size:10px;color:var(--text3);line-height:1.4}
+.sig-row-sign{text-align:center;padding-top:2px}
+.sig-row-wt{text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);padding-top:3px}
+@media(max-width:900px){.pillar-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -283,7 +310,10 @@ canvas{display:block}
 <!-- ========== SECTION: FI Signals ========== -->
 <section class="section" id="sec-meth-fi">
 <div class="page-header">
-  <div class="page-title">TAA <span>Methodology</span> · Fixed Income Signals</div>
+  <div>
+    <div class="page-title">Fixed Income — <span>Signal Blueprint</span></div>
+    <div class="page-desc">Four FI asset classes with their specific pillar compositions. Note: for all FI, macroeconomic growth signals are <strong>inverted</strong> (strong growth → higher rates → bond prices fall). Credit (Corp + EM) is the exception for the spread component: spread tightening driven by growth is positive.</div>
+  </div>
 </div>
 <div class="content">
   <div id="fi-pillar-cards"></div>
@@ -293,7 +323,10 @@ canvas{display:block}
 <!-- ========== SECTION: EQ Signals ========== -->
 <section class="section" id="sec-meth-eq">
 <div class="page-header">
-  <div class="page-title">TAA <span>Methodology</span> · Equity Signals</div>
+  <div>
+    <div class="page-title">Equity — <span>Signal Blueprint</span></div>
+    <div class="page-desc">Equity asset classes with sub-class detail. US Equity includes style tilts (Growth vs Value vs Quality) and sector rotation. All signals are signed positively with respect to equity performance.</div>
+  </div>
 </div>
 <div class="content">
   <div id="eq-pillar-cards"></div>
@@ -596,77 +629,100 @@ function buildHeatmap(){
 
 // ── Methodology ──────────────────────────────────────────────────────────────
 let methBuilt=false;
+// <<<BUILD:SIG_MATRIX_START>>> — regenerated from config/taa_config.xlsx
 const SIG_MATRIX=[
-  {pillar:'F',name:'ISM Mfg PMI',source:'BBG',freq:'Monthly',
-   signs:{money_market:'—',short_term_fi:'-',lt_treasuries:'-',lt_us_corp:'+',lt_em_fi:'—',
-          us_equity:'++',us_growth:'++',us_value:'+',dm_equity:'+',em_equity:'+',em_xchina:'+',china_equity:'—'}},
-  {pillar:'F',name:'ISM Svcs PMI',source:'BBG',freq:'Monthly',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',lt_treasuries:'-',
-          dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'—',short_term_fi:'-',lt_us_corp:'+',lt_em_fi:'—'}},
-  {pillar:'F',name:'Eurozone PMI Mfg',source:'BBG',freq:'Monthly',
-   signs:{dm_equity:'++',em_equity:'+',em_xchina:'+',china_equity:'—',us_equity:'—',
-          money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_growth:'—',us_value:'—'}},
-  {pillar:'F',name:'China PMI (Caixin)',source:'BBG',freq:'Monthly',
-   signs:{china_equity:'++',em_equity:'+',em_xchina:'+',lt_em_fi:'+',
-          us_equity:'—',dm_equity:'—',money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',us_growth:'—',us_value:'—'}},
-  {pillar:'F',name:'CESI United States',source:'BBG',freq:'Daily',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',lt_treasuries:'-',short_term_fi:'-',
-          lt_us_corp:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'+',lt_em_fi:'—'}},
-  {pillar:'F',name:'CESI Emerging Mkts',source:'BBG',freq:'Daily',
-   signs:{em_equity:'+',em_xchina:'+',china_equity:'+',lt_em_fi:'+',
-          us_equity:'—',dm_equity:'—',money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',us_growth:'—',us_value:'—'}},
-  {pillar:'F',name:'US GDP Revision',source:'BBG',freq:'Daily',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',lt_treasuries:'-',short_term_fi:'-',
-          lt_us_corp:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'+',lt_em_fi:'—'}},
-  {pillar:'F',name:'US Fwd EPS Growth',source:'BBG',freq:'Daily',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',lt_us_corp:'+',
-          dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_em_fi:'—'}},
-  {pillar:'M',name:'Price Momentum (12-1M)',source:'BBG',freq:'Daily',
-   signs:{us_equity:'++',us_growth:'++',us_value:'+',dm_equity:'++',em_equity:'++',em_xchina:'++',china_equity:'++',
-          lt_treasuries:'+',lt_us_corp:'+',lt_em_fi:'+',short_term_fi:'+',money_market:'+'}},
-  {pillar:'M',name:'MA 50/200 Distance',source:'BBG',freq:'Daily',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'+',em_xchina:'+',china_equity:'+',
-          lt_treasuries:'+',lt_us_corp:'+',lt_em_fi:'+',short_term_fi:'+',money_market:'—'}},
-  {pillar:'M',name:'OAS BBB Momentum',source:'FRED',freq:'Daily',
-   signs:{lt_us_corp:'++',short_term_fi:'+',lt_em_fi:'+',
-          us_equity:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'—',lt_treasuries:'+',us_growth:'—',us_value:'+'}},
-  {pillar:'M',name:'HY OAS Momentum',source:'FRED',freq:'Daily',
-   signs:{lt_us_corp:'++',us_equity:'+',
-          dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—',money_market:'—',short_term_fi:'+',lt_treasuries:'—',lt_em_fi:'+',us_growth:'—',us_value:'+'}},
-  {pillar:'S',name:'VIX Level',source:'FRED',freq:'Daily',
-   signs:{us_equity:'C',us_growth:'C',us_value:'C',dm_equity:'C',em_equity:'C',em_xchina:'C',china_equity:'C',
-          lt_treasuries:'+',short_term_fi:'+',money_market:'+',lt_us_corp:'-',lt_em_fi:'-'}},
-  {pillar:'S',name:'MOVE Index',source:'BBG',freq:'Daily',
-   signs:{lt_treasuries:'+',short_term_fi:'+',
-          us_equity:'-',dm_equity:'-',em_equity:'-',em_xchina:'-',china_equity:'-',
-          lt_us_corp:'-',lt_em_fi:'-',money_market:'+',us_growth:'-',us_value:'-'}},
-  {pillar:'S',name:'AAII Bull-Bear',source:'AAII',freq:'Weekly',
-   signs:{us_equity:'C',us_growth:'C',us_value:'C',
-          dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—'}},
-  {pillar:'S',name:'CBOE PCR (10d)',source:'FRED',freq:'Daily',
-   signs:{us_equity:'C',us_growth:'C',us_value:'C',
-          dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—'}},
-  {pillar:'V',name:'Forward P/E',source:'BBG',freq:'Daily',
-   signs:{us_equity:'-',us_growth:'-',us_value:'-',dm_equity:'-',em_equity:'-',em_xchina:'-',china_equity:'-',
-          money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—'}},
-  {pillar:'V',name:'Relative P/E',source:'BBG',freq:'Daily',
-   signs:{us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'+',em_xchina:'+',china_equity:'+',
-          money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—'}},
-  {pillar:'V',name:'OAS Level (pctile)',source:'FRED',freq:'Daily',
-   signs:{lt_us_corp:'++',short_term_fi:'+',lt_em_fi:'++',
-          us_equity:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—',money_market:'—',lt_treasuries:'+',us_growth:'—',us_value:'+'}},
-  {pillar:'V',name:'Yield Level (pctile)',source:'BBG',freq:'Daily',
-   signs:{lt_treasuries:'++',short_term_fi:'+',money_market:'++',lt_us_corp:'+',lt_em_fi:'+',
-          us_equity:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—',us_growth:'—',us_value:'—'}},
-  {pillar:'V',name:'Equity Risk Premium',source:'BBG',freq:'Daily',
-   signs:{us_equity:'++',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'++',em_xchina:'+',china_equity:'+',
-          money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—'}},
+  {pillar:'F',name:'ISM Mfg PMI',source:'BBG',freq:'Monthly',signs:{money_market:'—',short_term_fi:'-',lt_treasuries:'-',lt_us_corp:'+',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Eurozone Mfg PMI',source:'BBG',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'China Mfg PMI (Caixin)',source:'BBG',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'++'}},
+  {pillar:'F',name:'China Services PMI',source:'BBG',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'F',name:'Japan Mfg PMI',source:'BBG',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Citi US Surprise (CESIUSD)',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'-',lt_treasuries:'-',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Citi Eurozone Surprise',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Citi China Surprise',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'F',name:'Citi EM Surprise',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'F',name:'US GDP Forecast Revision',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'-',lt_treasuries:'-',lt_us_corp:'+',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'DM GDP Forecast Revision',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'EM GDP Forecast Revision',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'F',name:'China GDP Forecast Revision',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'F',name:'US Fwd EPS Growth',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'EM Fwd EPS Growth',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'F',name:'China Fwd EPS Growth',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'F',name:'MSCI World Fwd EPS Growth',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'US Earnings Beat %',source:'BBG',freq:'Quarterly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'+',us_growth:'—',us_value:'+',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'F',name:'5Y Breakeven Inflation',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'-',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'-1',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'10Y Breakeven Inflation',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'--',lt_us_corp:'-1',lt_em_fi:'-',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'US Core PCE YoY',source:'FRED',freq:'Monthly',signs:{money_market:'+',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Real Fed Funds Rate',source:'Bloomberg/H5',freq:'Daily',signs:{money_market:'+1',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Japan Mfg PMI (Jibun Bank)',source:'Bloomberg/H2',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+1',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Japan GDP Consensus Forecast',source:'Bloomberg/H2',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+1',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'F',name:'Japan Fwd EPS Revision',source:'Bloomberg/H3',freq:'Monthly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+1',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'SPXT 12-1M Price Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'SPXT MA50 vs MA200',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'M',name:'RSI(14) on SPXT',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'C',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'EAFE Price Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'C',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'MSCI EM Price Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'M',name:'EM ex-China Price Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'+'}},
+  {pillar:'M',name:'China Price Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'—',china_equity:'++'}},
+  {pillar:'M',name:'US Growth Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'+',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'US Value Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'BFU5TRUU 1-5Y Treasury Mom',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'BSGVTRUU Long Govt Mom',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'+',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'US Agg Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'LT03TRUU ST Govt Mom',source:'BBG',freq:'Daily',signs:{money_market:'+',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'BBB OAS Momentum',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'+',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'HY OAS Momentum',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'EM BBB OAS Momentum',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'+'}},
+  {pillar:'M',name:'LatAm Corp OAS Momentum',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'CDX IG 5Y Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'CDX HY Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'US 10Y Yield Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'+',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'US 2Y Yield Momentum',source:'BBG',freq:'Daily',signs:{money_market:'+',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'M',name:'USD DXY Momentum',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'—'}},
+  {pillar:'S',name:'VIX Level (percentile)',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'+',lt_treasuries:'+',lt_us_corp:'-',lt_em_fi:'-',us_equity:'C',us_growth:'C',us_value:'C',dm_equity:'C',em_equity:'C',em_xchina:'C',china_equity:'C'}},
+  {pillar:'S',name:'MOVE Index',source:'BBG',freq:'Daily',signs:{money_market:'+',short_term_fi:'C',lt_treasuries:'C',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'VSTOXX (EZ vol)',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'C',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'TED Spread',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'USD DXY Level',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'-',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'-',em_equity:'-',em_xchina:'-',china_equity:'-'}},
+  {pillar:'S',name:'EMBI Sovereign Spread',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'-',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'-',em_xchina:'-',china_equity:'-'}},
+  {pillar:'S',name:'GS Financial Conditions',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'-',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'CBOE PCR 10d Avg',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'C',us_growth:'C',us_value:'C',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'AAII Bull-Bear Spread',source:'AAII',freq:'Weekly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'C',us_growth:'C',us_value:'C',dm_equity:'—',em_equity:'C',em_xchina:'C',china_equity:'—'}},
+  {pillar:'S',name:'CFTC COT S&P Net Spec',source:'CFTC',freq:'Weekly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'C',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'CFTC COT UST 10Y Net Spec',source:'CFTC',freq:'Weekly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'C',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'DXY USD Index',source:'Bloomberg/H5',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'-1',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'-1',em_xchina:'-1',china_equity:'-1'}},
+  {pillar:'S',name:'Modern TED (T-bill - SOFR)',source:'Bloomberg/H5',freq:'Daily',signs:{money_market:'+1',short_term_fi:'+1',lt_treasuries:'+1',lt_us_corp:'-1',lt_em_fi:'—',us_equity:'-1',us_growth:'-1',us_value:'-1',dm_equity:'-1',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'Bloomberg US FCI',source:'Bloomberg/H5',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'-1',us_growth:'-1',us_value:'-1',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'AAII Bull-Bear Spread',source:'AAII',freq:'Weekly',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'-1',us_growth:'-1',us_value:'-1',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'S',name:'VSTOXX (Eurostoxx Vol Index)',source:'Bloomberg/H5',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'+1',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'S&P 500 Forward P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'+',em_xchina:'—',china_equity:'+'}},
+  {pillar:'V',name:'EAFE Forward P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'-',us_growth:'—',us_value:'—',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'MSCI EM Forward P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'MSCI China Forward P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'+'}},
+  {pillar:'V',name:'MSCI EM ex-China Forward P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'+',china_equity:'—'}},
+  {pillar:'V',name:'S&P 500 Growth P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'+',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'S&P 500 Value P/E',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'+',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'US Equity Risk Premium',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'EM Equity Risk Premium',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'+'}},
+  {pillar:'V',name:'Shiller CAPE (10Y)',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'+',us_growth:'+',us_value:'+',dm_equity:'+',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'US 10Y Yield Level (pctile)',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'+',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'US 2Y Yield Level (pctile)',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'Term Spread 10Y-2Y',source:'BBG',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'+',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'TIPS 10Y Real Yield',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'+',lt_us_corp:'+',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'TIPS 5Y Real Yield',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'BBB OAS Level (pctile)',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'+',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'HY OAS Level (pctile)',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'EM BBB OAS Level (pctile)',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'+',em_xchina:'+',china_equity:'+'}},
+  {pillar:'V',name:'LatAm OAS Level',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'+',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'Real 3M T-bill Rate',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'3M T-bill Yield Pctile',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'Fed Funds vs Neutral (r*)',source:'FRED',freq:'Daily',signs:{money_market:'+',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'—',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
+  {pillar:'V',name:'HY/IG Spread Ratio',source:'FRED',freq:'Daily',signs:{money_market:'—',short_term_fi:'—',lt_treasuries:'—',lt_us_corp:'+',lt_em_fi:'—',us_equity:'—',us_growth:'—',us_value:'—',dm_equity:'—',em_equity:'—',em_xchina:'—',china_equity:'—'}},
 ];
-const AC_ORDER=['money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi',
-                'us_equity','us_growth','us_value','dm_equity','em_equity','em_xchina','china_equity'];
-const AC_SHORT={money_market:'MM',short_term_fi:'STFI',lt_treasuries:'LT Tsy',lt_us_corp:'IG Corp',
-  lt_em_fi:'EM FI',us_equity:'US Eq',us_growth:'US Gro',us_value:'US Val',
-  dm_equity:'DM',em_equity:'EM Eq',em_xchina:'EM xCN',china_equity:'China'};
+// <<<BUILD:SIG_MATRIX_END>>>
+// <<<BUILD:AC_META_START>>> — regenerated from config/taa_config.xlsx
+const AC_ORDER=['money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi','us_equity','us_growth','us_value','dm_equity','em_equity','em_xchina','china_equity'];
+const AC_SHORT={money_market:'MM',short_term_fi:'STFI',lt_treasuries:'LT Tsy',lt_us_corp:'IG Corp',lt_em_fi:'EM FI',us_equity:'US Eq',us_growth:'US Gro',us_value:'US Val',dm_equity:'DM',em_equity:'EM Eq',em_xchina:'EM xCN',china_equity:'China'};
+// <<<BUILD:AC_META_END>>>
 const PSIGN_CLASS={'++':'s-pp','+':'s-p','-':'s-n','--':'s-nn','C':'s-c','—':'s-na'};
 const PILLAR_COLOR={F:'var(--pf)',M:'var(--pm)',S:'var(--ps)',V:'var(--pv)'};
 
@@ -694,21 +750,408 @@ function buildMethodology(){
   });
   document.getElementById('sig-matrix-table').innerHTML=h+'</tbody>';
 
-  // FI/EQ pillar cards
-  buildPillarCards('fi-pillar-cards',['money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi']);
-  buildPillarCards('eq-pillar-cards',['us_equity','us_growth','us_value','dm_equity','em_equity','em_xchina','china_equity']);
+  // FI/EQ Signal Blueprint (reference/methodology view)
+  buildBlueprint(FI_BLUEPRINT, 'fi-pillar-cards');
+  buildBlueprint(EQ_BLUEPRINT, 'eq-pillar-cards');
 }
 
-const AC_LABEL_FULL={money_market:'Money Market',short_term_fi:'Short-Term FI',lt_treasuries:'LT Treasuries',
-  lt_us_corp:'LT US Corp',lt_em_fi:'LT EM FI',us_equity:'US Equity',us_growth:'US Growth',
-  us_value:'US Value',dm_equity:'DM ex-US',em_equity:'EM Equity',em_xchina:'EM ex-China',
-  china_equity:'China Equity'};
-const PW={money_market:{F:0.10,M:0.15,S:0.25,V:0.50},short_term_fi:{F:0.20,M:0.25,S:0.20,V:0.35},
-  lt_treasuries:{F:0.25,M:0.25,S:0.20,V:0.30},lt_us_corp:{F:0.20,M:0.30,S:0.20,V:0.30},
-  lt_em_fi:{F:0.25,M:0.30,S:0.20,V:0.25},us_equity:{F:0.25,M:0.30,S:0.20,V:0.25},
-  us_growth:{F:0.20,M:0.35,S:0.15,V:0.30},us_value:{F:0.30,M:0.25,S:0.20,V:0.25},
-  dm_equity:{F:0.25,M:0.30,S:0.20,V:0.25},em_equity:{F:0.25,M:0.30,S:0.20,V:0.25},
-  em_xchina:{F:0.25,M:0.30,S:0.20,V:0.25},china_equity:{F:0.25,M:0.30,S:0.20,V:0.25}};
+// ── SIGNAL BLUEPRINT DATA (methodology reference) ────────────────────────────
+// <<<BUILD:FI_BLUEPRINT_START>>> — regenerated from config/taa_config.xlsx
+const FI_BLUEPRINT = [
+  {id:'MM', name:'Money Market', sub:'T-bills, repo, commercial paper', color:'#14B8A6',
+   pillars:{
+     F:{title:'Fundamentals (10%)', note:'Macro is mostly context here - primarily used for regime detection, not direct signal.', signals:[
+       {n:'Fed Funds vs Neutral (r*)', d:'High real FF = cash yield attractive; FF above neutral = restrictive = MM rates stay high', s:'+', w:'40%'},
+       {n:'US Core PCE YoY', d:'Inflation above target = Fed holds rates higher = positive for MM carry', s:'+', w:'30%'},
+       {n:'5Y Breakeven Inflation', d:'Rising breakeven = Fed can\'t cut -> positive for MM rates', s:'+', w:'30%'},
+       {n:'Real Fed Funds Rate', d:'Positive real FF = tight policy = MM yield attractive', s:'+1', w:'50%'},
+     ]},
+     M:{title:'Momentum (15%)', note:'MM instruments don\'t have trending returns, so momentum is limited.', signals:[
+       {n:'US 2Y Yield Momentum', d:'Rising 3M/2Y yield = positive momentum for cash', s:'+', w:'60%'},
+       {n:'LT03TRUU ST Govt Mom', d:'Secondary FI TR signal for positioning', s:'+', w:'40%'},
+     ]},
+     S:{title:'Sentiment (25%)', note:'Flight to safety is the primary driver of MM demand.', signals:[
+       {n:'TED Spread', d:'High TED = funding stress = demand for cash/safety -> OW MM', s:'+', w:'35%'},
+       {n:'VIX Level (percentile)', d:'High VIX = risk-off = demand for cash equivalents', s:'+', w:'35%'},
+       {n:'MOVE Index', d:'High bond vol = prefer cash over duration', s:'+', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress → demand for cash', s:'+1', w:'40%'},
+     ]},
+     V:{title:'Valuation (50%)', note:'The dominant signal for MM is simply: is the real short-term rate positive and attractive?', signals:[
+       {n:'Real 3M T-bill Rate', d:'3M yield - CPI. Positive and high = MM very attractive. Main signal.', s:'+', w:'40%'},
+       {n:'3M T-bill Yield Pctile', d:'Is the nominal yield high vs history?', s:'+', w:'30%'},
+       {n:'Fed Funds vs Neutral (r*)', d:'FF > r* (2.5%) = policy restrictive = MM attractive vs duration', s:'+', w:'30%'},
+     ]},
+   }},
+  {id:'STFI', name:'Short-Term Fixed Income (USD)', sub:'1-5Y US Treasuries + IG credit', color:'#3A7BD5',
+   pillars:{
+     F:{title:'Fundamentals (20%)', note:'Growth/PMI signals are inverted: strong growth -> rates rise -> STFI price falls. Credit fundamentals remain direct (growth = tighter spreads).', signals:[
+       {n:'ISM Mfg PMI', d:'PMI accelerating -> rates rise -> STFI price falls. Sign: -1 * z_pmi', s:'-', w:'30%'},
+       {n:'Citi US Surprise (CESIUSD)', d:'Positive surprises -> rate repricing upward -> -1 * z_cesi', s:'-', w:'25%'},
+       {n:'US GDP Forecast Revision', d:'Upward GDP revision -> rates rise. Sign: -1 * z_gdp_revision', s:'-', w:'25%'},
+       {n:'5Y Breakeven Inflation', d:'Rising inflation expectations -> nominal rates up -> -1 * z_breakeven', s:'-', w:'20%'},
+     ]},
+     M:{title:'Momentum (25%)', note:'Use TR price directly. Falling prices = negative momentum. OAS tightening on short-end credits is additional carry signal.', signals:[
+       {n:'BFU5TRUU 1-5Y Treasury Mom', d:'12-1M momentum most predictive; weighted avg of horizons', s:'+', w:'45%'},
+       {n:'US 2Y Yield Momentum', d:'z_yield_mom = -1 * zscore(Delta2Y_yield_1M)', s:'+', w:'25%'},
+       {n:'BBB OAS Momentum', d:'z_oas = -1 * zscore(DeltaBAMLC0A4CBBB, 1M)', s:'+', w:'30%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'Flight to quality (VIX, MOVE, TED) is positive for UST/STFI. USD strength is neutral for STFI.', signals:[
+       {n:'VIX Level (percentile)', d:'High VIX = demand for safe assets -> OW STFI', s:'+', w:'35%'},
+       {n:'MOVE Index', d:'MOVE > 120: reduce duration risk; below 80: favourable carry', s:'C', w:'35%'},
+       {n:'TED Spread', d:'High TED = demand for T-bills and short UST', s:'+', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress → flight to STFI', s:'+1', w:'35%'},
+     ]},
+     V:{title:'Valuation (35%)', note:'Carry is the primary valuation signal. 2Y yield level and real yield determine attractiveness.', signals:[
+       {n:'US 2Y Yield Level (pctile)', d:'High 2Y yield = attractive carry. Main valuation signal.', s:'+', w:'35%'},
+       {n:'TIPS 5Y Real Yield', d:'Real yield > 1.5% = very attractive; < 0% = unattractive', s:'+', w:'25%'},
+       {n:'BBB OAS Level (pctile)', d:'High OAS = credit component cheap = higher total yield', s:'+', w:'20%'},
+       {n:'Term Spread 10Y-2Y', d:'Inverted: high short-end yield vs long end = favourable STFI carry', s:'+', w:'20%'},
+     ]},
+   }},
+  {id:'LTTsy', name:'LT US Treasuries', sub:'7-30Y duration, BSGVTRUU benchmark', color:'#60A5FA',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'All macro growth signals are inverted and amplified. Inflation signals are doubly negative (higher rates + lower real value).', signals:[
+       {n:'ISM Mfg PMI', d:'PMI Quadrant 3/4 (slowdown/contraction) -> bullish duration', s:'-', w:'30%'},
+       {n:'US GDP Forecast Revision', d:'Downward revisions -> rate cut pricing -> duration rally', s:'-', w:'25%'},
+       {n:'10Y Breakeven Inflation', d:'Rising breakevens = most bearish signal for nominal UST', s:'--', w:'25%'},
+       {n:'Citi US Surprise (CESIUSD)', d:'Negative surprises -> rate cut pricing -> duration bullish', s:'-', w:'20%'},
+     ]},
+     M:{title:'Momentum (25%)', note:'Long UST have significant price momentum. Duration sells off in trending rate-rise environments and rallies in risk-off.', signals:[
+       {n:'BSGVTRUU Long Govt Mom', d:'12-1M skip: most predictive for duration assets', s:'+', w:'45%'},
+       {n:'US 10Y Yield Momentum', d:'z = -1 * zscore(Delta10Y_yield_1M/3M)', s:'+', w:'30%'},
+       {n:'BBB OAS Momentum', d:'When credit widens rapidly -> flight to quality = UST rally', s:'+', w:'25%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'VIX and MOVE are positive for UST. CFTC net-short UST (contrarian) also matters.', signals:[
+       {n:'VIX Level (percentile)', d:'Crisis signal: VIX > 80th pctile = strong buy UST', s:'+', w:'35%'},
+       {n:'CFTC COT UST 10Y Net Spec', d:'Extreme net short = crowded = potential squeeze = buy UST', s:'C', w:'35%'},
+       {n:'MOVE Index', d:'MOVE > 150: override to neutral. MOVE < 70: carry environment', s:'C', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress → flight to UST', s:'+1', w:'25%'},
+       {n:'move', d:'High bond vol = flight to UST quality', s:'+1', w:'20%'},
+     ]},
+     V:{title:'Valuation (30%)', note:'10Y yield level, real yield, and term premium are the anchors. Most powerful: high real yields + inverted curve.', signals:[
+       {n:'TIPS 10Y Real Yield', d:'Real yield > 2.0% = duration very attractive. Primary signal.', s:'+', w:'40%'},
+       {n:'US 10Y Yield Level (pctile)', d:'High pctile = high nominal yield = better carry', s:'+', w:'30%'},
+       {n:'Term Spread 10Y-2Y', d:'Deeply inverted curve = recession/rate-cut signal = OW duration', s:'+', w:'30%'},
+     ]},
+   }},
+  {id:'IGCorp', name:'LT US Corporate', sub:'IG credit, 5-10Y, US Corp BBB/HY', color:'#FBBF24',
+   pillars:{
+     F:{title:'Fundamentals (20%)', note:'Dual nature: duration (rates) + spread (credit). Spread effect typically dominates IG over short run.', signals:[
+       {n:'US Fwd EPS Growth', d:'Strong earnings = tighter spreads = positive for IG credit', s:'+', w:'30%'},
+       {n:'ISM Mfg PMI', d:'Expansion = tighter spreads. But rising rates offset. Net mild positive.', s:'+', w:'25%'},
+       {n:'US Earnings Beat %', d:'High beat rate = credit quality improving = tighter spreads', s:'+', w:'25%'},
+       {n:'US GDP Forecast Revision', d:'Upward revision = stronger balance sheets = tighter spreads', s:'+', w:'20%'},
+       {n:'10Y Breakeven Inflation', d:'High inflation = duration headwind', s:'-1', w:'15%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'OAS tightening momentum is primary. Price momentum of TR index is secondary.', signals:[
+       {n:'US Agg Momentum', d:'12-1M, 3M, 1M returns. Most predictive horizon: 3M.', s:'+', w:'30%'},
+       {n:'BBB OAS Momentum', d:'z = -1 * zscore(Delta OAS). Primary spread momentum signal.', s:'+', w:'35%'},
+       {n:'CDX IG 5Y Momentum', d:'IG CDS market as real-time credit conditions gauge', s:'+', w:'20%'},
+       {n:'US 10Y Yield Momentum', d:'Duration component: falling 10Y = positive for IG price', s:'+', w:'15%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'VIX mildly negative for IG spreads. Flight to quality from HY benefits IG.', signals:[
+       {n:'VIX Level (percentile)', d:'Rising VIX -> credit spread widening. But IG benefits vs HY.', s:'-', w:'35%'},
+       {n:'GS Financial Conditions', d:'Tighter conditions -> wider spreads -> negative for IG', s:'-', w:'35%'},
+       {n:'CDX HY Momentum', d:'HY outperforming IG = risk-on = tighter IG spreads', s:'+', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress = bad for IG credit', s:'-1', w:'20%'},
+     ]},
+     V:{title:'Valuation (30%)', note:'OAS level is the primary valuation signal. BBB OAS >180bps = cheap; <100bps = rich.', signals:[
+       {n:'BBB OAS Level (pctile)', d:'Main valuation anchor for IG corporate spread component', s:'+', w:'40%'},
+       {n:'HY/IG Spread Ratio', d:'Ratio > 4x = HY expensive, rotate to IG = IG attractive relatively', s:'+', w:'25%'},
+       {n:'TIPS 10Y Real Yield', d:'Duration component valuation: real yield attractiveness', s:'+', w:'20%'},
+       {n:'HY OAS Level (pctile)', d:'HY level as credit cycle regime', s:'+', w:'15%'},
+     ]},
+   }},
+  {id:'EMFI', name:'LT EM Fixed Income', sub:'EMBI + EM corporate (hard currency)', color:'#F97316',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'Driven by EM growth, China activity, and commodity cycles. Growth signals positive because spread component dominates duration.', signals:[
+       {n:'EM GDP Forecast Revision', d:'Upward EM GDP revision = tighter EMBI spreads = positive', s:'+', w:'30%'},
+       {n:'China Mfg PMI (Caixin)', d:'China is engine of EM growth. PMI expansion = positive for EM FI', s:'+', w:'25%'},
+       {n:'EM Fwd EPS Growth', d:'Corporate fundamentals of EM issuers', s:'+', w:'25%'},
+       {n:'Citi EM Surprise', d:'Positive EM surprises = risk appetite for EM debt', s:'+', w:'20%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'EM OAS tightening + EM equity momentum (leading) + USD weakness momentum.', signals:[
+       {n:'EM BBB OAS Momentum', d:'Primary spread momentum. z = -1 * zscore(DeltaOAS)', s:'+', w:'30%'},
+       {n:'LatAm Corp OAS Momentum', d:'LatAm-specific spread momentum', s:'+', w:'20%'},
+       {n:'MSCI EM Price Momentum', d:'EM equity often leads EM credit by 1-3 months', s:'+', w:'25%'},
+       {n:'USD DXY Momentum', d:'Dollar weakening = EM assets rally = EM FI spread tightens', s:'+', w:'25%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'USD strength is the #1 headwind. EMBI level proxies sovereign risk.', signals:[
+       {n:'USD DXY Level', d:'Strong USD = EM capital outflows = EM FI negative. z = -1 * z_DXY', s:'-', w:'30%'},
+       {n:'EMBI Sovereign Spread', d:'Widening EMBI = systemic EM sovereign stress = negative', s:'-', w:'30%'},
+       {n:'VIX Level (percentile)', d:'High VIX = exit EM assets = negative', s:'-', w:'20%'},
+       {n:'EM BBB OAS Level (pctile)', d:'Stable EM credit = positive sentiment signal', s:'+', w:'20%'},
+       {n:'DXY USD Index', d:'Strong USD = EM FI headwind', s:'-1', w:'30%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'Spread level (EMBI + EM corp OAS) is the primary anchor. EM real yield vs DM is a key RV signal.', signals:[
+       {n:'EM BBB OAS Level (pctile)', d:'High OAS = cheap EM credit. > 250 bps = attractive.', s:'+', w:'35%'},
+       {n:'LatAm OAS Level', d:'LatAm-specific credit cheapness', s:'+', w:'20%'},
+       {n:'TIPS 10Y Real Yield', d:'EM yields - DM yields - EMBI sovereign spread = EM excess real yield', s:'+', w:'25%'},
+       {n:'10Y Breakeven Inflation', d:'US inflation = USD appreciation risk = negative for USD-denominated EM', s:'-', w:'20%'},
+     ]},
+   }},
+];
+// <<<BUILD:FI_BLUEPRINT_END>>>
+
+// <<<BUILD:EQ_BLUEPRINT_START>>> — regenerated from config/taa_config.xlsx
+const EQ_BLUEPRINT = [
+  {id:'USEq', name:'US Equity (Broad)', sub:'S&P 500 / Russell 3000 benchmark', color:'#22C55E',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'US growth signals are direct. ISM PMI + CESI + GDP revisions + EPS growth drive the composite.', signals:[
+       {n:'ISM Mfg PMI', d:'PMI 4-quadrant regime. Quadrant 1/2 -> OW equity.', s:'+', w:'35%'},
+       {n:'Citi US Surprise (CESIUSD)', d:'Positive surprises (within 15-85 pctile) = bullish. Contrarian at extremes.', s:'+', w:'25%'},
+       {n:'US GDP Forecast Revision', d:'Consensus GDP rising = earnings forecast uplift', s:'+', w:'20%'},
+       {n:'US Fwd EPS Growth', d:'EPS growth > 10% and rising = high conviction bull signal', s:'+', w:'15%'},
+       {n:'US Earnings Beat %', d:'>65% beat rate = strong corporate delivery', s:'+', w:'5%'},
+       {n:'5Y Breakeven Inflation', d:'High inflation = ERP compression', s:'-1', w:'5%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'12-1M price momentum is the single highest-IC signal. Credit momentum (HY) leads by 2-4 weeks.', signals:[
+       {n:'SPXT 12-1M Price Momentum', d:'Cross-sectional + time-series. Highest IC single signal.', s:'+', w:'40%'},
+       {n:'SPXT MA50 vs MA200', d:'Golden cross = +1. Distance z-score = trend confirmation.', s:'+', w:'25%'},
+       {n:'RSI(14) on SPXT', d:'Continuous signal (RSI-50)/50. Contrarian at extremes >80/<20.', s:'C', w:'20%'},
+       {n:'HY OAS Momentum', d:'Credit conditions leading equity by ~2-4 weeks', s:'+', w:'15%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'All sentiment signals are contrarian at extremes. VIX >80%ile = buy; <20%ile = sell.', signals:[
+       {n:'VIX Level (percentile)', d:'VIX > 80%ile = buy signal. VIX < 20%ile = sell signal.', s:'C', w:'35%'},
+       {n:'CBOE PCR 10d Avg', d:'PCR > 1.1 = fear = contrarian buy. PCR < 0.7 = sell.', s:'C', w:'25%'},
+       {n:'AAII Bull-Bear Spread', d:'+30% net bulls = sell. -20% net bulls = buy.', s:'C', w:'20%'},
+       {n:'CFTC COT S&P Net Spec', d:'Extreme net long = crowded = fade', s:'C', w:'20%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress = bad for equity', s:'-1', w:'5%'},
+       {n:'Bloomberg US FCI', d:'Tight FCI = equity headwind', s:'-1', w:'15%'},
+       {n:'AAII Bull-Bear Spread', d:'Extreme bulls = contrarian sell', s:'-1', w:'20%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'ERP (EY - TIPS 10Y) is the primary cross-asset valuation signal. P/E percentile is secondary.', signals:[
+       {n:'S&P 500 Forward P/E', d:'pctile < 20% = cheap. pctile > 80% = expensive. Score: -2 + 4*(1-pctile)', s:'+', w:'35%'},
+       {n:'US Equity Risk Premium', d:'ERP > 4% = strongly OW equity vs bonds. Primary cross-asset signal.', s:'+', w:'35%'},
+       {n:'EAFE Forward P/E', d:'US P/E / EAFE P/E z-score. High ratio = US expensive = reduce tilt', s:'-', w:'20%'},
+       {n:'Shiller CAPE (10Y)', d:'Long-run anchor. > 35x = expensive territory. Use as 10% weight cap.', s:'+', w:'10%'},
+     ]},
+   }},
+  {id:'USGro', name:'US Growth', sub:'Growth style tilt within US equity', color:'#4ADE80',
+   pillars:{
+     F:{title:'Fundamentals (20%)', note:'Inherits US equity signals with stronger EPS-growth tilt.', signals:[
+       {n:'ISM Mfg PMI', d:'Growth sectors benefit from expansion phase', s:'+', w:'30%'},
+       {n:'US Fwd EPS Growth', d:'EPS acceleration = growth tailwind', s:'+', w:'30%'},
+       {n:'Citi US Surprise (CESIUSD)', d:'Surprise regime', s:'+', w:'25%'},
+       {n:'US GDP Forecast Revision', d:'Consensus GDP revisions', s:'+', w:'15%'},
+     ]},
+     M:{title:'Momentum (35%)', note:'S&P 500 Growth TR composite momentum; HY credit support.', signals:[
+       {n:'US Growth Momentum', d:'SPTRSGX TR composite momentum', s:'+', w:'55%'},
+       {n:'SPXT 12-1M Price Momentum', d:'Broad US equity momentum', s:'+', w:'25%'},
+       {n:'HY OAS Momentum', d:'HY credit risk appetite supports growth', s:'+', w:'20%'},
+     ]},
+     S:{title:'Sentiment (15%)', note:'Same as US equity; contrarian sentiment.', signals:[
+       {n:'VIX Level (percentile)', d:'Contrarian at extremes', s:'C', w:'40%'},
+       {n:'CBOE PCR 10d Avg', d:'Options positioning contrarian', s:'C', w:'30%'},
+       {n:'AAII Bull-Bear Spread', d:'Retail sentiment contrarian', s:'C', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress = bad for equity', s:'-1', w:'5%'},
+       {n:'Bloomberg US FCI', d:'Tight FCI = equity headwind', s:'-1', w:'15%'},
+       {n:'AAII Bull-Bear Spread', d:'Extreme bulls = contrarian sell', s:'-1', w:'20%'},
+     ]},
+     V:{title:'Valuation (30%)', note:'Growth vs Value relative P/E is the key style signal.', signals:[
+       {n:'S&P 500 Growth P/E', d:'Relative to Value: z-score of ratio', s:'+', w:'40%'},
+       {n:'US Equity Risk Premium', d:'ERP applied to growth side', s:'+', w:'30%'},
+       {n:'S&P 500 Forward P/E', d:'Absolute growth P/E percentile', s:'+', w:'20%'},
+       {n:'Shiller CAPE (10Y)', d:'Long-run valuation anchor', s:'+', w:'10%'},
+     ]},
+   }},
+  {id:'USVal', name:'US Value', sub:'Value style tilt within US equity', color:'#86EFAC',
+   pillars:{
+     F:{title:'Fundamentals (30%)', note:'Emphasises cyclical signals (PMI, GDP). Earnings beats supportive.', signals:[
+       {n:'ISM Mfg PMI', d:'Cyclical sectors drive value', s:'+', w:'35%'},
+       {n:'US GDP Forecast Revision', d:'GDP upgrades support cyclicals', s:'+', w:'25%'},
+       {n:'US Earnings Beat %', d:'Earnings delivery supports value re-rating', s:'+', w:'20%'},
+       {n:'Citi US Surprise (CESIUSD)', d:'Surprise momentum', s:'+', w:'20%'},
+     ]},
+     M:{title:'Momentum (25%)', note:'SPTRSVX TR + IG OAS (value benefits from IG tightening).', signals:[
+       {n:'US Value Momentum', d:'SPTRSVX TR composite', s:'+', w:'55%'},
+       {n:'BBB OAS Momentum', d:'Value benefits from IG tightening', s:'+', w:'25%'},
+       {n:'CDX IG 5Y Momentum', d:'IG credit conditions', s:'+', w:'20%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'US equity contrarian sentiment.', signals:[
+       {n:'VIX Level (percentile)', d:'Contrarian at extremes', s:'C', w:'45%'},
+       {n:'CBOE PCR 10d Avg', d:'Options positioning', s:'C', w:'30%'},
+       {n:'AAII Bull-Bear Spread', d:'Sentiment contrarian', s:'C', w:'25%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress = bad for equity', s:'-1', w:'5%'},
+       {n:'Bloomberg US FCI', d:'Tight FCI = equity headwind', s:'-1', w:'15%'},
+       {n:'AAII Bull-Bear Spread', d:'Extreme bulls = contrarian sell', s:'-1', w:'20%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'Value vs Growth relative P/E + market P/E.', signals:[
+       {n:'S&P 500 Value P/E', d:'Value style attractiveness', s:'+', w:'40%'},
+       {n:'US Equity Risk Premium', d:'ERP applied to value side', s:'+', w:'30%'},
+       {n:'S&P 500 Forward P/E', d:'Overall market P/E level', s:'+', w:'20%'},
+       {n:'Shiller CAPE (10Y)', d:'Long-run anchor', s:'+', w:'10%'},
+     ]},
+   }},
+  {id:'DM', name:'DM ex-US Equity', sub:'Developed markets excluding the US', color:'#3FB950',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'Eurozone PMI dominates (EAFE ~60% Europe). Japan is secondary.', signals:[
+       {n:'Eurozone Mfg PMI', d:'Eurozone is ~60% of EAFE. PMI regime drives DM ex-US earnings', s:'+', w:'30%'},
+       {n:'Citi Eurozone Surprise', d:'European data surprises = direct signal for Eurozone/EAFE equity', s:'+', w:'25%'},
+       {n:'Japan Mfg PMI', d:'Japan ~20% of EAFE. Secondary signal.', s:'+', w:'15%'},
+       {n:'DM GDP Forecast Revision', d:'DM growth consensus rising = positive for EAFE earnings', s:'+', w:'20%'},
+       {n:'MSCI World Fwd EPS Growth', d:'DM earnings breadth and trend', s:'+', w:'10%'},
+       {n:'Japan Mfg PMI (Jibun Bank)', d:'Japan mfg activity = DM equity fundamental', s:'+1', w:'10%'},
+       {n:'Japan GDP Consensus Forecast', d:'Japan GDP revision = DM proxy', s:'+1', w:'5%'},
+       {n:'Japan Fwd EPS Revision', d:'Japan EPS revision = DM proxy', s:'+1', w:'5%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'EAFE TR momentum. USD-hedged removes currency noise.', signals:[
+       {n:'EAFE Price Momentum', d:'EAFE price momentum. Primary signal. USD-hedged removes currency noise.', s:'+', w:'40%'},
+       {n:'SPXT MA50 vs MA200', d:'Trend confirmation via moving average spread', s:'+', w:'25%'},
+       {n:'SPXT 12-1M Price Momentum', d:'DM vs US relative return (3M/6M)', s:'+', w:'20%'},
+       {n:'EAFE Price Momentum', d:'Contrarian at extremes', s:'C', w:'15%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'VIX + VSTOXX for global risk-off. USD weakness = better USD-terms returns.', signals:[
+       {n:'VIX Level (percentile)', d:'Both high = global risk-off = UW DM ex-US equity', s:'C', w:'40%'},
+       {n:'VSTOXX (EZ vol)', d:'EZ-specific vol; USD weakness = DM returns better in USD terms', s:'C', w:'30%'},
+       {n:'USD DXY Level', d:'European ETF fund flows (proxy via DXY direction)', s:'-', w:'30%'},
+       {n:'Modern TED (T-bill - SOFR)', d:'Funding stress = bad for DM equity', s:'-1', w:'15%'},
+       {n:'VSTOXX (Eurostoxx Vol Index)', d:'High VSTOXX = fear = contrarian buy DM', s:'+1', w:'25%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'EAFE P/E percentile + ERP + relative vs US.', signals:[
+       {n:'EAFE Forward P/E', d:'EAFE P/E percentile. Threshold: < 13x cheap, > 19x expensive', s:'+', w:'35%'},
+       {n:'US Equity Risk Premium', d:'DM earnings yield vs bond yield. Higher than US ERP = more attractive.', s:'+', w:'30%'},
+       {n:'S&P 500 Forward P/E', d:'EAFE P/E / S&P P/E z-score. Low = DM cheap vs US = bullish DM.', s:'+', w:'25%'},
+       {n:'Shiller CAPE (10Y)', d:'DM div yield vs US div yield (carry advantage)', s:'+', w:'10%'},
+     ]},
+   }},
+  {id:'EMEq', name:'Emerging Markets Equity', sub:'Broad emerging markets equity', color:'#C4B5FD',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'China PMI is dominant (~30%+ of MSCI EM). Broad EM surprises + EM GDP revisions.', signals:[
+       {n:'China Mfg PMI (Caixin)', d:'China = 30%+ of MSCI EM. China PMI is dominant EM fundamental.', s:'+', w:'30%'},
+       {n:'Citi EM Surprise', d:'Broad EM economic surprises. Moderate range (not extreme contrarian).', s:'+', w:'25%'},
+       {n:'EM GDP Forecast Revision', d:'EM growth consensus change. Upward revision = bullish EM earnings', s:'+', w:'20%'},
+       {n:'EM Fwd EPS Growth', d:'EM earnings growth trend. > 10% = positive signal', s:'+', w:'15%'},
+       {n:'US Earnings Beat %', d:'EM delivery vs estimates', s:'+', w:'10%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'MSCI EM TR + EM ex-China breadth check + EM credit leads by 2-4 weeks.', signals:[
+       {n:'MSCI EM Price Momentum', d:'MSCI EM price momentum. Primary signal.', s:'+', w:'35%'},
+       {n:'EM ex-China Price Momentum', d:'EM ex-China breadth check. Both confirming = high conviction.', s:'+', w:'20%'},
+       {n:'China Price Momentum', d:'China equity momentum - often diverges from broad EM', s:'+', w:'15%'},
+       {n:'EM BBB OAS Momentum', d:'EM credit conditions leading EM equity by 2-4 weeks', s:'+', w:'20%'},
+       {n:'USD DXY Momentum', d:'Dollar weakness = EM equity bull case.', s:'+', w:'10%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'USD strength = #1 headwind. EMBI spread proxies sovereign risk.', signals:[
+       {n:'USD DXY Level', d:'The #1 headwind for EM equity. z_DXY sign inverted.', s:'-', w:'30%'},
+       {n:'VIX Level (percentile)', d:'High VIX = risk-off = EM equity suffers most (high beta to global risk)', s:'C', w:'25%'},
+       {n:'EMBI Sovereign Spread', d:'EM sovereign stress is directly negative for EM equity', s:'-', w:'25%'},
+       {n:'AAII Bull-Bear Spread', d:'Institutional positioning proxy (via retail sentiment)', s:'C', w:'20%'},
+       {n:'DXY USD Index', d:'Strong USD = EM equity headwind', s:'-1', w:'30%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'P/E percentile + EM ERP + EM credit cheapness.', signals:[
+       {n:'MSCI EM Forward P/E', d:'NDUEEGF PE percentile. < 10x very cheap, > 14x expensive.', s:'+', w:'30%'},
+       {n:'S&P 500 Forward P/E', d:'EM P/E / S&P P/E z-score. Historically EM trades at 25-35% discount.', s:'+', w:'25%'},
+       {n:'EM Equity Risk Premium', d:'EM risk-adjusted ERP. Accounts for sovereign risk premium.', s:'+', w:'25%'},
+       {n:'EM BBB OAS Level (pctile)', d:'EM credit cheap = better financing conditions = positive for EM equity', s:'+', w:'20%'},
+     ]},
+   }},
+  {id:'EMxCN', name:'EM ex-China', sub:'Emerging markets excluding China', color:'#A78BFA',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'Excludes China-specific drivers; emphasises broader EM PMI/CESI/EPS.', signals:[
+       {n:'China Mfg PMI (Caixin)', d:'Regional spillovers still matter, but weaker for ex-China', s:'+', w:'25%'},
+       {n:'Citi EM Surprise', d:'Broad EM surprises', s:'+', w:'25%'},
+       {n:'EM GDP Forecast Revision', d:'EM consensus growth revisions', s:'+', w:'25%'},
+       {n:'EM Fwd EPS Growth', d:'EM ex-China earnings trend', s:'+', w:'15%'},
+       {n:'US Earnings Beat %', d:'EM delivery proxy', s:'+', w:'10%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'MSCI EM ex-China TR composite.', signals:[
+       {n:'EM ex-China Price Momentum', d:'MSCI EM ex-China TR composite', s:'+', w:'50%'},
+       {n:'MSCI EM Price Momentum', d:'Broad EM context', s:'+', w:'20%'},
+       {n:'EM BBB OAS Momentum', d:'EM credit leads equity', s:'+', w:'20%'},
+       {n:'USD DXY Momentum', d:'USD weakness supportive', s:'+', w:'10%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'Same EM sentiment signals as broad EM.', signals:[
+       {n:'USD DXY Level', d:'Strong USD hurts EM ex-China', s:'-', w:'35%'},
+       {n:'VIX Level (percentile)', d:'Global risk regime', s:'C', w:'25%'},
+       {n:'EMBI Sovereign Spread', d:'EM sovereign stress', s:'-', w:'25%'},
+       {n:'AAII Bull-Bear Spread', d:'Sentiment proxy', s:'C', w:'15%'},
+       {n:'DXY USD Index', d:'Strong USD = EM ex-China headwind', s:'-1', w:'30%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'MSCI EM ex-China P/E percentile + EM credit level.', signals:[
+       {n:'MSCI EM ex-China Forward P/E', d:'EM ex-China P/E percentile', s:'+', w:'40%'},
+       {n:'EM Equity Risk Premium', d:'Risk-adjusted ERP', s:'+', w:'30%'},
+       {n:'EM BBB OAS Level (pctile)', d:'EM credit valuation', s:'+', w:'30%'},
+     ]},
+   }},
+  {id:'China', name:'China Equity', sub:'Chinese equity (onshore + offshore)', color:'#F87171',
+   pillars:{
+     F:{title:'Fundamentals (25%)', note:'Caixin PMI dominant. Level >50 + rising direction = maximum bullish.', signals:[
+       {n:'China Mfg PMI (Caixin)', d:'Primary China activity signal. Level > 50 + direction rising = maximum bullish.', s:'++', w:'35%'},
+       {n:'China Services PMI', d:'China consumer and services economy. Services > 50% of GDP.', s:'+', w:'20%'},
+       {n:'China GDP Forecast Revision', d:'Bloomberg consensus China GDP. Revision direction is key.', s:'+', w:'20%'},
+       {n:'Citi China Surprise', d:'China economic data vs expectations', s:'+', w:'15%'},
+       {n:'China Fwd EPS Growth', d:'MSCI China earnings growth trend and revision', s:'+', w:'10%'},
+     ]},
+     M:{title:'Momentum (30%)', note:'MSCI China often diverges from broad EM. Monitor both absolute and China vs EM xCN.', signals:[
+       {n:'China Price Momentum', d:'China equity price momentum. Note: can diverge sharply from EM broad.', s:'++', w:'40%'},
+       {n:'SPXT MA50 vs MA200', d:'China trend signal (MA proxy)', s:'+', w:'25%'},
+       {n:'EM ex-China Price Momentum', d:'Is China outperforming or underperforming rest of EM?', s:'+', w:'20%'},
+       {n:'EM BBB OAS Momentum', d:'EM credit as financial conditions proxy for China equity', s:'+', w:'15%'},
+     ]},
+     S:{title:'Sentiment (20%)', note:'CNY weakness = capital flight signal. EMBI / China sovereign spreads matter.', signals:[
+       {n:'USD DXY Level', d:'CNY weakness proxy via DXY', s:'-', w:'30%'},
+       {n:'EMBI Sovereign Spread', d:'China CDS or EMBI component for sovereign risk', s:'-', w:'30%'},
+       {n:'VIX Level (percentile)', d:'China is highest beta within EM to global risk-off events', s:'C', w:'40%'},
+       {n:'DXY USD Index', d:'Strong USD = China equity headwind', s:'-1', w:'35%'},
+     ]},
+     V:{title:'Valuation (25%)', note:'China often <10x P/E = cheap; <8x = very cheap. Discount to US narrowing = less attractive.', signals:[
+       {n:'MSCI China Forward P/E', d:'NDEUCHF PE percentile. China often < 10x = cheap. < 8x = very cheap.', s:'+', w:'35%'},
+       {n:'S&P 500 Forward P/E', d:'China P/E / S&P P/E. Historically 35-55% discount.', s:'+', w:'30%'},
+       {n:'EM Equity Risk Premium', d:'Risk-adjusted ERP accounting for geopolitical/political risk', s:'+', w:'25%'},
+       {n:'EM BBB OAS Level (pctile)', d:'Financing conditions for Chinese corporates', s:'+', w:'10%'},
+     ]},
+   }},
+];
+// <<<BUILD:EQ_BLUEPRINT_END>>>
+
+function blueprintSign(s){
+  if(!s || s==='—' || s==='·') return '<span class="sign s-na">·</span>';
+  if(s==='++') return '<span class="sign s-pp">++</span>';
+  if(s==='+')  return '<span class="sign s-p">+</span>';
+  if(s==='−−'||s==='--') return '<span class="sign s-nn">−−</span>';
+  if(s==='−' ||s==='-')  return '<span class="sign s-n">−</span>';
+  if(s==='C')  return '<span class="sign s-c">C</span>';
+  return `<span class="sign s-na">${s}</span>`;
+}
+
+function buildBlueprint(acs, containerId){
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  const PK_CLASS={F:'pf',M:'pm',S:'ps',V:'pv'};
+  container.innerHTML=acs.map(ac=>`
+    <div class="blueprint-block">
+      <div class="blueprint-header" style="color:${ac.color}">
+        ${ac.name} <span class="sub">${ac.sub}</span>
+      </div>
+      <div class="pillar-grid">
+        ${['F','M','S','V'].map(pk=>{
+          const pv=ac.pillars[pk]; if(!pv) return '';
+          return `<div class="pillar-card ${PK_CLASS[pk]}">
+            <div class="pillar-card-head">
+              <span class="pillar-card-title" style="color:var(--${PK_CLASS[pk]})">${pv.title}</span>
+            </div>
+            ${pv.note?`<div class="pillar-note">${pv.note}</div>`:''}
+            <div>
+              ${pv.signals.map(sig=>`
+                <div class="signal-row">
+                  <div>
+                    <div class="sig-row-name">${sig.n}</div>
+                    <div class="sig-row-desc">${sig.d}</div>
+                  </div>
+                  <div class="sig-row-sign">${blueprintSign(sig.s)}</div>
+                  <div class="sig-row-wt">${sig.w}</div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// <<<BUILD:AC_LABEL_PW_START>>> — regenerated from config/taa_config.xlsx
+const AC_LABEL_FULL={money_market:'Money Market',short_term_fi:'Short-Term Fixed Income (USD)',lt_treasuries:'LT US Treasuries',lt_us_corp:'LT US Corporate',lt_em_fi:'LT EM Fixed Income',us_equity:'US Equity (Broad)',us_growth:'US Growth',us_value:'US Value',dm_equity:'DM ex-US Equity',em_equity:'Emerging Markets Equity',em_xchina:'EM ex-China',china_equity:'China Equity'};
+const PW={money_market:{F:0.10,M:0.15,S:0.25,V:0.50},short_term_fi:{F:0.20,M:0.25,S:0.20,V:0.35},lt_treasuries:{F:0.25,M:0.25,S:0.20,V:0.30},lt_us_corp:{F:0.20,M:0.30,S:0.20,V:0.30},lt_em_fi:{F:0.25,M:0.30,S:0.20,V:0.25},us_equity:{F:0.25,M:0.30,S:0.20,V:0.25},us_growth:{F:0.20,M:0.35,S:0.15,V:0.30},us_value:{F:0.30,M:0.25,S:0.20,V:0.25},dm_equity:{F:0.25,M:0.30,S:0.20,V:0.25},em_equity:{F:0.25,M:0.30,S:0.20,V:0.25},em_xchina:{F:0.25,M:0.30,S:0.20,V:0.25},china_equity:{F:0.25,M:0.30,S:0.20,V:0.25}};
+// <<<BUILD:AC_LABEL_PW_END>>>
 
 function buildPillarCards(containerId, acs){
   const sc=Object.fromEntries(SCORECARD.map(r=>[r.ac,r]));

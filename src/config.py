@@ -8,7 +8,7 @@ are defined here. Changing a value in this file propagates everywhere
 without touching business logic.
 
 Author: Investment Management
-Last updated: April 2026
+Last updated: April 2026 (v2 — new H1-H6 sheet structure, DXY/SOFR/PCE/FCI added)
 """
 
 import os
@@ -24,7 +24,7 @@ OUTPUT_DIR  = os.path.join(_ROOT, "results")                # timestamped subfol
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SHEET / COLUMN MAPPINGS
+# SHEET / COLUMN MAPPINGS  (Excel sheet names: H1–H6, AAII, OAS)
 # All dicts: {excel_column_name: internal_short_name}
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -37,21 +37,21 @@ OAS_COLS = {
     "BAMLEMRLCRPILAOAS":       "oas_latam",
 }
 
-# Sheet "4": PE ratios, Earnings Yields, Total Return indices (~2,686 rows from 2015).
-# This is the main source for equity/FI price momentum and equity valuation.
+# Sheet "H4": PE ratios, Earnings Yields, Total Return indices (~3,991 rows from 2011).
+# Column names updated: "PE" → "Forward PE", "Fwd EPS" → "Forward EPS".
 SHEET4_PE_COLS = {
-    "NDUEACWF Index PE":  "msci_acwi",
-    "SPTRSVX Index PE":   "sp500_value",
-    "SPXQUT Index PE":    "sp500_quality",
-    "SPTRSGX Index PE":   "sp500_growth",
-    "NDDUEAFE Index PE":  "msci_eafe",     # previously all-NaN; now available
-    "NDUEEGF Index PE":   "msci_em",
-    "M1CXBRV Index PE":   "msci_em_xchina",
-    "NDEUCHF Index PE":   "msci_china",
-    "SPXT Index PE":      "sp500",
+    "NDUEACWF Index Forward PE":  "msci_acwi",
+    "SPTRSVX Index Forward PE":   "sp500_value",
+    "SPXQUT Index Forward PE":    "sp500_quality",
+    "SPTRSGX Index Forward PE":   "sp500_growth",
+    "NDDUEAFE Index Forward PE":  "msci_eafe",
+    "NDUEEGF Index Forward PE":   "msci_em",
+    "M1CXBRV Index Forward PE":   "msci_em_xchina",
+    "NDEUCHF Index Forward PE":   "msci_china",
+    "SPXT Index Forward PE":      "sp500",
 }
 
-# Earnings yields (%) from sheet "4" — used for ERP calculation.
+# Earnings yields (%) from sheet "H4" — used for ERP calculation.
 SHEET4_EY_COLS = {
     "NDUEACWF Index EY":  "msci_acwi_ey",
     "SPTRSVX Index EY":   "sp500_val_ey",
@@ -64,9 +64,7 @@ SHEET4_EY_COLS = {
     "SPXT Index EY":      "sp500_ey",
 }
 
-# Total Return price levels from sheet "4".
-# These replace the old Hoja2 fi_px block as the primary momentum source.
-# Note: bfu5_price (Bloomberg 1-5Y Treasury) is not in sheet 4 — i132_price is used as fallback.
+# Total Return price levels from sheet "H4" — primary momentum source.
 SHEET4_TR_COLS = {
     "I26729US Index TR":   "usagg_price",    # Bloomberg US Aggregate
     "NDUEACWF Index TR":   "msci_acwi_px",
@@ -83,7 +81,55 @@ SHEET4_TR_COLS = {
     "BSGVTRUU Index TR":   "bsgv_price",
 }
 
-# Sheet "5": Daily market data — VIX, MOVE, CDX, yields, sentiment (~2,669 rows from 2015).
+# Sheet "H6": MSCI World + all 11 S&P sectors — PE, EY, TR (~3,991 rows from 2011).
+SHEET_H6_PE_COLS = {
+    "NDDUWI Index Forward PE":   "msci_world",
+    "S5INFT Index Forward PE":   "sp500_it",
+    "S5ENRS Index Forward PE":   "sp500_energy",
+    "S5UTIL Index Forward PE":   "sp500_util",
+    "S5INDU Index Forward PE":   "sp500_indu",
+    "S5HLTH Index Forward PE":   "sp500_hlth",
+    "S5MATR Index Forward PE":   "sp500_matr",
+    "S5CONS Index Forward PE":   "sp500_staples",
+    "S5TELS Index Forward PE":   "sp500_comm",
+    "S5RLST Index Forward PE":   "sp500_re",
+    "S5COND Index Forward PE":   "sp500_discr",
+    "S5FINL Index Forward PE":   "sp500_fin",
+}
+
+SHEET_H6_EY_COLS = {
+    "NDDUWI Index EY":   "msci_world_ey",
+    "S5INFT Index EY":   "sp500_it_ey",
+    "S5ENRS Index EY":   "sp500_energy_ey",
+    "S5UTIL Index EY":   "sp500_util_ey",
+    "S5INDU Index EY":   "sp500_indu_ey",
+    "S5HLTH Index EY":   "sp500_hlth_ey",
+    "S5MATR Index EY":   "sp500_matr_ey",
+    "S5CONS Index EY":   "sp500_staples_ey",
+    "S5TELS Index EY":   "sp500_comm_ey",
+    "S5RLST Index EY":   "sp500_re_ey",
+    "S5COND Index EY":   "sp500_discr_ey",
+    "S5FINL Index EY":   "sp500_fin_ey",
+}
+
+SHEET_H6_TR_COLS = {
+    "NDDUWI Index TR":   "msci_world_px",
+    "S5INFT Index TR":   "sp500_it_px",
+    "S5ENRS Index TR":   "sp500_energy_px",
+    "S5UTIL Index TR":   "sp500_util_px",
+    "S5INDU Index TR":   "sp500_indu_px",
+    "S5HLTH Index TR":   "sp500_hlth_px",
+    "S5MATR Index TR":   "sp500_matr_px",
+    "S5CONS Index TR":   "sp500_staples_px",
+    "S5TELS Index TR":   "sp500_comm_px",
+    "S5RLST Index TR":   "sp500_re_px",
+    "S5COND Index TR":   "sp500_discr_px",
+    "S5FINL Index TR":   "sp500_fin_px",
+}
+
+# Sheet "H5": Daily market data — VIX, MOVE, CDX, yields, sentiment, DXY, SOFR, FCI, PCE.
+# Extended from 2010 (~4,044 rows). New series: DXY, BFCIUS (FCI), SOFRRATE, PCE.
+# Breakevens moved here from old F3. GT10/GT02/GB03 also here.
 SHEET5_COLS = {
     "IBOXUMAE CBBT Curncy": "cdx_ig_spread",  # CDX NA IG 5Y spread (bps)
     "IBOXHYAE CBBT Curncy": "cdx_hy_price",   # CDX NA HY 5Y price (~100 par)
@@ -91,18 +137,25 @@ SHEET5_COLS = {
     "MOVE Index":            "move",
     "V2X Index":             "vstoxx",
     "VIX3M Index":           "vix3m",
-    "BASPTDSP Index":        "ted",            # Basis swap spread ≈ TED proxy
+    "BASPTDSP Index":        "ted_legacy",     # Defunct since 2019 — kept for history
     "PCRTEQTY Index":        "pcr",            # CBOE equity put/call ratio
     "SKEW Index":            "skew",
     "H15X10YR Index":        "tips_10y",       # TIPS 10Y real yield (%)
     "H15X5YR Index":         "tips_5y",        # TIPS 5Y real yield (%)
     "FDTR Index":            "fedrate",        # Fed Funds effective rate
+    "DXY Curncy":            "dxy",            # US Dollar Index (Bloomberg, from 2011)
+    "BFCIUS Index":          "fci",            # Bloomberg US Financial Conditions Index
+    "SOFRRATE Index":        "sofr",           # SOFR rate (from Apr 2018)
+    "PCE CYOY Index":        "pce_yoy",        # US Core PCE YoY (monthly)
+    "USGGBE05 Index":        "breakeven_5y",   # 5Y breakeven inflation (moved from H3)
+    "USGGBE10 Index":        "breakeven_10y",  # 10Y breakeven inflation (moved from H3)
+    "CPI XYOY Index":        "cpi_us",         # US Core CPI YoY (monthly)
     "GT10 @BGN Govt":        "usy_10y",
     "GT02 @BGN Govt":        "usy_2y",
     "GB03 @BGN Govt":        "tbill_3m",
 }
 
-# Sheet "F1": PMI, CESI surprise indices, GDP forecasts (~2,490 rows from 2016).
+# Sheet "H1": PMI, CESI surprise indices, GDP forecasts (~4,003 rows from 2011).
 SHEET_F1_COLS = {
     "NAPMPMI Index":    "pmi_ism_mfg",       # ISM Manufacturing PMI
     "NAPMNMI Index":    "pmi_ism_svcs",       # ISM Services PMI
@@ -128,7 +181,7 @@ SHEET_F1_COLS = {
     "ECGDWO 27 Index":  "gdp_world_nxt",
 }
 
-# Sheet "F2": Additional regional PMI, CESI, GDP (~2,490 rows from 2016).
+# Sheet "H2": Additional regional PMI, CESI, GDP (~3,960 rows from 2011).
 SHEET_F2_COLS = {
     "ECGDEU 27 Index":  "gdp_eu_nxt",
     "MPMIJPMA Index":   "pmi_japan_mfg",
@@ -145,21 +198,19 @@ SHEET_F2_COLS = {
     "ECGDR4 27 Index":  "gdp_latam_nxt",
 }
 
-# Sheet "F3": Forward EPS, breakeven inflation (~2,490 rows from 2016).
+# Sheet "H3": Forward EPS only (~3,991 rows from 2011).
+# Note: breakevens moved to H5. Column names: "Fwd EPS" → "Forward EPS".
 SHEET_F3_COLS = {
-    "SPX Index Fwd EPS":   "eps_fwd_us",
-    "MXWO Index Fwd EPS":  "eps_fwd_world",
-    "MXEM Index Fwd EPS":  "eps_fwd_em",
-    "MXCN Index Fwd EPS":  "eps_fwd_china",
-    "MXJP Index Fwd EPS":  "eps_fwd_japan",
-    "MXEF Index Fwd EPS":  "eps_fwd_eafe",
-    "MXLA Index Fwd EPS":  "eps_fwd_latam",
-    "USGGBE05 Index":       "breakeven_5y",
-    "USGGBE10 Index":       "breakeven_10y",
-    "CPI XYOY Index":       "cpi_us",
+    "SPX Index Forward EPS":   "eps_fwd_us",
+    "MXWO Index Forward EPS":  "eps_fwd_world",
+    "MXEM Index Forward EPS":  "eps_fwd_em",
+    "MXCN Index Forward EPS":  "eps_fwd_china",
+    "MXJP Index Forward EPS":  "eps_fwd_japan",
+    "MXEF Index Forward EPS":  "eps_fwd_eafe",
+    "MXLA Index Forward EPS":  "eps_fwd_latam",
 }
 
-# Sheet "AAII": AAII weekly investor sentiment.
+# Sheet "AAII": AAII weekly investor sentiment (from 1987).
 SHEET_AAII_COLS = {
     "Bullish":          "aaii_bull",
     "Bearish":          "aaii_bear",
@@ -171,29 +222,52 @@ SHEET_AAII_COLS = {
 # ASSET CLASS UNIVERSE
 # ─────────────────────────────────────────────────────────────────────────────
 
+# <<<BUILD:PY_AC_UNIVERSE_START>>> — regenerated from config/taa_config.xlsx
 ASSET_CLASSES = [
-    "money_market", "short_term_fi", "lt_treasuries",
-    "lt_us_corp", "lt_em_fi",
-    "us_equity", "us_growth", "us_value",
-    "dm_equity", "em_equity", "em_xchina", "china_equity",
+    "money_market",
+    "short_term_fi",
+    "lt_treasuries",
+    "lt_us_corp",
+    "lt_em_fi",
+    "us_equity",
+    "us_growth",
+    "us_value",
+    "dm_equity",
+    "em_equity",
+    "em_xchina",
+    "china_equity",
 ]
 
 ASSET_CLASS_LABELS = {
-    "money_market":  "Money Market",       "short_term_fi": "Short-Term FI",
-    "lt_treasuries": "LT Treasuries",      "lt_us_corp":    "LT US Corporate",
-    "lt_em_fi":      "LT EM Fixed Income", "us_equity":     "US Equity",
-    "us_growth":     "US Growth",          "us_value":      "US Value",
-    "dm_equity":     "DM ex-US Equity",    "em_equity":     "EM Equity",
-    "em_xchina":     "EM ex-China",        "china_equity":  "China Equity",
+    "money_market": "Money Market",
+    "short_term_fi": "Short-Term Fixed Income (USD)",
+    "lt_treasuries": "LT US Treasuries",
+    "lt_us_corp": "LT US Corporate",
+    "lt_em_fi": "LT EM Fixed Income",
+    "us_equity": "US Equity (Broad)",
+    "us_growth": "US Growth",
+    "us_value": "US Value",
+    "dm_equity": "DM ex-US Equity",
+    "em_equity": "Emerging Markets Equity",
+    "em_xchina": "EM ex-China",
+    "china_equity": "China Equity",
 }
 
 ASSET_CLASS_GROUPS = {
-    "money_market": "FI", "short_term_fi": "FI", "lt_treasuries": "FI",
-    "lt_us_corp": "FI",   "lt_em_fi": "FI",
-    "us_equity": "EQ",    "us_growth": "EQ",  "us_value": "EQ",
-    "dm_equity": "EQ",    "em_equity": "EQ",  "em_xchina": "EQ",
+    "money_market": "FI",
+    "short_term_fi": "FI",
+    "lt_treasuries": "FI",
+    "lt_us_corp": "FI",
+    "lt_em_fi": "FI",
+    "us_equity": "EQ",
+    "us_growth": "EQ",
+    "us_value": "EQ",
+    "dm_equity": "EQ",
+    "em_equity": "EQ",
+    "em_xchina": "EQ",
     "china_equity": "EQ",
 }
+# <<<BUILD:PY_AC_UNIVERSE_END>>>
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -201,20 +275,22 @@ ASSET_CLASS_GROUPS = {
 # Each row sums to 1.0
 # ─────────────────────────────────────────────────────────────────────────────
 
+# <<<BUILD:PY_PILLAR_WEIGHTS_START>>> — regenerated from config/taa_config.xlsx
 PILLAR_WEIGHTS = {
-    "money_market":  {"F": 0.10, "M": 0.15, "S": 0.25, "V": 0.50},
+    "money_market": {"F": 0.10, "M": 0.15, "S": 0.25, "V": 0.50},
     "short_term_fi": {"F": 0.20, "M": 0.25, "S": 0.20, "V": 0.35},
     "lt_treasuries": {"F": 0.25, "M": 0.25, "S": 0.20, "V": 0.30},
-    "lt_us_corp":    {"F": 0.20, "M": 0.30, "S": 0.20, "V": 0.30},
-    "lt_em_fi":      {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "us_equity":     {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "us_growth":     {"F": 0.20, "M": 0.35, "S": 0.15, "V": 0.30},
-    "us_value":      {"F": 0.30, "M": 0.25, "S": 0.20, "V": 0.25},
-    "dm_equity":     {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "em_equity":     {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "em_xchina":     {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "china_equity":  {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "lt_us_corp": {"F": 0.20, "M": 0.30, "S": 0.20, "V": 0.30},
+    "lt_em_fi": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "us_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "us_growth": {"F": 0.20, "M": 0.35, "S": 0.15, "V": 0.30},
+    "us_value": {"F": 0.30, "M": 0.25, "S": 0.20, "V": 0.25},
+    "dm_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "em_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "em_xchina": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "china_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
 }
+# <<<BUILD:PY_PILLAR_WEIGHTS_END>>>
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -256,13 +332,22 @@ CONVICTION_THRESHOLDS = [
     (None,  "HIGH UW",   -1.0),
 ]
 
+# <<<BUILD:PY_MAX_TILT_START>>> — regenerated from config/taa_config.xlsx
 MAX_TILT_PCT = {
-    "money_market": 2.0, "short_term_fi": 3.0, "lt_treasuries": 4.0,
-    "lt_us_corp": 3.0,   "lt_em_fi": 3.0,
-    "us_equity": 5.0,    "us_growth": 3.0, "us_value": 3.0,
-    "dm_equity": 4.0,    "em_equity": 4.0, "em_xchina": 3.0,
+    "money_market": 2.0,
+    "short_term_fi": 3.0,
+    "lt_treasuries": 4.0,
+    "lt_us_corp": 3.0,
+    "lt_em_fi": 3.0,
+    "us_equity": 5.0,
+    "us_growth": 3.0,
+    "us_value": 3.0,
+    "dm_equity": 4.0,
+    "em_equity": 4.0,
+    "em_xchina": 3.0,
     "china_equity": 3.0,
 }
+# <<<BUILD:PY_MAX_TILT_END>>>
 
 ALPHA_ABS = 0.35  # weight of absolute view; (1-ALPHA) = relative view
 
