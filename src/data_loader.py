@@ -36,7 +36,7 @@ from config import (
     OAS_COLS, SHEET4_PE_COLS, SHEET4_EY_COLS, SHEET4_TR_COLS,
     SHEET_H6_PE_COLS, SHEET_H6_EY_COLS, SHEET_H6_TR_COLS,
     SHEET5_COLS, SHEET_F1_COLS, SHEET_F2_COLS, SHEET_F3_COLS,
-    SHEET_AAII_COLS,
+    SHEET_AAII_COLS, SHEET_H7_COLS,
     MAX_FFILL_DAYS, RETURN_OUTLIER_ZSCORE,
 )
 
@@ -330,6 +330,24 @@ def load_aaii() -> pd.DataFrame:
     return out
 
 
+def load_h7() -> pd.DataFrame:
+    """
+    H7: New macro series added May 2026.
+      - breakeven_1y  : US 1Y Breakeven Inflation (USGGBE01)
+      - gdpnow        : Atlanta Fed GDPNow US Forecast (GDGCAFJP)
+      - nfci          : Chicago Fed National Financial Conditions Index (NFCIINDX)
+      - fci_ez        : Bloomberg Euro-Zone FCI (BFCIEU)
+      - fci_uk        : Bloomberg UK FCI (BFCIGB)
+    """
+    df  = pd.read_excel(EXCEL_PATH, sheet_name="H7")
+    df  = _parse_date_col(df)
+    out = _select_rename(df, SHEET_H7_COLS)
+    out = _sort_asc(out)
+    out = out.ffill(limit=MAX_FFILL_DAYS)
+    out.index.name = "Date"
+    return out
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # MASTER LOADER
 # ─────────────────────────────────────────────────────────────────────────────
@@ -352,6 +370,7 @@ def load_all(verbose: bool = True) -> dict:
       'f1'      : PMI, CESI, GDP fundamentals (H1+H2)
       'f3'      : Forward EPS (H3)
       'aaii'    : AAII bull-bear spread (weekly -> daily)
+      'h7'      : New macro series (breakeven_1y, gdpnow, nfci, fci_ez, fci_uk)
 
     Legacy alias:
       'tr'      : alias for fi_px
@@ -371,6 +390,7 @@ def load_all(verbose: bool = True) -> dict:
         "f1":      load_f1,
         "f3":      load_f3,
         "aaii":    load_aaii,
+        "h7":      load_h7,
     }
 
     data = {}
@@ -406,3 +426,17 @@ def get_series(data: dict, sheet: str, col: str) -> pd.Series:
     if not df.empty and col in df.columns:
         return df[col].dropna()
     return pd.Series(dtype=float, name=col)
+
+
+def load_raw_sheet(path: str, sheet_name: str) -> pd.DataFrame:
+    """Load any sheet from the TAA inputs Excel by name.
+
+    Parses the first column as the date index, forward-fills up to MAX_FFILL_DAYS,
+    and returns a DatetimeIndex DataFrame of floats.
+    """
+    df = pd.read_excel(path, sheet_name=sheet_name, index_col=0, parse_dates=True)
+    df.index = pd.to_datetime(df.index, errors="coerce")
+    df = df[df.index.notna()].sort_index()
+    df = df.apply(pd.to_numeric, errors="coerce")
+    df = df.ffill(limit=MAX_FFILL_DAYS)
+    return df

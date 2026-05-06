@@ -29,14 +29,13 @@ _ROOT = os.path.dirname(_SRC)
 sys.path.insert(0, _SRC)
 
 from data_loader import load_all
-from main import build_bloomberg_series
 from proxies import build_proxy_ext
 from signals import (
     ewma_zscore, rolling_zscore, pctile_rank, relative_pe,
     equity_risk_premium, oas_level_score, yield_level_score,
     WINDOWS
 )
-from config import OUTPUT_DIR
+from config import OUTPUT_DIR, CUSTOM_SERIES_PATH
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -191,23 +190,104 @@ def _blended_gdp_revision(f1: pd.DataFrame, cur_col: str, nxt_col: str) -> pd.Se
 # MAIN EXTRACTOR
 # ─────────────────────────────────────────────────────────────────────────────
 
+def compute_fundamentals_heatmap(data: dict, n_months: int = 24) -> dict:
+    """
+    Monthly z-score heatmap for Chartbook: Fundamentals — US focus (v4).
+
+    Series included:
+      pmi_us       : PMI US Composite (ISM Mfg + Svcs avg)
+      ism_no_inv   : ISM New Orders / Inventories ratio (>1 = demand expanding)
+      gdp_2026     : US GDP 2026 consensus forecast (Bloomberg ECGDUS 27 — next year expectations)
+      eps_rev_us   : US Corp EPS Revision Composite (40% 3M + 60% 6M)
+      gdpnow       : Atlanta Fed GDPNow US real-time forecast
+      fci_us       : Bloomberg US Financial Conditions Index (tight = negative for risk)
+      nfci         : Chicago Fed National Financial Conditions Index (tight = negative)
+
+    Returns JSON-serializable dict with monthly z-scores for the last n_months.
+    """
+    f1  = data.get("f1",  pd.DataFrame())
+    mkt = data.get("mkt", pd.DataFrame())
+    h7  = data.get("h7",  pd.DataFrame())
+
+    # Load custom series for PMI composite and EPS revision
+    custom = pd.DataFrame()
+    if os.path.exists(CUSTOM_SERIES_PATH):
+        try:
+            custom = pd.read_excel(CUSTOM_SERIES_PATH, sheet_name="custom_series",
+                                   index_col=0, parse_dates=True)
+        except Exception:
+            pass
+
+    def _gs(df, col):
+        """Get series safely."""
+        if df is not None and not df.empty and col in df.columns:
+            s = df[col].dropna()
+            return s if len(s) >= 20 else None
+        return None
+
+    # Series definitions: (raw_series, label, direction_for_display)
+    # direction: +1 = high value is bullish/positive; -1 = high value is bearish
+    SERIES = [
+        ("pmi_us",     _gs(custom, "pmi_us"),          "PMI US Composite",               +1),
+        ("ism_no_inv", _gs(f1,     "ism_new_ord_inv"),  "ISM New Orders/Inventories",     +1),
+        ("gdp_2026",   _gs(f1,     "gdp_us_nxt"),       "US GDP 2026 Expectations",       +1),
+        ("eps_rev_us", _gs(custom, "eps_rev_us"),       "US Corp EPS Revision",           +1),
+        ("gdpnow",     _gs(h7,     "gdpnow"),           "Atlanta Fed GDPNow",             +1),
+        ("fci_us",     _gs(mkt,    "fci"),              "Bloomberg US FCI (inverted)",     -1),
+        ("nfci",       _gs(h7,     "nfci"),             "Chicago Fed NFCI (inverted)",     -1),
+    ]
+
+    # Target monthly dates: last n_months (end of month)
+    today = pd.Timestamp.today().normalize()
+    monthly_dates = pd.date_range(end=today, periods=n_months, freq="ME")
+
+    result = {
+        "series_meta": [],
+        "dates":       [d.strftime("%Y-%m") for d in monthly_dates],
+        "zscores":     {},
+        "raw":         {},
+    }
+
+    for sid, raw_s, label, direction in SERIES:
+        result["series_meta"].append({
+            "id":        sid,
+            "label":     label,
+            "direction": direction,
+        })
+
+        if raw_s is None or raw_s.empty:
+            result["zscores"][sid] = [None] * n_months
+            result["raw"][sid]     = [None] * n_months
+            continue
+
+        # Compute EWMA z-score (3Y span)
+        z = ewma_zscore(raw_s * direction, span=WINDOWS["long"])
+
+        # Resample to monthly (last available value per month)
+        z_m   = z.resample("ME").last()
+        raw_m = raw_s.resample("ME").last()
+
+        def _pick(series_m, d):
+            """Get closest monthly value; return None if gap > 45 days."""
+            if series_m.empty:
+                return None
+            idx = series_m.index.get_indexer([d], method="nearest")[0]
+            if abs((series_m.index[idx] - d).days) <= 45:
+                v = series_m.iloc[idx]
+                return round(float(v), 4) if not pd.isna(v) else None
+            return None
+
+        result["zscores"][sid] = [_pick(z_m,   d) for d in monthly_dates]
+        result["raw"][sid]     = [_pick(raw_m, d) for d in monthly_dates]
+
+    return result
+
+
 def build_chartbook_data() -> dict:
     print("Loading pipeline data...")
     data    = load_all(verbose=False)
-    bbg_ext = build_bloomberg_series(data)
     proxies = build_proxy_ext(data, verbose=False)
-    ext     = {}
-    for key, proxy_val in proxies.items():
-        if key.startswith("_"):
-            ext[key] = proxy_val
-            continue
-        bbg_val = bbg_ext.get(key)
-        is_live = (bbg_val is not None and isinstance(bbg_val, pd.Series)
-                   and bbg_val.dropna().shape[0] > 0)
-        ext[key] = bbg_val if is_live else proxy_val
-    for key, val in bbg_ext.items():
-        if key not in ext:
-            ext[key] = val
+    ext     = {k: v for k, v in proxies.items()}
 
     f1  = data.get("f1",     pd.DataFrame())
     f3  = data.get("f3",     pd.DataFrame())
@@ -219,6 +299,9 @@ def build_chartbook_data() -> dict:
     yl  = data.get("yields", pd.DataFrame())
     fi  = data.get("fi_px",  pd.DataFrame())
     aaii_df = data.get("aaii", pd.DataFrame())
+
+    print("Extracting fundamentals heatmap...")
+    fundamentals_heatmap = compute_fundamentals_heatmap(data, n_months=24)
 
     print("Extracting fundamentals...")
     # ── I. FUNDAMENTALS ────────────────────────────────────────────────────────
@@ -478,11 +561,12 @@ def build_chartbook_data() -> dict:
     }
 
     return {
-        "meta":         meta,
-        "fundamentals": fundamentals,
-        "momentum":     momentum,
-        "sentiment":    sentiment,
-        "valuation":    valuation,
+        "meta":                  meta,
+        "fundamentals":          fundamentals,
+        "fundamentals_heatmap":  fundamentals_heatmap,
+        "momentum":              momentum,
+        "sentiment":             sentiment,
+        "valuation":             valuation,
     }
 
 

@@ -764,3 +764,66 @@ def pillar_valuation(asset_class: str, data: dict) -> pd.Series:
         signals, weights = {}, {}
 
     return _wavg(signals, weights)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GENERIC PILLAR BUILDER — driven by SignalMapping from taa_config.xlsx
+# ─────────────────────────────────────────────────────────────────────────────
+
+def build_all_pillars(ac: str, signals: dict,
+                      signal_mapping: pd.DataFrame) -> dict:
+    """
+    Build F/M/S/V pillar scores for one asset class using SignalMapping config.
+
+    Parameters
+    ----------
+    ac             : asset class key, e.g. "us_equity"
+    signals        : {series_id: pd.Series (z-score)} from SignalEngine.load_all()
+    signal_mapping : DataFrame with cols ac_id, series_id, pillar, sign,
+                     weight_in_pillar (floats or "35%" strings)
+
+    Returns
+    -------
+    dict  {'F': pd.Series, 'M': pd.Series, 'S': pd.Series, 'V': pd.Series}
+    """
+    def _w(raw) -> float:
+        if raw is None:
+            return 0.0
+        try:
+            s = str(raw).strip()
+            if s.endswith('%'):
+                return float(s[:-1]) / 100.0
+            v = float(s)
+            return v / 100.0 if v > 1.5 else v
+        except (ValueError, TypeError):
+            return 0.0
+
+    def _sign(raw) -> float:
+        try:
+            return float(raw)
+        except (ValueError, TypeError):
+            return 1.0
+
+    ac_rows = signal_mapping[
+        signal_mapping["ac_id"].astype(str).str.strip() == ac
+    ]
+
+    result = {}
+    for pillar in "FMSV":
+        p_rows = ac_rows[ac_rows["pillar"].astype(str).str.strip() == pillar]
+        sigs: dict = {}
+        wts:  dict = {}
+        for _, r in p_rows.iterrows():
+            sid = str(r.get("series_id", "")).strip()
+            w   = _w(r.get("weight_in_pillar", 0.0))
+            sgn = _sign(r.get("sign", 1.0))
+            if not sid or w == 0.0:
+                continue
+            sig = signals.get(sid)
+            if sig is None or (isinstance(sig, pd.Series) and sig.dropna().empty):
+                continue
+            sigs[sid] = sig * sgn
+            wts[sid]  = w
+        result[pillar] = _wavg(sigs, wts)
+
+    return result

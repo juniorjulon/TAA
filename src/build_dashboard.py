@@ -290,23 +290,29 @@ def main():
 
     cfg = load_config()
 
-    # ---- index.html ---------------------------------------------------------
-    with open(INDEX_HTML, "r", encoding="utf-8") as f:
-        html = f.read()
+    # ---- index.html (only if BUILD markers are present) ---------------------
+    # generate_dashboard.py now writes index.html as a complete file (no markers).
+    # build_dashboard.py skips the HTML update in that case — the live JS blocks
+    # are injected by generate_dashboard.py via _live_js_overrides().
+    try:
+        with open(INDEX_HTML, "r", encoding="utf-8") as f:
+            html = f.read()
 
-    replacements_html = [
-        ("SIG_MATRIX_START",   "SIG_MATRIX_END",   render_sig_matrix(cfg)),
-        ("AC_META_START",      "AC_META_END",      render_ac_meta(cfg)),
-        ("FI_BLUEPRINT_START", "FI_BLUEPRINT_END", render_fi_blueprint(cfg)),
-        ("EQ_BLUEPRINT_START", "EQ_BLUEPRINT_END", render_eq_blueprint(cfg)),
-        ("AC_LABEL_PW_START",  "AC_LABEL_PW_END",  render_ac_label_pw(cfg)),
-    ]
-    for start, end, body in replacements_html:
-        html = replace_block(html, start, end, body, comment_prefix="//")
+        replacements_html = [
+            ("SIG_MATRIX_START",   "SIG_MATRIX_END",   render_sig_matrix(cfg)),
+            ("AC_META_START",      "AC_META_END",      render_ac_meta(cfg)),
+            ("FI_BLUEPRINT_START", "FI_BLUEPRINT_END", render_fi_blueprint(cfg)),
+            ("EQ_BLUEPRINT_START", "EQ_BLUEPRINT_END", render_eq_blueprint(cfg)),
+            ("AC_LABEL_PW_START",  "AC_LABEL_PW_END",  render_ac_label_pw(cfg)),
+        ]
+        for start, end, body in replacements_html:
+            html = replace_block(html, start, end, body, comment_prefix="//")
 
-    with open(INDEX_HTML, "w", encoding="utf-8") as f:
-        f.write(html)
-    print(f"[OK] index.html regenerated ({len(replacements_html)} blocks)")
+        with open(INDEX_HTML, "w", encoding="utf-8") as f:
+            f.write(html)
+        print(f"[OK] index.html regenerated ({len(replacements_html)} blocks)")
+    except RuntimeError:
+        print("[OK] index.html — no BUILD markers; will update via generate_dashboard.py")
 
     # ---- src/config.py ------------------------------------------------------
     with open(CONFIG_PY, "r", encoding="utf-8") as f:

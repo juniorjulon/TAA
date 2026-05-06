@@ -19,8 +19,10 @@ import os
 
 _HERE       = os.path.dirname(os.path.abspath(__file__))   # src/
 _ROOT       = os.path.dirname(_HERE)                        # project root
-EXCEL_PATH  = os.path.join(_ROOT, "data", "Dashboard_TAA_Inputs.xlsx")
-OUTPUT_DIR  = os.path.join(_ROOT, "results")                # timestamped subfolder created at runtime
+EXCEL_PATH         = os.path.join(_ROOT, "data", "Dashboard_TAA_Inputs.xlsx")
+OUTPUT_DIR         = os.path.join(_ROOT, "results")           # timestamped subfolder created at runtime
+CONFIG_XLSX        = os.path.join(_ROOT, "config", "taa_config.xlsx")
+CUSTOM_SERIES_PATH = os.path.join(_ROOT, "data", "custom_series.xlsx")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,6 +157,15 @@ SHEET5_COLS = {
     "GB03 @BGN Govt":        "tbill_3m",
 }
 
+# Sheet "H7": New macro series added May 2026.
+SHEET_H7_COLS = {
+    "USGGBE01 Index": "breakeven_1y",   # US 1Y Breakeven Inflation
+    "GDGCAFJP Index": "gdpnow",         # Atlanta Fed GDPNow US forecast (daily)
+    "NFCIINDX Index": "nfci",           # Chicago Fed National Financial Conditions Index
+    "BFCIEU Index":   "fci_ez",         # Bloomberg Euro-Zone Financial Conditions Index
+    "BFCIGB Index":   "fci_uk",         # Bloomberg United Kingdom Financial Conditions Index
+}
+
 # Sheet "H1": PMI, CESI surprise indices, GDP forecasts (~4,003 rows from 2011).
 SHEET_F1_COLS = {
     "NAPMPMI Index":    "pmi_ism_mfg",       # ISM Manufacturing PMI
@@ -234,8 +245,6 @@ ASSET_CLASSES = [
     "us_value",
     "dm_equity",
     "em_equity",
-    "em_xchina",
-    "china_equity",
 ]
 
 ASSET_CLASS_LABELS = {
@@ -249,8 +258,6 @@ ASSET_CLASS_LABELS = {
     "us_value": "US Value",
     "dm_equity": "DM ex-US Equity",
     "em_equity": "Emerging Markets Equity",
-    "em_xchina": "EM ex-China",
-    "china_equity": "China Equity",
 }
 
 ASSET_CLASS_GROUPS = {
@@ -264,8 +271,6 @@ ASSET_CLASS_GROUPS = {
     "us_value": "EQ",
     "dm_equity": "EQ",
     "em_equity": "EQ",
-    "em_xchina": "EQ",
-    "china_equity": "EQ",
 }
 # <<<BUILD:PY_AC_UNIVERSE_END>>>
 
@@ -287,8 +292,6 @@ PILLAR_WEIGHTS = {
     "us_value": {"F": 0.30, "M": 0.25, "S": 0.20, "V": 0.25},
     "dm_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
     "em_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "em_xchina": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "china_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
 }
 # <<<BUILD:PY_PILLAR_WEIGHTS_END>>>
 
@@ -344,8 +347,6 @@ MAX_TILT_PCT = {
     "us_value": 3.0,
     "dm_equity": 4.0,
     "em_equity": 4.0,
-    "em_xchina": 3.0,
-    "china_equity": 3.0,
 }
 # <<<BUILD:PY_MAX_TILT_END>>>
 
@@ -353,3 +354,48 @@ ALPHA_ABS = 0.35  # weight of absolute view; (1-ALPHA) = relative view
 
 PILLAR_AGREEMENT_MULTIPLIERS  = {4: 1.00, 3: 0.80, 2: 0.50, 1: 0.00, 0: 0.00}
 PILLAR_AGREEMENT_THRESHOLD    = 0.25  # min |z| for pillar to count as "having signal"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HIERARCHICAL ASSET CLASS STRUCTURE
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Two-level view system (Maillard/Roncalli/Teïletche 2010; BlackRock BGRI):
+#   Level 1 (macro): aggregate z-score per top-level bucket → overall tilt direction
+#   Level 2 (relative): within-bucket z-score vs parent → zero-sum internal rotation
+#
+# Aggregates that already exist as standalone ACs (us_equity, em_equity) use their
+# own composite z-score as the L1 view. "lt_fi_aggregate" is synthetic: its z is
+# computed as a weighted average of its three children's z-scores.
+#
+# max_tilt_l1: tilt capacity reserved for the aggregate direction (% of portfolio)
+# max_tilt_l2: tilt capacity reserved for within-bucket rotation (% of portfolio)
+
+AC_HIERARCHY = {
+    # Synthetic aggregate — not a standalone AC; z computed from children
+    "lt_fi_aggregate": {
+        "children":      ["lt_treasuries", "lt_us_corp", "lt_em_fi"],
+        "model_weights": {"lt_treasuries": 0.40, "lt_us_corp": 0.35, "lt_em_fi": 0.25},
+        "max_tilt_l1":   3.5,   # 70% of 5% (lt_treasuries cap)
+        "max_tilt_l2":   1.5,   # 30%; zero-sum within FI bucket
+    },
+    # Real AC — own composite z IS the L1 view
+    "us_equity": {
+        "children":      ["us_value", "us_growth"],
+        "model_weights": {"us_value": 0.50, "us_growth": 0.50},
+        "max_tilt_l1":   3.5,   # 70% of 5%
+        "max_tilt_l2":   1.5,   # 30%
+    },
+}
+
+# Standalone ACs (no children in hierarchy — L1 only, no internal rotation)
+AC_STANDALONE = ["money_market", "short_term_fi", "dm_equity", "em_equity"]
+
+# Reverse lookup: child → parent aggregate key
+AC_PARENT = {
+    "lt_treasuries": "lt_fi_aggregate",
+    "lt_us_corp":    "lt_fi_aggregate",
+    "lt_em_fi":      "lt_fi_aggregate",
+    "us_value":      "us_equity",
+    "us_growth":     "us_equity",
+}

@@ -34,14 +34,18 @@ import numpy as np
 warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # src/ on path
 
-from data_loader import load_all
-from proxies     import build_proxy_ext
-from pillars     import (pillar_fundamentals, pillar_momentum,
-                          pillar_sentiment,    pillar_valuation)
-from scoring     import (composite_score, score_snapshot,
-                          print_scorecard, apply_crisis_override)
-from config      import ASSET_CLASSES, OUTPUT_DIR, MAX_FFILL_DAYS
-from signals     import ewma_zscore, rolling_zscore, pctile_rank, WINDOWS
+from data_loader          import load_all
+from proxies              import build_proxy_ext
+from pillars              import (pillar_fundamentals, pillar_momentum,
+                                   pillar_sentiment,    pillar_valuation,
+                                   build_all_pillars)
+from signal_engine        import SignalEngine
+from scoring              import (composite_score, score_snapshot,
+                                   print_scorecard, apply_crisis_override)
+from hierarchical_scoring import HierarchicalViews
+from portfolio            import (load_portfolio_configs, build_multi_portfolio_report)
+from config               import ASSET_CLASSES, OUTPUT_DIR, MAX_FFILL_DAYS, CONFIG_XLSX
+from signals              import ewma_zscore, rolling_zscore, pctile_rank, WINDOWS
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -258,7 +262,7 @@ def build_bloomberg_series(data: dict) -> dict:
 
 def run_pipeline(verbose: bool = True) -> dict:
     """
-    Execute the full TAA scoring pipeline.
+    Execute the full TAA scoring pipeline (Excel-driven via SignalEngine).
 
     Returns
     -------
@@ -272,43 +276,41 @@ def run_pipeline(verbose: bool = True) -> dict:
     print("  TAA SIGNAL SYSTEM")
     print("=" * 60)
 
-    # STEP 1: Load and clean data
+    # STEP 1: Load raw data (needed for crisis override + proxy fallbacks)
     data = load_all(verbose=verbose)
 
-    # STEP 2: Build external signals from Excel (+ proxy fallbacks)
-    bbg     = build_bloomberg_series(data)
-    proxies = build_proxy_ext(data, verbose=verbose)
+    # STEP 2: Load all signals via SignalEngine (reads DataSeries from taa_config.xlsx)
+    if verbose:
+        print("\nLoading signals via SignalEngine...")
+    engine  = SignalEngine()
+    signals = engine.load_all(verbose=verbose)
 
-    ext = {}
+    # STEP 3: Proxy fallbacks for signals not loaded by engine
+    proxies = build_proxy_ext(data, verbose=verbose)
     for key, proxy_val in proxies.items():
         if key.startswith("_"):
-            ext[key] = proxy_val
             continue
-        bbg_val = bbg.get(key)
-        is_bbg_live = (bbg_val is not None and
-                       isinstance(bbg_val, pd.Series) and
-                       bbg_val.dropna().shape[0] > 0)
-        ext[key] = bbg_val if is_bbg_live else proxy_val
+        sig = signals.get(key)
+        if sig is None or (isinstance(sig, pd.Series) and sig.dropna().empty):
+            signals[key] = proxy_val
 
-    for key, val in bbg.items():
-        if key not in ext:
-            ext[key] = val
+    if verbose:
+        print(f"\n  Total signals available: {len(signals)}")
 
-    # STEP 3: Build pillar scores
+    # STEP 4: Get SignalMapping and build pillar scores
+    signal_mapping = engine.get_signal_mapping()
+
     if verbose:
         print("\nBuilding pillar scores...")
 
     pillar_scores = {}
     for ac in ASSET_CLASSES:
         try:
-            pf = pillar_fundamentals(ac, data, ext)
-            pm = pillar_momentum(ac, data)
-            ps = pillar_sentiment(ac, data, ext)
-            pv = pillar_valuation(ac, data)
-            pillar_scores[ac] = {"F": pf, "M": pm, "S": ps, "V": pv}
+            ps = build_all_pillars(ac, signals, signal_mapping)
+            pillar_scores[ac] = ps
 
             if verbose:
-                live = sum(1 for s in [pf, pm, ps, pv]
+                live = sum(1 for s in ps.values()
                            if isinstance(s, pd.Series) and s.dropna().shape[0] > 0)
                 print(f"  {ac:<22} {live}/4 pillars active")
 
@@ -318,7 +320,7 @@ def run_pipeline(verbose: bool = True) -> dict:
             traceback.print_exc()
             pillar_scores[ac] = {"F": None, "M": None, "S": None, "V": None}
 
-    # STEP 4: Composite scores
+    # STEP 5: Composite scores
     if verbose:
         print("\nComposite z-scores (latest):")
 
@@ -333,14 +335,36 @@ def run_pipeline(verbose: bool = True) -> dict:
             else:
                 print(f"  {ac:<22} no data")
 
-    # STEP 5: Scorecard snapshot
+    # STEP 6: Scorecard snapshot
     scorecard = score_snapshot(pillar_scores)
 
-    # Crisis override: VIX and MOVE available from mkt sheet
+    # STEP 7: Hierarchical views (Level 1 aggregate + Level 2 within-class)
+    hv = HierarchicalViews()
+    hierarchy_scorecard = hv.enrich(scorecard)
+    bucket_summary      = hv.bucket_summary(hierarchy_scorecard)
+
+    if verbose:
+        print("\nHierarchical views (L1 aggregate | L2 within-class):")
+        print(f"  {'Bucket':<20} {'Z_L1':>7}  {'Sub-AC':<22} {'Z_L2':>7} {'tilt_L1':>8} {'tilt_L2':>8} {'tilt_hier':>10}")
+        print(f"  {'-'*88}")
+        for _, brow in bucket_summary.iterrows():
+            if brow["sub_ac"] == "[AGGREGATE]":
+                z1 = f"{brow['Z_L1']:+.3f}" if not pd.isna(brow['Z_L1']) else " n/a"
+                print(f"  {brow['bucket']:<20} {z1:>7}  {'[aggregate L1]':<22}")
+            elif brow["sub_ac"] == "":
+                z1 = f"{brow['Z_L1']:+.3f}" if not pd.isna(brow['Z_L1']) else " n/a"
+                print(f"  {brow['bucket']:<20} {z1:>7}")
+            else:
+                z2  = f"{float(brow['Z_L2']):+.3f}" if brow['Z_L2'] != "" else "    -"
+                tl1 = f"{float(brow['tilt_L1']):+.2f}%" if brow['tilt_L1'] != "" else "    -"
+                tl2 = f"{float(brow['tilt_L2']):+.2f}%" if brow['tilt_L2'] != "" else "    -"
+                th  = f"{float(brow['tilt_hier']):+.2f}%" if brow['tilt_hier'] != "" else "    -"
+                print(f"  {'':20} {'':>7}  {brow['sub_ac']:<22} {z2:>7} {tl1:>8} {tl2:>8} {th:>10}")
+
+    # Crisis override: VIX and MOVE from mkt sheet
     mkt = data.get("mkt", pd.DataFrame())
     vix_pctile = move_pctile = None
     if not mkt.empty:
-        from signals import pctile_rank
         if "vix" in mkt.columns:
             vp = pctile_rank(mkt["vix"].dropna(), WINDOWS["xlarge"])
             if len(vp.dropna()) > 0:
@@ -360,27 +384,31 @@ def run_pipeline(verbose: bool = True) -> dict:
     print_scorecard(scorecard, date=latest_date)
 
     return {
-        "pillar_scores": pillar_scores,
-        "composites":    composites,
-        "scorecard":     scorecard,
-        "data":          data,
+        "pillar_scores":      pillar_scores,
+        "composites":         composites,
+        "scorecard":          scorecard,
+        "hierarchy_scorecard": hierarchy_scorecard,
+        "bucket_summary":     bucket_summary,
+        "data":               data,
     }
 
 
 def export_results(results: dict, out_dir: str = None) -> None:
     """Export all outputs to results/RUN_YYYYMMDD_HHMM/."""
+    import os as _os
     from datetime import datetime
     timestamp = datetime.now().strftime("RUN_%Y%m%d_%H%M")
     base      = out_dir if out_dir is not None else OUTPUT_DIR
-    run_dir   = os.path.join(base, timestamp)
-    os.makedirs(run_dir, exist_ok=True)
+    run_dir   = _os.path.join(base, timestamp)
+    _os.makedirs(run_dir, exist_ok=True)
 
-    sc_path = os.path.join(run_dir, "taa_scorecard.csv")
+    # ── Standard outputs ─────────────────────────────────────────────────────
+    sc_path = _os.path.join(run_dir, "taa_scorecard.csv")
     results["scorecard"].to_csv(sc_path)
     print(f"  Scorecard        -> {sc_path}")
 
     comp_df = pd.DataFrame(results["composites"])
-    ts_path = os.path.join(run_dir, "taa_composite_series.csv")
+    ts_path = _os.path.join(run_dir, "taa_composite_series.csv")
     comp_df.to_csv(ts_path)
     print(f"  Composite series -> {ts_path}")
 
@@ -389,8 +417,33 @@ def export_results(results: dict, out_dir: str = None) -> None:
                 if isinstance(s, pd.Series) and s.dropna().shape[0] > 0}
         if rows:
             pd.DataFrame(rows).to_csv(
-                os.path.join(run_dir, f"pillars_{ac}.csv"))
+                _os.path.join(run_dir, f"pillars_{ac}.csv"))
     print(f"  Pillar series    -> {run_dir}/pillars_*.csv")
+
+    # ── Hierarchical scorecard ────────────────────────────────────────────────
+    hier_sc = results.get("hierarchy_scorecard")
+    if hier_sc is not None:
+        hier_path = _os.path.join(run_dir, "taa_hierarchy_scorecard.csv")
+        hier_sc.to_csv(hier_path)
+        print(f"  Hierarchy views  -> {hier_path}")
+
+        bucket_path = _os.path.join(run_dir, "taa_bucket_summary.csv")
+        results.get("bucket_summary", pd.DataFrame()).to_csv(bucket_path, index=False)
+        print(f"  Bucket summary   -> {bucket_path}")
+
+    # ── Multi-portfolio views ─────────────────────────────────────────────────
+    ptf_path = _os.path.join(run_dir, "multi_portfolio_views.xlsx")
+    portfolios_file = _os.path.join(_os.path.dirname(_os.path.dirname(__file__)),
+                                    "config", "portfolios.xlsx")
+    if _os.path.exists(portfolios_file):
+        try:
+            portfolios = load_portfolio_configs(portfolios_file)
+            build_multi_portfolio_report(results["scorecard"], portfolios, ptf_path)
+        except Exception as exc:
+            print(f"  Multi-portfolio  -> SKIPPED ({exc})")
+    else:
+        print(f"  Multi-portfolio  -> SKIPPED (config/portfolios.xlsx not found)")
+
     print(f"\n  All outputs in: {run_dir}")
 
 

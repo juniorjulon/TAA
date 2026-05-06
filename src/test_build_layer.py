@@ -82,10 +82,10 @@ check("sheet names", lambda: (
     else (_ for _ in ()).throw(AssertionError(f"Got: {names}"))
 )[-1])
 
-check("AssetClasses: 12 rows", lambda: (
+check("AssetClasses: 10 rows", lambda: (
     wb := _load_wb(),
     rows := _sheet_rows(wb, "AssetClasses"),
-    None if len(rows) == 12 else (_ for _ in ()).throw(AssertionError(f"Got {len(rows)} rows"))
+    None if len(rows) == 10 else (_ for _ in ()).throw(AssertionError(f"Got {len(rows)} rows"))
 )[-1])
 
 check("DataSeries: >= 80 rows", lambda: (
@@ -95,7 +95,7 @@ check("DataSeries: >= 80 rows", lambda: (
     else (_ for _ in ()).throw(AssertionError(f"Got {len(rows)} rows"))
 )[-1])
 
-check("PillarWeights: 12 rows, each sums to 1.0", lambda: (
+check("PillarWeights: 10 rows, each sums to 1.0", lambda: (
     wb := _load_wb(),
     ws := wb["PillarWeights"],
     hdrs := [c.value for c in ws[1]],
@@ -109,12 +109,14 @@ check("PillarWeights: 12 rows, each sums to 1.0", lambda: (
     ] or f"{len(rows)} rows, all sum to 1.0"
 )[-1])
 
-check("SignalMapping: >= 150 rows", lambda: (
+check("SignalMapping: >= 100 rows", lambda: (
     wb := _load_wb(),
     rows := _sheet_rows(wb, "SignalMapping"),
-    f"{len(rows)} rows" if len(rows) >= 150
+    f"{len(rows)} rows" if len(rows) >= 100
     else (_ for _ in ()).throw(AssertionError(f"Got {len(rows)} rows"))
 )[-1])
+
+# (replaced above with >= 100 check)
 
 check("PillarNotes: >= 48 rows", lambda: (
     wb := _load_wb(),
@@ -135,84 +137,74 @@ check("AssetClasses: FI and EQ groups present", lambda: (
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. BUILD MARKERS IN index.html
+# 3. index.html CONTENT CHECKS
 # ─────────────────────────────────────────────────────────────────────────────
+# Note: index.html is now generated as a complete file by generate_dashboard.py
+# (no BUILD markers). Content is verified by checking key JS constants.
 print(HEAD)
-print("3. BUILD MARKERS IN index.html")
+print("3. index.html CONTENT CHECKS")
 print(HEAD)
-
-EXPECTED_HTML_MARKERS = [
-    "BUILD:SIG_MATRIX_START",
-    "BUILD:SIG_MATRIX_END",
-    "BUILD:AC_META_START",
-    "BUILD:AC_META_END",
-    "BUILD:FI_BLUEPRINT_START",
-    "BUILD:FI_BLUEPRINT_END",
-    "BUILD:EQ_BLUEPRINT_START",
-    "BUILD:EQ_BLUEPRINT_END",
-    "BUILD:AC_LABEL_PW_START",
-    "BUILD:AC_LABEL_PW_END",
-]
 
 def _read_html():
     with open(os.path.join(ROOT, "index.html"), "r", encoding="utf-8") as f:
         return f.read()
 
-for marker in EXPECTED_HTML_MARKERS:
-    check(f"marker present: {marker}", lambda m=marker: (
-        None if f"<<<{m}>>>" in _read_html()
-        else (_ for _ in ()).throw(AssertionError(f"<<<{m}>>> not found in index.html"))
-    ))
+check("index.html exists and non-empty", lambda: (
+    html := _read_html(),
+    None if len(html) > 100_000 else (_ for _ in ()).throw(AssertionError(f"Too small: {len(html)}"))
+)[-1])
 
-def _extract_block(html, start_m, end_m):
-    s = f"<<<BUILD:{start_m}>>>"
-    e = f"<<<BUILD:{end_m}>>>"
-    if s not in html or e not in html:
-        return ""
-    after = html[html.index(s) + len(s):]
-    after = after[after.index("\n") + 1:] if "\n" in after else after
-    before = after[:after.index(e)]
-    if "\n" in before:
-        before = before[:before.rindex("\n")]
-    return before
+check("index.html has SIG_MATRIX constant", lambda: (
+    None if "const SIG_MATRIX=" in _read_html()
+    else (_ for _ in ()).throw(AssertionError("SIG_MATRIX not found"))
+))
 
-def _extract_meta(html):
-    s = "<<<BUILD:AC_META_START>>>"
-    e = "<<<BUILD:AC_META_END>>>"
-    if s not in html or e not in html:
-        return ""
-    return html[html.index(s):html.index(e) + len(e)]
+check("index.html has FI_BLUEPRINT constant", lambda: (
+    None if "const FI_BLUEPRINT" in _read_html()
+    else (_ for _ in ()).throw(AssertionError("FI_BLUEPRINT not found"))
+))
+
+check("index.html has EQ_BLUEPRINT constant", lambda: (
+    None if "const EQ_BLUEPRINT" in _read_html()
+    else (_ for _ in ()).throw(AssertionError("EQ_BLUEPRINT not found"))
+))
+
+check("index.html has correct PW weights (money_market V=0.50)", lambda: (
+    html := _read_html(),
+    None if "V:0.50" in html
+    else (_ for _ in ()).throw(AssertionError("PW pillar weights appear to be equal (all 0.25)"))
+)[-1])
 
 check("FI_BLUEPRINT contains 5 AC blocks", lambda: (
     html := _read_html(),
-    block := _extract_block(html, "FI_BLUEPRINT_START", "FI_BLUEPRINT_END"),
-    count := block.count("pillars:{"),
+    m := re.search(r"const FI_BLUEPRINT\s*=\s*\[(.*?)\];", html, re.DOTALL),
+    count := m.group(1).count("pillars:{") if m else 0,
     f"{count} blocks" if count == 5
-    else (_ for _ in ()).throw(AssertionError(f"Expected 5, got {count} in FI section"))
+    else (_ for _ in ()).throw(AssertionError(f"Expected 5, got {count} in FI_BLUEPRINT"))
 )[-1])
 
-check("EQ_BLUEPRINT has entries for US/DM/EM/China", lambda: (
+check("EQ_BLUEPRINT has entries for US/DM/EM equity ACs", lambda: (
     html := _read_html(),
-    None if all(kw in html for kw in ["US Equity", "DM ex-US", "EM Equity", "China Equity"])
+    None if all(kw in html for kw in ["US Equity", "DM ex-US", "Emerging Markets"])
     else (_ for _ in ()).throw(AssertionError("One or more EQ AC names missing"))
 )[-1])
 
-check("EQ_BLUEPRINT contains 7 AC blocks (all EQ ACs)", lambda: (
+check("EQ_BLUEPRINT contains 5 AC blocks (all EQ ACs)", lambda: (
     html := _read_html(),
-    block := _extract_block(html, "EQ_BLUEPRINT_START", "EQ_BLUEPRINT_END"),
-    count := block.count("pillars:{"),
-    f"{count} blocks" if count == 7
-    else (_ for _ in ()).throw(AssertionError(f"Expected 7, got {count}"))
+    m := re.search(r"const EQ_BLUEPRINT\s*=\s*\[(.*?)\];", html, re.DOTALL),
+    count := m.group(1).count("pillars:{") if m else 0,
+    f"{count} blocks" if count == 5
+    else (_ for _ in ()).throw(AssertionError(f"Expected 5, got {count} in EQ_BLUEPRINT"))
 )[-1])
 
-check("AC_SHORT contains all 12 ac_id keys", lambda: (
+check("AC_ORDER contains all 10 ac_id keys", lambda: (
     html := _read_html(),
-    meta := _extract_meta(html),
-    ids_found := set(re.findall(r"\b(money_market|short_term_fi|lt_treasuries|lt_us_corp|lt_em_fi|"
-                                r"us_equity|us_growth|us_value|dm_equity|em_equity|em_xchina|china_equity)\b", meta)),
-    f"{len(ids_found)} unique AC ids" if len(ids_found) == 12
-    else (_ for _ in ()).throw(AssertionError(f"Found {ids_found}, missing: {set(['money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi','us_equity','us_growth','us_value','dm_equity','em_equity','em_xchina','china_equity']) - ids_found}"))
-
+    m := re.search(r"const AC_ORDER=\[(.*?)\]", html, re.DOTALL),
+    ids_found := set(re.findall(r"'([a-z_]+)'", m.group(1))) if m else set(),
+    expected := {'money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi',
+                 'us_equity','us_growth','us_value','dm_equity','em_equity'},
+    f"{len(ids_found)} unique AC ids" if ids_found == expected
+    else (_ for _ in ()).throw(AssertionError(f"Mismatch: extra={ids_found-expected}, missing={expected-ids_found}"))
 )[-1])
 
 
@@ -242,19 +234,19 @@ for marker in EXPECTED_PY_MARKERS:
         else (_ for _ in ()).throw(AssertionError(f"<<<{m}>>> not found in config.py"))
     ))
 
-check("config.py ASSET_CLASSES has 12 entries", lambda: (
+check("config.py ASSET_CLASSES has 10 entries", lambda: (
     cfg := _read_config(),
     m := re.search(r"ASSET_CLASSES\s*=\s*\[([^\]]+)\]", cfg, re.DOTALL),
     count := len(re.findall(r'"[a-z_]+"', m.group(1))) if m else 0,
-    f"{count} entries" if count == 12
-    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 12"))
+    f"{count} entries" if count == 10
+    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 10"))
 )[-1])
 
-check("config.py PILLAR_WEIGHTS has 12 entries", lambda: (
+check("config.py PILLAR_WEIGHTS has 10 entries", lambda: (
     cfg := _read_config(),
     count := len(re.findall(r'"[a-z_]+":\s*\{"F":', cfg)),
-    f"{count} entries" if count == 12
-    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 12"))
+    f"{count} entries" if count == 10
+    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 10"))
 )[-1])
 
 
@@ -297,14 +289,14 @@ check("render_fi_blueprint() produces 5 AC blocks", lambda: (
     else (_ for _ in ()).throw(AssertionError(f"Expected 5 FI AC blocks, got {count}"))
 )[-1])
 
-check("render_eq_blueprint() produces 7 AC blocks (all EQ ACs)", lambda: (
+check("render_eq_blueprint() produces 5 AC blocks (all EQ ACs)", lambda: (
     sys.path.insert(0, HERE),
     bd := sys.modules.get("build_dashboard") or __import__("build_dashboard"),
     cfg := bd.load_config(),
     js := bd.render_eq_blueprint(cfg),
     count := js.count("pillars:{"),
-    f"{count} pillar blocks" if count == 7
-    else (_ for _ in ()).throw(AssertionError(f"Expected 7 EQ AC blocks, got {count}"))
+    f"{count} pillar blocks" if count == 5
+    else (_ for _ in ()).throw(AssertionError(f"Expected 5 EQ AC blocks, got {count}"))
 )[-1])
 
 
@@ -339,12 +331,11 @@ check("docx contains key section headings", lambda: (
     else (_ for _ in ()).throw(AssertionError(f"Missing headings: {missing}"))
 )[-1])
 
-check("docx mentions all 12 asset class full names", lambda: (
+check("docx mentions all 10 asset class full names", lambda: (
     from_docx := _check_docx(),
     text := " ".join(from_docx),
     expected := ["Money Market","Short-Term Fixed Income","LT US Treasuries","LT US Corporate",
-                 "LT EM Fixed Income","US Equity","US Growth","US Value",
-                 "DM ex-US","Emerging Markets","EM ex-China","China Equity"],
+                 "LT EM","US Equity","US Growth","US Value","DM ex-US","Emerging Markets"],
     missing := [n for n in expected if n not in text],
     None if not missing
     else (_ for _ in ()).throw(AssertionError(f"Missing AC names: {missing}"))
