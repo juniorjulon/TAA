@@ -102,12 +102,13 @@ def build_custom_series(verbose: bool = True) -> pd.DataFrame:
 
     # ── GDP Blends ────────────────────────────────────────────────────────────
 
-    series["gdp_us"]    = _blended_gdp(_safe(f1, "gdp_us_cur"),    _safe(f1, "gdp_us_nxt"))
-    series["gdp_dm"]    = _blended_gdp(_safe(f1, "gdp_dm_cur"),    _safe(f1, "gdp_dm_nxt"))
-    series["gdp_em"]    = _blended_gdp(_safe(f1, "gdp_em_cur"),    _safe(f1, "gdp_em_nxt"))
-    series["gdp_eu"]    = _blended_gdp(_safe(f1, "gdp_eu_cur"),    _safe(f1, "gdp_eu_nxt"))
-    series["gdp_japan"] = _blended_gdp(_safe(f1, "gdp_japan_cur"), _safe(f1, "gdp_japan_nxt"))
-    series["gdp_china"] = _blended_gdp(_safe(f1, "gdp_china_cur"), _safe(f1, "gdp_china_nxt"))
+    # GDP blends — use renamed series (26 = current year, 27 = next year)
+    series["gdp_us"]    = _blended_gdp(_safe(f1, "gdp_forecast_us_26"),    _safe(f1, "gdp_forecast_us_27"))
+    series["gdp_dm"]    = _blended_gdp(_safe(f1, "gdp_forecast_dm_26"),    _safe(f1, "gdp_forecast_dm_27"))
+    series["gdp_em"]    = _blended_gdp(_safe(f1, "gdp_forecast_em_26"),    _safe(f1, "gdp_forecast_em_27"))
+    series["gdp_eu"]    = _blended_gdp(_safe(f1, "gdp_forecast_eu_26"),    _safe(f1, "gdp_forecast_eu_27"))
+    series["gdp_japan"] = _blended_gdp(_safe(f1, "gdp_forecast_jp_26"),    _safe(f1, "gdp_forecast_jp_27"))
+    series["gdp_china"] = _blended_gdp(_safe(f1, "gdp_forecast_cn_26"),    _safe(f1, "gdp_forecast_cn_27"))
 
     # ── Rate Environment ──────────────────────────────────────────────────────
 
@@ -120,14 +121,16 @@ def build_custom_series(verbose: bool = True) -> pd.DataFrame:
     tips_10y  = _safe(tsy, "tips_10y")
     tips_5y   = _safe(tsy, "tips_5y")
 
-    # Modern TED = 3M T-bill − SOFR (already computed in load_tsy)
+    # Modern TED = 3M T-bill − SOFR (SOFR inception: 2018-04-01).
+    # Gate to 2018-04-01 to avoid NaN padding warping the EWMA warm-up.
+    # EWMA reliable_from = 2018-04-01 + 756 days ≈ 2020-12-01.
     modern_ted_loaded = _safe(tsy, "modern_ted")
     if not modern_ted_loaded.dropna().empty:
-        series["modern_ted"] = modern_ted_loaded
+        series["modern_ted"] = modern_ted_loaded["2018-04-01":]
     elif not tbill_3m.dropna().empty and not sofr.dropna().empty:
         idx = tbill_3m.index.union(sofr.index)
-        series["modern_ted"] = (tbill_3m.reindex(idx).ffill() -
-                                sofr.reindex(idx).ffill()).dropna()
+        ted = (tbill_3m.reindex(idx).ffill() - sofr.reindex(idx).ffill()).dropna()
+        series["modern_ted"] = ted["2018-04-01":]
 
     # Real Fed Funds = FDTR − PCE YoY (monthly → ffill 35 days)
     if not fedrate.dropna().empty and not pce_yoy.dropna().empty:

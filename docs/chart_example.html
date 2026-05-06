@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISM Manufacturing PMI</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0e1117;
+    --surface: #161b24;
+    --border: #1f2937;
+    --text-primary: #e8eaf0;
+    --text-secondary: #6b7585;
+    --text-accent: #cbd5e1;
+    --line-color: #e05252;
+    --fill-start: rgba(224, 82, 82, 0.35);
+    --fill-end: rgba(224, 82, 82, 0.0);
+    --hover-line: rgba(203, 213, 225, 0.35);
+    --dot-color: #e05252;
+    --dot-ring: rgba(224, 82, 82, 0.25);
+    --tag-bg: rgba(224, 82, 82, 0.15);
+    --tag-border: rgba(224, 82, 82, 0.4);
+    --grid: rgba(255,255,255,0.04);
+    --toggle-bg: #1f2937;
+    --toggle-thumb: #4b5563;
+    --label: #8b97a8;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --border: #e2e5eb;
+    --text-primary: #1e2535;
+    --text-secondary: #8896a7;
+    --text-accent: #3d4a5e;
+    --line-color: #c0392b;
+    --fill-start: rgba(192, 57, 43, 0.18);
+    --fill-end: rgba(192, 57, 43, 0.0);
+    --hover-line: rgba(61, 74, 94, 0.3);
+    --dot-color: #c0392b;
+    --dot-ring: rgba(192, 57, 43, 0.2);
+    --tag-bg: rgba(192, 57, 43, 0.08);
+    --tag-border: rgba(192, 57, 43, 0.3);
+    --grid: rgba(0,0,0,0.04);
+    --toggle-bg: #dde1e9;
+    --toggle-thumb: #ffffff;
+    --label: #7a8899;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    transition: background 0.3s ease;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 680px;
+    padding: 24px 24px 20px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .country-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  /* Theme toggle */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-label {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .toggle {
+    width: 36px;
+    height: 20px;
+    background: var(--toggle-bg);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.3s;
+    border: 1px solid var(--border);
+  }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--toggle-thumb);
+    transition: transform 0.3s, background 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  [data-theme="light"] .toggle::after {
+    transform: translateX(16px);
+    background: var(--line-color);
+  }
+
+  /* Price display */
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 10px 0 18px;
+    min-height: 22px;
+  }
+
+  .price-main {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    transition: color 0.15s;
+  }
+
+  .price-change {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    color: var(--line-color);
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+  }
+
+  /* Chart */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    cursor: crosshair;
+  }
+
+  svg.chart {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .grid-line {
+    stroke: var(--grid);
+    stroke-width: 1;
+  }
+
+  .axis-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    fill: var(--label);
+    letter-spacing: 0.04em;
+  }
+
+  .area-fill {
+    transition: opacity 0.3s;
+  }
+
+  .line-path {
+    fill: none;
+    stroke: var(--line-color);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .hover-line {
+    stroke: var(--hover-line);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hover-dot {
+    fill: var(--dot-color);
+    r: 4;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px var(--dot-color));
+  }
+
+  .hover-dot-ring {
+    fill: none;
+    stroke: var(--dot-color);
+    stroke-width: 1;
+    r: 8;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hover-overlay {
+    fill: transparent;
+    cursor: crosshair;
+  }
+
+  /* Date labels */
+  .date-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+
+  .date-lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--label);
+    letter-spacing: 0.04em;
+  }
+
+  /* Timeframe pills */
+  .timeframes {
+    display: flex;
+    gap: 2px;
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .tf {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  .tf:hover { color: var(--text-primary); background: var(--border); }
+  .tf.active {
+    color: var(--line-color);
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    font-weight: 500;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .stat-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .trend-up {
+    color: #4ade80;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .divider { width: 1px; height: 14px; background: var(--border); }
+
+  /* Tooltip date */
+  .tooltip-date {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.1s;
+    top: -4px;
+    transform: translateX(-50%);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div>
+      <div class="country-tag">US</div>
+      <div class="chart-title">ISM Manufacturing PMI</div>
+    </div>
+    <div class="toggle-wrap" onclick="toggleTheme()">
+      <span class="toggle-label" id="theme-lbl">Dark</span>
+      <div class="toggle"></div>
+    </div>
+  </div>
+
+  <div class="price-row">
+    <span class="price-main" id="price-display">154.94</span>
+    <span class="price-change" id="change-display">+0.01%</span>
+  </div>
+
+  <div class="chart-wrap" id="chartWrap">
+    <svg class="chart" id="chartSvg" viewBox="0 0 640 180" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--line-color)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--line-color)" stop-opacity="0"/>
+        </linearGradient>
+        <clipPath id="chartClip">
+          <rect x="0" y="0" width="640" height="170"/>
+        </clipPath>
+      </defs>
+
+      <!-- Grid lines -->
+      <line class="grid-line" x1="0" y1="42" x2="640" y2="42"/>
+      <line class="grid-line" x1="0" y1="84" x2="640" y2="84"/>
+      <line class="grid-line" x1="0" y1="126" x2="640" y2="126"/>
+      <line class="grid-line" x1="0" y1="168" x2="640" y2="168"/>
+
+      <!-- Y axis labels -->
+      <text class="axis-label" x="2" y="39" text-anchor="start">156</text>
+      <text class="axis-label" x="2" y="81" text-anchor="start">154</text>
+      <text class="axis-label" x="2" y="123" text-anchor="start">152</text>
+      <text class="axis-label" x="2" y="165" text-anchor="start">150</text>
+
+      <!-- Area and line -->
+      <g clip-path="url(#chartClip)">
+        <path id="areaPath" class="area-fill" fill="url(#areaGrad)"/>
+        <path id="linePath" class="line-path"/>
+      </g>
+
+      <!-- Hover elements -->
+      <line class="hover-line" id="hoverLine" x1="0" y1="0" x2="0" y2="170"/>
+      <circle class="hover-dot-ring" id="hoverRing" cx="0" cy="0"/>
+      <circle class="hover-dot" id="hoverDot" cx="0" cy="0"/>
+
+      <!-- Overlay for events -->
+      <rect class="hover-overlay" id="hoverOverlay" x="0" y="0" width="640" height="170"/>
+    </svg>
+    <div class="tooltip-date" id="tooltipDate"></div>
+  </div>
+
+  <div class="date-row">
+    <span class="date-lbl">May 4</span>
+    <span class="date-lbl">May 5</span>
+    <span class="date-lbl">May 6</span>
+  </div>
+
+  <div class="timeframes">
+    <div class="tf">1D</div>
+    <div class="tf active">5D</div>
+    <div class="tf">1M</div>
+    <div class="tf">6M</div>
+    <div class="tf">YTD</div>
+    <div class="tf">1Y</div>
+    <div class="tf">5Y</div>
+    <div class="tf">MAX</div>
+  </div>
+
+  <div class="footer">
+    <div class="stat">
+      <span class="stat-key">Latest</span>
+      <span class="stat-val">52.7</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">Trend</span>
+      <span class="trend-up">↑</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">Z</span>
+      <span class="stat-val" style="color: var(--line-color)">+1.30</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const rawData = [
+  152.3, 152.1, 151.8, 151.5, 151.9, 152.4, 152.0, 151.7, 151.4, 151.2,
+  151.0, 150.8, 150.5, 150.3, 150.1, 150.4, 150.7, 151.0, 151.3, 151.1,
+  150.9, 150.7, 150.6, 150.8, 151.1, 151.4, 151.2, 151.0, 150.8, 150.6,
+  150.4, 150.2, 150.0, 150.3, 150.6, 150.8, 151.0, 151.3, 151.5, 151.8,
+  152.0, 152.2, 152.1, 151.9, 151.7, 151.5, 151.8, 152.1, 152.3, 152.5,
+  152.4, 152.2, 152.0, 151.9, 152.1, 152.4, 152.7, 152.5, 152.3, 152.1,
+  152.4, 152.7, 153.0, 152.8, 152.6, 152.4, 152.2, 152.5, 152.8, 153.0,
+  153.3, 153.5, 153.3, 153.1, 152.9, 152.7, 152.5, 152.8, 153.1, 153.4,
+  153.6, 153.5, 153.3, 153.2, 153.0, 153.3, 153.6, 153.9, 154.2, 154.5,
+  154.3, 154.1, 153.9, 153.7, 154.0, 154.3, 154.6, 154.8, 154.94
+];
+
+const SVG_W = 640, SVG_H = 170;
+const PAD_L = 28, PAD_R = 8, PAD_T = 6, PAD_B = 8;
+
+const minVal = 149.5, maxVal = 156;
+
+function scaleX(i) {
+  return PAD_L + (i / (rawData.length - 1)) * (SVG_W - PAD_L - PAD_R);
+}
+function scaleY(v) {
+  return PAD_T + (1 - (v - minVal) / (maxVal - minVal)) * (SVG_H - PAD_T - PAD_B);
+}
+
+function buildPath() {
+  return rawData.map((v, i) => `${i === 0 ? 'M' : 'L'}${scaleX(i).toFixed(2)},${scaleY(v).toFixed(2)}`).join(' ');
+}
+
+function buildArea() {
+  const line = buildPath();
+  const lastX = scaleX(rawData.length - 1).toFixed(2);
+  const firstX = scaleX(0).toFixed(2);
+  const bottom = (SVG_H - PAD_B).toFixed(2);
+  return `${line} L${lastX},${bottom} L${firstX},${bottom} Z`;
+}
+
+document.getElementById('linePath').setAttribute('d', buildPath());
+document.getElementById('areaPath').setAttribute('d', buildArea());
+
+// ── Hover interaction ─────────────────────────────────────────────────────
+const overlay    = document.getElementById('hoverOverlay');
+const hoverLine  = document.getElementById('hoverLine');
+const hoverDot   = document.getElementById('hoverDot');
+const hoverRing  = document.getElementById('hoverRing');
+const priceDisp  = document.getElementById('price-display');
+const changeDisp = document.getElementById('change-display');
+const tooltipDate = document.getElementById('tooltipDate');
+const chartWrap  = document.getElementById('chartWrap');
+
+const baseVal = rawData[0];
+let isHovering = false;
+
+const dates = [];
+const startMs = new Date('2026-05-04T09:30:00').getTime();
+const endMs   = new Date('2026-05-06T11:35:00').getTime();
+for (let i = 0; i < rawData.length; i++) {
+  const t = new Date(startMs + (endMs - startMs) * (i / (rawData.length - 1)));
+  dates.push(t);
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const h = d.getHours(), m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hh = h % 12 || 12;
+  const mm = m.toString().padStart(2, '0');
+  return `${months[d.getMonth()]} ${d.getDate()}, ${hh}:${mm} ${ampm} UTC-4`;
+}
+
+overlay.addEventListener('mousemove', (e) => {
+  const rect = document.getElementById('chartSvg').getBoundingClientRect();
+  const svgX = ((e.clientX - rect.left) / rect.width) * SVG_W;
+
+  const idx = Math.round((svgX - PAD_L) / (SVG_W - PAD_L - PAD_R) * (rawData.length - 1));
+  const clampedIdx = Math.max(0, Math.min(rawData.length - 1, idx));
+
+  const cx = scaleX(clampedIdx);
+  const cy = scaleY(rawData[clampedIdx]);
+  const val = rawData[clampedIdx];
+  const pct = (((val - baseVal) / baseVal) * 100).toFixed(2);
+  const sign = pct >= 0 ? '+' : '';
+
+  hoverLine.setAttribute('x1', cx); hoverLine.setAttribute('x2', cx);
+  hoverDot.setAttribute('cx', cx); hoverDot.setAttribute('cy', cy);
+  hoverRing.setAttribute('cx', cx); hoverRing.setAttribute('cy', cy);
+
+  hoverLine.style.opacity = '1';
+  hoverDot.style.opacity  = '1';
+  hoverRing.style.opacity = '0.5';
+
+  priceDisp.textContent  = val.toFixed(2);
+  changeDisp.textContent = `${sign}${pct}%`;
+
+  // Tooltip date
+  const wrapRect = chartWrap.getBoundingClientRect();
+  const relX = e.clientX - wrapRect.left;
+  tooltipDate.style.left   = relX + 'px';
+  tooltipDate.style.top    = (SVG_H + 8) + 'px';
+  tooltipDate.textContent  = formatDate(dates[clampedIdx]);
+  tooltipDate.style.opacity = '1';
+});
+
+overlay.addEventListener('mouseleave', () => {
+  hoverLine.style.opacity  = '0';
+  hoverDot.style.opacity   = '0';
+  hoverRing.style.opacity  = '0';
+  tooltipDate.style.opacity = '0';
+  priceDisp.textContent  = '154.94';
+  changeDisp.textContent = '+0.01%';
+});
+
+// ── Theme toggle ──────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-lbl').textContent = isDark ? 'Light' : 'Dark';
+}
+
+// ── Timeframe pills ───────────────────────────────────────────────────────
+document.querySelectorAll('.tf').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.tf').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

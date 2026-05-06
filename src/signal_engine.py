@@ -32,7 +32,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from openpyxl import load_workbook
-from config import CONFIG_XLSX, EXCEL_PATH, CUSTOM_SERIES_PATH, EWMA_SPAN, WINDOWS
+from config import CONFIG_XLSX, EXCEL_PATH, CUSTOM_SERIES_PATH, EWMA_SPAN, WINDOWS, MIN_DATE_FOR_SIGNALS
 from signals import (ewma_zscore, rolling_zscore, pctile_rank,
                      composite_price_momentum)
 from data_loader import load_raw_sheet
@@ -346,6 +346,9 @@ class SignalEngine:
 
                 z = _apply_transform(raw, transform_code, window, sid,
                                      self._mom_config)
+                # Enforce global signal floor: drop unreliable EWMA warm-up period
+                if MIN_DATE_FOR_SIGNALS:
+                    z = z[z.index >= MIN_DATE_FOR_SIGNALS]
                 if not z.dropna().empty:
                     signals[sid] = z
                     if verbose:

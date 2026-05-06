@@ -107,6 +107,8 @@ def compute_momentum_components(price: pd.Series, n: int = MAX_ROWS) -> dict:
     """
     Compute individual momentum z-score components for a price series.
     Returns dict keyed by component name, each as _ser() output.
+    Also includes 'price_pct' — cumulative % return from first data point
+    (normalized to 0 at start) for display alongside the z-score metrics.
     """
     if price is None or price.dropna().shape[0] < 63:
         return {}
@@ -130,6 +132,13 @@ def compute_momentum_components(price: pd.Series, n: int = MAX_ROWS) -> dict:
         out["ma_dist"]  = _ser(ewma_zscore((ma50 - ma200) / ma200.replace(0, np.nan)).tail(n))
     if len(px) >= 14 + 20:
         out["rsi"]      = _ser(ewma_zscore(_rsi_signal(px)).tail(n))
+
+    # Price level as cumulative % return from first point (for visual overlay)
+    px_tail = px.tail(n)
+    base    = float(px_tail.iloc[0])
+    if base > 0:
+        pct_return = ((px_tail / base) - 1) * 100
+        out["price_pct"] = _ser(pct_return)
 
     return out
 
@@ -190,26 +199,26 @@ def _blended_gdp_revision(f1: pd.DataFrame, cur_col: str, nxt_col: str) -> pd.Se
 # MAIN EXTRACTOR
 # ─────────────────────────────────────────────────────────────────────────────
 
-def compute_fundamentals_heatmap(data: dict, n_months: int = 24) -> dict:
+def compute_pmi_heatmap(data: dict, start_year: int = 2023) -> dict:
     """
-    Monthly z-score heatmap for Chartbook: Fundamentals — US focus (v4).
+    PMI & Leading Indicators heatmap — MONTHLY columns grouped by Quarter/Year.
+
+    Format matches LGT Capital Partners reference:
+      - Columns: Year → Quarter (Q1/Q2/Q3/Q4) → Month (J/F/M/A/M/J/J/A/S/O/N/D)
+      - Colors: independent per row (each row normalized on its own range)
+      - PMI rows: threshold at 50 (green=expansion, red=contraction)
+      - Non-PMI rows: percentile rank within own history for color intensity
 
     Series included:
-      pmi_us       : PMI US Composite (ISM Mfg + Svcs avg)
-      ism_no_inv   : ISM New Orders / Inventories ratio (>1 = demand expanding)
-      gdp_2026     : US GDP 2026 consensus forecast (Bloomberg ECGDUS 27 — next year expectations)
-      eps_rev_us   : US Corp EPS Revision Composite (40% 3M + 60% 6M)
-      gdpnow       : Atlanta Fed GDPNow US real-time forecast
-      fci_us       : Bloomberg US Financial Conditions Index (tight = negative for risk)
-      nfci         : Chicago Fed National Financial Conditions Index (tight = negative)
-
-    Returns JSON-serializable dict with monthly z-scores for the last n_months.
+      PMI:        Global, US (mfg/svcs), Eurozone (mfg/svcs), China (mfg/svcs), Japan, UK
+      US context: ISM N.O./Inv ratio, GDP 2026 expectations, Corp EPS revision,
+                  Atlanta Fed GDPNow, Bloomberg US FCI, Chicago Fed NFCI
     """
     f1  = data.get("f1",  pd.DataFrame())
     mkt = data.get("mkt", pd.DataFrame())
     h7  = data.get("h7",  pd.DataFrame())
 
-    # Load custom series for PMI composite and EPS revision
+    # Load custom series for EPS revision
     custom = pd.DataFrame()
     if os.path.exists(CUSTOM_SERIES_PATH):
         try:
@@ -219,68 +228,153 @@ def compute_fundamentals_heatmap(data: dict, n_months: int = 24) -> dict:
             pass
 
     def _gs(df, col):
-        """Get series safely."""
         if df is not None and not df.empty and col in df.columns:
             s = df[col].dropna()
-            return s if len(s) >= 20 else None
+            return s if len(s) >= 6 else None
         return None
 
-    # Series definitions: (raw_series, label, direction_for_display)
-    # direction: +1 = high value is bullish/positive; -1 = high value is bearish
-    SERIES = [
-        ("pmi_us",     _gs(custom, "pmi_us"),          "PMI US Composite",               +1),
-        ("ism_no_inv", _gs(f1,     "ism_new_ord_inv"),  "ISM New Orders/Inventories",     +1),
-        ("gdp_2026",   _gs(f1,     "gdp_us_nxt"),       "US GDP 2026 Expectations",       +1),
-        ("eps_rev_us", _gs(custom, "eps_rev_us"),       "US Corp EPS Revision",           +1),
-        ("gdpnow",     _gs(h7,     "gdpnow"),           "Atlanta Fed GDPNow",             +1),
-        ("fci_us",     _gs(mkt,    "fci"),              "Bloomberg US FCI (inverted)",     -1),
-        ("nfci",       _gs(h7,     "nfci"),             "Chicago Fed NFCI (inverted)",     -1),
+    # Build monthly date range: from start_year-01-01 to latest available data
+    today = pd.Timestamp.today()
+    months = pd.date_range(
+        start=pd.Timestamp(start_year, 1, 1),
+        end=today,
+        freq="ME"
+    )
+
+    def _mvals(s, months):
+        """Extract last available value in each month. Returns list of floats or None."""
+        if s is None or s.empty:
+            return [None] * len(months)
+        sm = s.resample("ME").last()
+        out = []
+        for m in months:
+            matches = sm[(sm.index.year == m.year) & (sm.index.month == m.month)]
+            if len(matches) > 0:
+                v = float(matches.iloc[0])
+                out.append(round(v, 3) if not np.isnan(v) else None)
+            else:
+                out.append(None)
+        return out
+
+    def _pctile_within_row(values):
+        """For each value, compute its percentile rank within the row's own non-null values.
+        Returns list of 0-1 floats (or None). Used for independent per-row color scaling."""
+        valid = [v for v in values if v is not None]
+        if len(valid) < 3:
+            return [None] * len(values)
+        mn, mx = min(valid), max(valid)
+        rng = mx - mn
+        if rng < 1e-9:
+            return [0.5 if v is not None else None for v in values]
+        return [round((v - mn) / rng, 3) if v is not None else None for v in values]
+
+    # ── Row definitions ────────────────────────────────────────────────────────
+    # color_mode: "threshold" = fixed midpoint (PMI=50, ratio=1.0)
+    #             "percentile" = normalized within own row history
+    # invert: True means HIGH value = RED (e.g. tight FCI = bad)
+    rows_def = [
+        # ── PMI: Global & United States ────────────────────────────────────────
+        ("header", "PMI — Global"),
+        ("threshold", "Global Manufacturing PMI",  _gs(f1, "pmi_global_mfg"),        50.0, False),
+        ("header", "PMI — United States"),
+        ("threshold", "ISM Manufacturing PMI",     _gs(f1, "pmi_ism_mfg"),           50.0, False),
+        ("threshold", "ISM Services PMI",          _gs(f1, "pmi_ism_svcs"),          50.0, False),
+        ("threshold", "ISM N.O. / Inventories",    _gs(f1, "ism_new_ord_inv"),        1.0, False),
+        # ── US Macro & Financial Conditions ────────────────────────────────────
+        ("header", "US — Macro & Financial Conditions"),
+        ("percentile", "GDP 2026 Expectations (%)", _gs(f1, "gdp_forecast_us_27"),   None, False),
+        ("percentile", "Atlanta Fed GDPNow (%)",    _gs(h7, "gdpnow"),               None, False),
+        ("percentile", "Corp EPS Revision Composite", _gs(custom, "eps_rev_us"),     None, False),
+        ("percentile", "Bloomberg US FCI",          _gs(mkt, "fci"),                 None, True),
+        ("percentile", "Chicago Fed NFCI",          _gs(h7, "nfci"),                 None, True),
+        # ── PMI: Eurozone, China, Japan & UK ───────────────────────────────────
+        ("header", "PMI — Eurozone"),
+        ("threshold", "Eurozone Manufacturing PMI", _gs(f1, "pmi_ez_mfg"),           50.0, False),
+        ("threshold", "Eurozone Services PMI",      _gs(f1, "pmi_ez_svcs"),          50.0, False),
+        ("header", "PMI — China"),
+        ("threshold", "China Manufacturing (Caixin)",_gs(f1, "pmi_china_mfg"),       50.0, False),
+        ("threshold", "China Services (Caixin)",    _gs(f1, "pmi_china_svcs"),       50.0, False),
+        ("header", "PMI — Japan & UK"),
+        ("threshold", "Japan Manufacturing PMI",    _gs(f1, "pmi_japan_mfg"),        50.0, False),
+        ("threshold", "UK Manufacturing PMI",       _gs(f1, "pmi_uk_mfg"),           50.0, False),
     ]
 
-    # Target monthly dates: last n_months (end of month)
-    today = pd.Timestamp.today().normalize()
-    monthly_dates = pd.date_range(end=today, periods=n_months, freq="ME")
+    # Build column metadata (3 levels: year → quarter → month)
+    MONTH_SHORT = ["J","F","M","A","M","J","J","A","S","O","N","D"]
+    MONTH_FULL  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    QTR_MONTHS  = {1:[1,2,3], 2:[4,5,6], 3:[7,8,9], 4:[10,11,12]}
 
-    result = {
-        "series_meta": [],
-        "dates":       [d.strftime("%Y-%m") for d in monthly_dates],
-        "zscores":     {},
-        "raw":         {},
-    }
-
-    for sid, raw_s, label, direction in SERIES:
-        result["series_meta"].append({
-            "id":        sid,
-            "label":     label,
-            "direction": direction,
+    col_meta = []   # [{year, quarter, month_short, month_full}]
+    for m in months:
+        col_meta.append({
+            "year":        m.year,
+            "quarter":     (m.month - 1) // 3 + 1,
+            "month_idx":   m.month,
+            "month_short": MONTH_SHORT[m.month - 1],
+            "month_full":  MONTH_FULL[m.month - 1],
         })
 
-        if raw_s is None or raw_s.empty:
-            result["zscores"][sid] = [None] * n_months
-            result["raw"][sid]     = [None] * n_months
-            continue
+    # Year group info (for colspan)
+    years_info = {}
+    for i, cm in enumerate(col_meta):
+        y = cm["year"]
+        if y not in years_info:
+            years_info[y] = {"year": y, "start_idx": i, "count": 0}
+        years_info[y]["count"] += 1
+    years_list = sorted(years_info.values(), key=lambda x: x["year"])
 
-        # Compute EWMA z-score (3Y span)
-        z = ewma_zscore(raw_s * direction, span=WINDOWS["long"])
+    # Quarter group info per year (for colspan)
+    qtr_info = []
+    seen = set()
+    for i, cm in enumerate(col_meta):
+        key = (cm["year"], cm["quarter"])
+        if key not in seen:
+            seen.add(key)
+            qtr_info.append({
+                "year": cm["year"],
+                "quarter": cm["quarter"],
+                "label": f"Q{cm['quarter']}",
+                "start_idx": i,
+                "count": 0,
+            })
+        qtr_info[-1]["count"] += 1
 
-        # Resample to monthly (last available value per month)
-        z_m   = z.resample("ME").last()
-        raw_m = raw_s.resample("ME").last()
+    # Build rows output
+    rows_out = []
+    for row_def in rows_def:
+        if row_def[0] == "header":
+            rows_out.append({"type": "header", "label": row_def[1]})
+        elif row_def[0] == "threshold":
+            _, label, raw_s, threshold, invert = row_def
+            vals = _mvals(raw_s, months)
+            rows_out.append({
+                "type":       "data",
+                "label":      label,
+                "color_mode": "threshold",
+                "threshold":  threshold,
+                "invert":     invert,
+                "values":     vals,
+            })
+        else:  # percentile
+            _, label, raw_s, _, invert = row_def
+            vals = _mvals(raw_s, months)
+            pcts = _pctile_within_row(vals)
+            rows_out.append({
+                "type":       "data",
+                "label":      label,
+                "color_mode": "percentile",
+                "invert":     invert,
+                "values":     vals,
+                "percentiles": pcts,
+            })
 
-        def _pick(series_m, d):
-            """Get closest monthly value; return None if gap > 45 days."""
-            if series_m.empty:
-                return None
-            idx = series_m.index.get_indexer([d], method="nearest")[0]
-            if abs((series_m.index[idx] - d).days) <= 45:
-                v = series_m.iloc[idx]
-                return round(float(v), 4) if not pd.isna(v) else None
-            return None
-
-        result["zscores"][sid] = [_pick(z_m,   d) for d in monthly_dates]
-        result["raw"][sid]     = [_pick(raw_m, d) for d in monthly_dates]
-
-    return result
+    return {
+        "col_meta":  col_meta,
+        "years":     years_list,
+        "quarters":  qtr_info,
+        "rows":      rows_out,
+        "subtitle":  "PMI, leading indicators & financial conditions · monthly data · colors independent per row",
+    }
 
 
 def build_chartbook_data() -> dict:
@@ -300,8 +394,8 @@ def build_chartbook_data() -> dict:
     fi  = data.get("fi_px",  pd.DataFrame())
     aaii_df = data.get("aaii", pd.DataFrame())
 
-    print("Extracting fundamentals heatmap...")
-    fundamentals_heatmap = compute_fundamentals_heatmap(data, n_months=24)
+    print("Extracting PMI heatmap...")
+    fundamentals_heatmap = compute_pmi_heatmap(data, start_year=2023)
 
     print("Extracting fundamentals...")
     # ── I. FUNDAMENTALS ────────────────────────────────────────────────────────

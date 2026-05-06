@@ -15,15 +15,15 @@
   --shadow-md:0 4px 12px rgba(16,24,40,.06);
 }
 :root, [data-theme="light"]{
-  --bg:#F4F6F8;--bg2:#FFFFFF;--bg3:#F7F9FB;--bg4:#EEF2F6;
+  --bg:#E8EDF5;--bg2:#FFFFFF;--bg3:#F0F4FA;--bg4:#E2E8F2;
   --text:#0E1420;--text2:#4B5668;--text3:#8A95A6;
   --brand:#00A968;--brand-dark:#008A56;--brand-tint:#E6F7EF;
   --blue:#3A7BD5;--teal:#14B8A6;--amber:#F59E0B;
   --purple:#8B5CF6;--green:#00A968;--red:#E11D48;--orange:#F97316;
   --pos:#00A968;--neg:#E11D48;--neut:#8A95A6;
   --pf:#00A968;--pm:#F59E0B;--ps:#8B5CF6;--pv:#3A7BD5;
-  --border:#E5EAF0;--border-strong:#D7DEE7;
-  --grid:rgba(16,24,40,.08);
+  --border:#D8E0EC;--border-strong:#C8D4E6;
+  --grid:rgba(16,24,40,.14);
   --chart-text:#4B5668;
   --sign-pos-bg:rgba(0,169,104,.12);--sign-pos-col:#00894F;--sign-pos-bd:rgba(0,169,104,.3);
   --sign-pos2-bg:rgba(0,169,104,.22);--sign-pos2-col:#00693E;--sign-pos2-bd:rgba(0,169,104,.45);
@@ -44,9 +44,9 @@
   --purple:#C084FC;--green:#22C55E;--red:#F87171;--orange:#FB923C;
   --pos:#22C55E;--neg:#F87171;--neut:#6B7A93;
   --pf:#2DD4BF;--pm:#FBBF24;--ps:#C084FC;--pv:#60A5FA;
-  --border:#1E2E47;--border-strong:#2A3E5F;
-  --grid:rgba(255,255,255,.06);
-  --chart-text:#8B9CC0;
+  --border:#243555;--border-strong:#344E72;
+  --grid:rgba(255,255,255,.14);
+  --chart-text:#A0B0C8;
   --sign-pos-bg:rgba(34,197,94,.15);--sign-pos-col:#4ADE80;--sign-pos-bd:rgba(34,197,94,.35);
   --sign-pos2-bg:rgba(34,197,94,.25);--sign-pos2-col:#86EFAC;--sign-pos2-bd:rgba(34,197,94,.5);
   --sign-neg-bg:rgba(248,113,113,.14);--sign-neg-col:#F87171;--sign-neg-bd:rgba(248,113,113,.35);
@@ -746,7 +746,10 @@ body{font-weight:400}
 <!-- ========== CHARTBOOK: Fundamentals ========== -->
 <section class="section" id="sec-cb-fund">
 <div class="page-header">
-  <div class="page-title">Chartbook · <span>I. Fundamentals</span></div>
+  <div>
+    <div class="page-title">Chartbook · <span>I. Fundamentals</span></div>
+    <div class="page-desc" style="margin-top:4px">Leading economic indicators: PMI activity indices (threshold 50 = expansion/contraction), CESI economic surprise indices, GDP consensus forecasts, and forward EPS growth. Charts show raw levels; footer shows latest reading, trend direction, and EWMA z-score vs 3Y history.</div>
+  </div>
 </div>
 <div class="content" id="cb-fund-content"></div>
 </section>
@@ -754,7 +757,10 @@ body{font-weight:400}
 <!-- ========== CHARTBOOK: Momentum ========== -->
 <section class="section" id="sec-cb-mom">
 <div class="page-header">
-  <div class="page-title">Chartbook · <span>II. Momentum</span></div>
+  <div>
+    <div class="page-title">Chartbook · <span>II. Momentum</span></div>
+    <div class="page-desc" style="margin-top:4px">Price momentum metrics normalized to z-score scale (EWMA, 3Y span). <strong>Metrics:</strong> Ret 1M (21d return), Ret 3M (63d), Ret 6M (126d), 12-1M (skip-month momentum, 252d−21d), MA Dist (MA50 vs MA200 distance), RSI (14d normalized). Grey shaded area = cumulative % return from start of window. A positive z-score across multiple horizons signals persistent trend strength.</div>
+  </div>
 </div>
 <div class="content" id="cb-mom-content"></div>
 </section>
@@ -762,7 +768,10 @@ body{font-weight:400}
 <!-- ========== CHARTBOOK: Sentiment ========== -->
 <section class="section" id="sec-cb-sent">
 <div class="page-header">
-  <div class="page-title">Chartbook · <span>III. Sentiment</span></div>
+  <div>
+    <div class="page-title">Chartbook · <span>III. Sentiment</span></div>
+    <div class="page-desc" style="margin-top:4px">Market sentiment indicators including volatility indices (VIX, MOVE, VSTOXX), funding stress (TED spread), positioning (AAII Bull-Bear), and financial conditions. Charts show raw levels with <strong>dashed percentile bands (25th/75th over 5Y window)</strong> — values above the 75th band signal elevated stress/euphoria historically. Footer shows latest value and z-score vs 5Y history.</div>
+  </div>
 </div>
 <div class="content" id="cb-sent-content"></div>
 </section>
@@ -770,7 +779,10 @@ body{font-weight:400}
 <!-- ========== CHARTBOOK: Valuation ========== -->
 <section class="section" id="sec-cb-val">
 <div class="page-header">
-  <div class="page-title">Chartbook · <span>IV. Valuation</span></div>
+  <div>
+    <div class="page-title">Chartbook · <span>IV. Valuation</span></div>
+    <div class="page-desc" style="margin-top:4px">Equity valuation (Forward P/E, ERP = Earnings Yield minus TIPS 10Y real rate), credit spread levels (OAS in bps), and yield curves. Charts show raw levels with <strong>dashed percentile bands (25th/75th over 5Y or 10Y window)</strong> for context. ERP above 4% is historically very attractive; OAS at the 75th band indicates cheap credit carry. Footer shows latest value and z-score.</div>
+  </div>
 </div>
 <div class="content" id="cb-val-content"></div>
 </section>
@@ -856,7 +868,7 @@ function ds(label,data,color,opts={}){
   return {label,data,borderColor:color,backgroundColor:opts.fill?color+'22':'transparent',
     borderWidth:opts.bw??1.5,pointRadius:0,pointHoverRadius:3,fill:opts.fill??false,tension:.3,...opts};
 }
-function sliceTF(arr,n){return arr?arr.slice(-n):arr}
+function sliceTF(arr,n){return arr?(n<=0?arr:arr.slice(-n)):arr}
 function sliceLast(dates,vals,n){return{d:sliceTF(dates,n),v:sliceTF(vals,n)}}
 
 // ── TF toggle helper ─────────────────────────────────────────────────────────
@@ -1754,9 +1766,10 @@ function mkChartCard(id, label, name, accent, height=160){
       <div><div class="chart-card-label" style="color:${accent}">${label}</div>
         <div class="chart-card-name">${name}</div></div>
       <div class="tf-btns">
-        <button class="tf-btn" onclick="tfClick(this,'${id}',21)">1M</button>
         <button class="tf-btn" onclick="tfClick(this,'${id}',63)">3M</button>
-        <button class="tf-btn active" onclick="tfClick(this,'${id}',252)">1Y</button>
+        <button class="tf-btn" onclick="tfClick(this,'${id}',252)">1Y</button>
+        <button class="tf-btn" onclick="tfClick(this,'${id}',756)">3Y</button>
+        <button class="tf-btn active" onclick="tfClick(this,'${id}',0)">MAX</button>
       </div>
     </div>
     <div class="chart-wrap" style="height:${height}px"><canvas id="${id}"></canvas></div>
@@ -1780,6 +1793,44 @@ function tfClick(btn,id,n){
 function registerChart(id,chart,dates,series){
   chart._fullData={dates,series};
   CHARTS[id]=chart;
+}
+
+// Compute Nth percentile from array of numbers
+function _pctile(arr, p){
+  const v=arr.filter(x=>x!==null&&!isNaN(x)).sort((a,b)=>a-b);
+  if(!v.length) return null;
+  const i=(p/100)*(v.length-1);
+  const lo=Math.floor(i), hi=Math.ceil(i);
+  return lo===hi ? v[lo] : v[lo]+(v[hi]-v[lo])*(i-lo);
+}
+
+// Add 25th/75th percentile reference bands to a chart as flat dashed datasets
+// windowLabel: e.g. "3Y" — shown in legend and footer
+function addPercentileBands(chart, values, windowLabel){
+  if(!chart||!values||!values.length) return;
+  const valid=values.filter(v=>v!==null&&!isNaN(v));
+  if(valid.length<10) return;
+  const p25=_pctile(valid,25), p75=_pctile(valid,75);
+  const n=chart.data.labels.length;
+  const flat25=Array(n).fill(p25), flat75=Array(n).fill(p75);
+  chart.data.datasets.push({
+    label:`25th pctile (${windowLabel})`,
+    data:flat25, borderColor:'rgba(255,171,0,.55)',
+    borderWidth:1.2, borderDash:[5,4], pointRadius:0, fill:false, tension:0
+  });
+  chart.data.datasets.push({
+    label:`75th pctile (${windowLabel})`,
+    data:flat75, borderColor:'rgba(100,210,120,.55)',
+    borderWidth:1.2, borderDash:[5,4], pointRadius:0, fill:false, tension:0
+  });
+  chart.update('none');
+}
+
+// Compute window label from n (number of days)
+function windowLabel(n){
+  if(n<=0) return 'full';
+  if(n<=63) return '3M'; if(n<=252) return '1Y'; if(n<=756) return '3Y';
+  return 'full';
 }
 function footer(id,val,trend,z){
   const el=document.getElementById(id+'-footer');
@@ -1841,32 +1892,36 @@ function buildCBFund(){
 
   el.innerHTML=h;
 
-  // PMI charts (show raw level with 50-line)
+  // PMI charts — raw level, 50-line as flat reference dataset, full history default
   function pmiChart(id, ser){
     if(!ser||!ser.dates||!ser.dates.length) return;
+    const line50=Array(ser.dates.length).fill(50);
     const c=new Chart(document.getElementById(id),{
       type:'line',
       data:{labels:ser.dates,
-        datasets:[{data:ser.values,borderColor:'var(--pf)',backgroundColor:'rgba(20,184,166,.08)',
-          borderWidth:1.5,pointRadius:0,fill:true,tension:.3}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
-        plugins:{legend:{display:false},
-          annotation:{annotations:{line50:{type:'line',yMin:50,yMax:50,
-            borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,4]}}}},
-        scales:{x:{grid:{color:getComputedStyle(document.documentElement).getPropertyValue('--grid').trim()},ticks:{maxTicksLimit:6,font:{size:9}}},
-          y:{grid:{color:getComputedStyle(document.documentElement).getPropertyValue('--grid').trim()},ticks:{font:{size:9}}}}}
+        datasets:[
+          {label:'PMI',data:ser.values,borderColor:'var(--pf)',backgroundColor:'rgba(20,184,166,.08)',
+           borderWidth:1.8,pointRadius:0,fill:true,tension:.3},
+          {label:'Neutral 50',data:line50,borderColor:'rgba(160,176,200,.45)',
+           borderWidth:1.2,borderDash:[4,4],pointRadius:0,fill:false,tension:0}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:0},
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'var(--grid)'},ticks:{maxTicksLimit:8,font:{size:9},color:'var(--chart-text)'}},
+          y:{grid:{color:'var(--grid)'},ticks:{font:{size:9},color:'var(--chart-text)'}}}}
     });
-    registerChart(id,c,ser.dates,[ser.values]);
+    registerChart(id,c,ser.dates,[ser.values,line50]);
     const v=lastVal(ser.values);
-    footer(id,v?.toFixed(1),trendArrow(ser.values),lastVal(ser.z));
+    footer(id,v!=null?v.toFixed(1):'—',trendArrow(ser.values),lastVal(ser.z));
   }
 
   function lineZChart(id,ser,color='var(--blue)'){
     if(!ser||!ser.dates||!ser.dates.length) return;
     const c=makeLineChart(id,ser.dates,[ds('Value',ser.values,color,{fill:true})]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.values]);
     const v=lastVal(ser.values);
-    footer(id,v?.toFixed(2),trendArrow(ser.values),lastVal(ser.z));
+    footer(id,v!=null?v.toFixed(2):'—',trendArrow(ser.values),lastVal(ser.z));
   }
 
   pmiChart('f-ism-mfg',F.pmi.ism_mfg);
@@ -1897,9 +1952,10 @@ function buildMomCard(id,region,name){
       <div><div class="chart-card-label" style="color:var(--pm)">${region}</div>
         <div class="chart-card-name">${name}</div></div>
       <div class="tf-btns">
-        <button class="tf-btn" onclick="tfClick(this,'${id}',21)">1M</button>
         <button class="tf-btn" onclick="tfClick(this,'${id}',63)">3M</button>
-        <button class="tf-btn active" onclick="tfClick(this,'${id}',252)">1Y</button>
+        <button class="tf-btn" onclick="tfClick(this,'${id}',252)">1Y</button>
+        <button class="tf-btn" onclick="tfClick(this,'${id}',756)">3Y</button>
+        <button class="tf-btn active" onclick="tfClick(this,'${id}',0)">MAX</button>
       </div>
     </div>
     <div class="metric-toggles" id="mt-${id}">
@@ -1913,16 +1969,60 @@ function buildMomCard(id,region,name){
 function buildMomChart(id, momData){
   if(!momData||!Object.keys(momData).length) return;
   const keys=Object.keys(MOM_COLORS);
-  const dates=momData[keys.find(k=>momData[k]?.dates?.length)]?.dates||[];
-  const datasets=keys.filter(k=>momData[k]?.dates?.length)
-    .map(k=>ds(MOM_LABELS[k],momData[k].values,MOM_COLORS[k]));
-  const c=makeLineChart(id,dates,datasets,{legend:false});
-  if(!c) return;
-  const series=keys.filter(k=>momData[k]?.dates?.length).map(k=>momData[k].values);
-  registerChart(id,c,dates,series);
+  // Find any available dated series for the time axis
+  const refKey=keys.find(k=>momData[k]?.dates?.length);
+  const dates=(refKey&&momData[refKey]?.dates)||[];
+  if(!dates.length) return;
+
+  // Price % return series as grey background area (secondary axis)
+  const priceDs=momData.price_pct?.dates?.length
+    ? [{label:'Price %',data:momData.price_pct.values,
+        borderColor:'rgba(160,176,200,.35)',backgroundColor:'rgba(160,176,200,.08)',
+        borderWidth:1.2,pointRadius:0,fill:true,tension:.3,yAxisID:'yPrice'}]
+    : [];
+
+  const momDs=keys.filter(k=>momData[k]?.dates?.length)
+    .map(k=>ds(MOM_LABELS[k],momData[k].values,MOM_COLORS[k],{yAxisID:'y'}));
+
+  const allDs=[...priceDs,...momDs];
+
+  // Determine y-scale range for price if present
+  const priceVals=momData.price_pct?.values?.filter(v=>v!=null)||[];
+  const pMin=priceVals.length?Math.min(...priceVals)*1.1:undefined;
+  const pMax=priceVals.length?Math.max(...priceVals)*1.1:undefined;
+
+  const el=document.getElementById(id);
+  if(!el) return;
+  const c=new Chart(el,{
+    type:'line',
+    data:{labels:dates,datasets:allDs},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:0},
+      plugins:{legend:{display:false}},
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:'var(--grid)'},ticks:{maxTicksLimit:8,font:{size:9},color:'var(--chart-text)'}},
+        y:{grid:{color:'var(--grid)'},ticks:{font:{size:9},color:'var(--chart-text)'},
+           title:{display:false}},
+        yPrice:{display:priceVals.length>0,position:'right',
+          min:pMin,max:pMax,
+          grid:{drawOnChartArea:false},
+          ticks:{font:{size:8},color:'rgba(160,176,200,.6)',
+            callback:v=>(v>=0?'+':'')+v.toFixed(0)+'%'}}
+      }}
+  });
+
+  const momSeries=keys.filter(k=>momData[k]?.dates?.length).map(k=>momData[k].values);
+  registerChart(id,c,dates,[...(momData.price_pct?.values?[momData.price_pct.values]:[]),...momSeries]);
   c._momKeys=keys.filter(k=>momData[k]?.dates?.length);
   c._momDates=dates;
-  footer(id, null, null, null);
+  c._priceOffset=priceVals.length?1:0;  // dataset index offset for price series
+
+  // Footer: show latest composite z (12-1M is primary)
+  const primary12=momData.ret_12_1m||momData.ret_3m||momData[keys[0]];
+  const latestZ=primary12?lastVal(primary12.values):null;
+  const latestPct=momData.price_pct?lastVal(momData.price_pct.values):null;
+  const pctStr=latestPct!=null?(latestPct>=0?'+':'')+latestPct.toFixed(1)+'%':'—';
+  footer(id, pctStr, trendArrow(primary12?.values||[]), latestZ);
 }
 
 function toggleMom(id, btn){
@@ -1930,8 +2030,9 @@ function toggleMom(id, btn){
   btn.classList.toggle('active');
   const c=CHARTS[id];
   if(!c) return;
-  const idx=c._momKeys?.indexOf(m)??-1;
-  if(idx>=0){c.data.datasets[idx].hidden=!c.data.datasets[idx].hidden; c.update();}
+  const offset=c._priceOffset||0;
+  const idx=(c._momKeys?.indexOf(m)??-1);
+  if(idx>=0){c.data.datasets[idx+offset].hidden=!c.data.datasets[idx+offset].hidden; c.update();}
 }
 
 function buildCBMom(){
@@ -1985,20 +2086,27 @@ function buildCBMom(){
   buildMomChart('m-corp',   M.fi.lt_us_corp);
   buildMomChart('m-stfi',   M.fi.short_term_fi);
 
-  function spreadMomChart(id, ser1, ser2, c1, c2, l1, l2){
-    if(!ser1&&!ser2) return;
-    const dates=(ser1||ser2)?.dates||[];
+  function spreadMomChart(id, ser, color, label){
+    if(!ser?.dates?.length) return;
+    const vals1=ser.spread_mom_1m?.values||[];
+    const vals3=ser.spread_mom_3m?.values||[];
     const dss=[];
-    if(ser1?.dates?.length) dss.push(ds(l1,ser1.spread_mom_1m||ser1.values,c1));
-    if(ser2?.dates?.length) dss.push(ds(l2,ser2.spread_mom_3m||ser2.values,c2));
-    const c=makeLineChart(id,dates,dss);
-    registerChart(id,c,dates,dss.map(d=>d.data));
+    if(vals1.length) dss.push(ds('1M momentum',vals1,color));
+    if(vals3.length) dss.push(ds('3M momentum',vals3,color.replace(')',',0.5)').replace('var','var'),{borderDash:[4,3]}));
+    if(!dss.length) return;
+    const c=makeLineChart(id,ser.dates,dss,{legend:dss.length>1});
+    if(!c) return;
+    registerChart(id,c,ser.dates,dss.map(d=>d.data));
+    const v1=lastVal(vals1); const v3=lastVal(vals3);
+    const el=document.getElementById(id+'-footer');
+    if(el) el.innerHTML=`<span>1M: <span class="val">${v1!=null?v1.toFixed(2):'—'}</span></span>`+
+      `<span>3M: <span class="val">${v3!=null?v3.toFixed(2):'—'}</span></span>`;
   }
   const S=M.spreads;
-  spreadMomChart('m-oas-bbb',S.oas_bbb,null,'var(--blue)',null,'1M','3M');
-  spreadMomChart('m-oas-hy', S.oas_hy, null,'var(--amber)',null,'1M','3M');
-  spreadMomChart('m-oas-em', S.oas_em, null,'var(--purple)',null,'1M','3M');
-  spreadMomChart('m-oas-la', S.oas_latam,null,'var(--orange)',null,'1M','3M');
+  spreadMomChart('m-oas-bbb',S.oas_bbb,'var(--blue)','BBB');
+  spreadMomChart('m-oas-hy', S.oas_hy, 'var(--amber)','HY');
+  spreadMomChart('m-oas-em', S.oas_em, 'var(--purple)','EM');
+  spreadMomChart('m-oas-la', S.oas_latam,'var(--orange)','LatAm');
 }
 
 // ── CHARTBOOK: Sentiment ─────────────────────────────────────────────────────
@@ -2030,25 +2138,31 @@ function buildCBSent(){
 
   el.innerHTML=h;
 
-  function volChart(id, ser, thresholds=[], color='var(--ps)'){
+  // Sentiment chart — raw level, percentile bands (25/75th over 5Y window)
+  function volChart(id, ser, color='var(--ps)'){
     if(!ser||!ser.dates?.length) return;
     const c=makeLineChart(id, ser.dates,
-      [ds('Value',ser.values,color,{fill:true,bw:1.5})]);
+      [ds('Value',ser.values,color,{fill:true,bw:1.8})]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.values]);
+    // Add 25th/75th percentile bands from 5Y window (1260 days)
+    const window5y=ser.values?.slice(-1260)||ser.values||[];
+    addPercentileBands(c, window5y, '5Y');
     const v=lastVal(ser.values);
     const pct=ser.pctile?lastVal(ser.pctile):null;
-    footer(id, v?.toFixed(1), null, null);
-    const fl=document.getElementById(id+'-footer');
-    if(fl&&pct!==null) fl.innerHTML+=`<span>Pctile: <span class="val">${(pct*100).toFixed(0)}th</span></span>`;
+    const el=document.getElementById(id+'-footer');
+    if(el) el.innerHTML=
+      `<span>Latest: <span class="val">${v!=null?v.toFixed(2):'—'}</span></span>`+
+      (pct!=null?`<span>Pctile: <span class="val" style="color:${pct>.75?'var(--neg)':pct<.25?'var(--pos)':'var(--text)'}">${(pct*100).toFixed(0)}th (5Y)</span></span>`:'');
   }
 
-  volChart('s-vix',   S.volatility.vix,  [],'var(--ps)');
-  volChart('s-move',  S.volatility.move, [],'var(--ps)');
-  volChart('s-vstoxx',S.volatility.vstoxx,[],'var(--ps)');
-  volChart('s-ted',   S.funding.ted,     [],'var(--orange)');
-  volChart('s-embi',  S.funding.embi,    [],'var(--red)');
-  volChart('s-aaii',  S.positioning.aaii_bull_bear,[],'var(--amber)');
-  volChart('s-pcr',   S.positioning.pcr, [],'var(--purple)');
+  volChart('s-vix',   S.volatility?.vix,   'var(--ps)');
+  volChart('s-move',  S.volatility?.move,  'var(--ps)');
+  volChart('s-vstoxx',S.volatility?.vstoxx,'var(--ps)');
+  volChart('s-ted',   S.funding?.ted,      'var(--orange)');
+  volChart('s-embi',  S.funding?.embi,     'var(--red)');
+  volChart('s-aaii',  S.positioning?.aaii_bull_bear,'var(--amber)');
+  volChart('s-pcr',   S.positioning?.pcr,  'var(--purple)');
 }
 
 // ── CHARTBOOK: Valuation ─────────────────────────────────────────────────────
@@ -2140,23 +2254,27 @@ function buildCBVal(){
 
   el.innerHTML=h;
 
-  // Render P/E absolute charts
+  // P/E absolute charts — with 25/75 percentile bands (10Y window)
   function peChart(id, ser){
     if(!ser||!ser.dates?.length) return;
-    const c=makeLineChart(id,ser.dates,[ds('P/E',ser.values,'var(--pv)',{fill:false})]);
+    const c=makeLineChart(id,ser.dates,[ds('P/E',ser.values,'var(--pv)',{fill:false,bw:1.8})]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.values]);
+    // Percentile bands using full available history (10Y window context)
+    addPercentileBands(c, ser.values, '10Y');
     const v=lastVal(ser.values);
     const p=ser.pctile?lastVal(ser.pctile):null;
     const fl=document.getElementById(id+'-footer');
-    if(fl) fl.innerHTML=`<span>Latest: <span class="val">${v?.toFixed(1)}x</span></span>`+
-      (p!==null?`<span>Pctile: <span class="val">${(p*100).toFixed(0)}th</span></span>`:'');
+    if(fl) fl.innerHTML=
+      `<span>Latest: <span class="val">${v!=null?v.toFixed(1)+'x':'—'}</span></span>`+
+      (p!=null?`<span>Pctile: <span class="val" style="color:${p>.75?'var(--neg)':p<.25?'var(--pos)':'var(--text)'}">${(p*100).toFixed(0)}th (10Y)</span></span>`:'');
   }
-  peChart('v-pe-sp500',V.pe_absolute.sp500);
-  peChart('v-pe-eafe', V.pe_absolute.msci_eafe);
-  peChart('v-pe-em',   V.pe_absolute.msci_em);
-  peChart('v-pe-china',V.pe_absolute.msci_china);
-  peChart('v-pe-gro',  V.pe_absolute.sp500_growth);
-  peChart('v-pe-val',  V.pe_absolute.sp500_value);
+  peChart('v-pe-sp500',V.pe_absolute?.sp500);
+  peChart('v-pe-eafe', V.pe_absolute?.msci_eafe);
+  peChart('v-pe-em',   V.pe_absolute?.msci_em);
+  peChart('v-pe-china',V.pe_absolute?.msci_china);
+  peChart('v-pe-gro',  V.pe_absolute?.sp500_growth);
+  peChart('v-pe-val',  V.pe_absolute?.sp500_value);
 
   // Relative P/E interactive
   let relPeTfN=252;
@@ -2215,9 +2333,11 @@ function buildCBVal(){
       ds('Ratio',ser.ratio,'#3A7BD5',{bw:2}),
       ds('Z',ser.z,'var(--purple)',{bw:1.2}),
     ],{legend:true});
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.ratio,ser.z]);
     const zv=lastVal(ser.z);
-    footer(id,lastVal(ser.ratio)?.toFixed(2),null,zv);
+    const rv=lastVal(ser.ratio);
+    footer(id,rv!=null?rv.toFixed(2):'—',null,zv);
   }
   relPeStatic('v-rel-gv',  'growth_vs_value');
   relPeStatic('v-rel-usem','us_vs_em');
@@ -2229,10 +2349,13 @@ function buildCBVal(){
     const c=makeLineChart(id, ser.dates,[
       ds('ERP %',ser.values,'var(--green)',{fill:true,bw:2}),
     ]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.values]);
+    addPercentileBands(c, ser.values, '10Y');
     const v=lastVal(ser.values);
     const fl=document.getElementById(id+'-footer');
-    if(fl) fl.innerHTML=`<span>ERP: <span class="val">${v?.toFixed(2)}%</span></span>`+
+    if(fl) fl.innerHTML=`<span>ERP: <span class="val">${v!=null?v.toFixed(2):'—'}%</span></span>`+
+      `<span style="font-size:9px;color:var(--text3)">4%=cheap · 2%=fair · &lt;1%=exp.</span>`+
       `<span style="font-size:9px;color:var(--text3)">4%=cheap · 2%=fair · <1%=expensive</span>`;
   }
   erpChart('v-erp-us',V.erp.us_equity);
@@ -2243,7 +2366,9 @@ function buildCBVal(){
     if(!ser||!ser.dates?.length) return;
     const vals=ser.values.map(v=>v!==null?v*100:null); // decimal to bps
     const c=makeLineChart(id, ser.dates,[ds('OAS (bps)',vals,'var(--blue)',{fill:true})]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[vals]);
+    addPercentileBands(c, vals.filter(v=>v!=null).slice(-1260), '5Y');
     const v=lastVal(vals);
     const p=ser.pctile?lastVal(ser.pctile):null;
     const fl=document.getElementById(id+'-footer');
@@ -2259,7 +2384,9 @@ function buildCBVal(){
   function yldChart(id, ser, color='var(--blue)'){
     if(!ser||!ser.dates?.length) return;
     const c=makeLineChart(id, ser.dates,[ds('Yield %',ser.values,color)]);
+    if(!c) return;
     registerChart(id,c,ser.dates,[ser.values]);
+    addPercentileBands(c, ser.values, '10Y');
     const v=lastVal(ser.values);
     const p=ser.pctile?lastVal(ser.pctile):null;
     const fl=document.getElementById(id+'-footer');

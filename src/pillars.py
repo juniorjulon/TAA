@@ -187,7 +187,7 @@ def pillar_fundamentals(asset_class: str, data: dict,
             "eps_eafe": 0.15, "pmi_japan": 0.10, "gdp_japan": 0.05, "eps_japan": 0.05,
         }
 
-    elif asset_class in ("em_equity", "em_xchina"):
+    elif asset_class == "em_equity":
         signals = {
             "pmi_china": pmi_china,
             "cesi_em":   cesi_em,
@@ -195,15 +195,6 @@ def pillar_fundamentals(asset_class: str, data: dict,
             "eps_em":    eps_em,
         }
         weights = {"pmi_china": 0.30, "cesi_em": 0.25, "gdp_em": 0.25, "eps_em": 0.20}
-
-    elif asset_class == "china_equity":
-        signals = {
-            "pmi_china":  pmi_china,
-            "cesi_china": cesi_china,
-            "gdp_china":  gdp_china,
-            "eps_china":  eps_china,
-        }
-        weights = {"pmi_china": 0.40, "cesi_china": 0.25, "gdp_china": 0.20, "eps_china": 0.15}
 
     # ── Fixed Income (DURATION): all growth signals INVERTED ────────────────
     elif asset_class in ("short_term_fi", "lt_treasuries"):
@@ -391,20 +382,12 @@ def pillar_momentum(asset_class: str, data: dict) -> pd.Series:
         }
         weights = {"eafe_mom": 0.65, "acwi_mom": 0.35}
 
-    elif asset_class in ("em_equity", "em_xchina"):
+    elif asset_class == "em_equity":
         signals = {
             "em_mom":    _eq_mom("msci_em_px"),
-            "emx_mom":   _eq_mom("em_xchina_px"),
             "oas_em_mom": oas_em_mom,  # EM credit conditions
         }
-        weights = {"em_mom": 0.45, "emx_mom": 0.30, "oas_em_mom": 0.25}
-
-    elif asset_class == "china_equity":
-        signals = {
-            "cn_mom":    _eq_mom("china_px"),
-            "oas_em_mom": oas_em_mom,
-        }
-        weights = {"cn_mom": 0.70, "oas_em_mom": 0.30}
+        weights = {"em_mom": 0.60, "oas_em_mom": 0.40}
 
     else:
         signals, weights = {}, {}
@@ -564,7 +547,7 @@ def pillar_sentiment(asset_class: str, data: dict,
         }
         weights = {"vix_eq": 0.30, "vstoxx": 0.25, "cdx_hy": 0.30, "ted": 0.15}
 
-    elif asset_class in ("em_equity", "em_xchina"):
+    elif asset_class == "em_equity":
         signals = {
             "dxy":       (-dxy_s) if dxy_s is not None else None,  # USD z-scored; strong USD = EM headwind
             "embi":      embi_sig,
@@ -572,14 +555,6 @@ def pillar_sentiment(asset_class: str, data: dict,
             "em_stress": _inv(em_stress_sig),
         }
         weights = {"dxy": 0.30, "embi": 0.25, "vix_eq": 0.25, "em_stress": 0.20}
-
-    elif asset_class == "china_equity":
-        signals = {
-            "dxy":       (-dxy_s) if dxy_s is not None else None,  # USD z-scored; strong USD = China headwind
-            "em_stress": _inv(em_stress_sig),
-            "vix_eq":    vix_eq,
-        }
-        weights = {"dxy": 0.35, "em_stress": 0.35, "vix_eq": 0.30}
 
     else:
         signals, weights = {}, {}
@@ -742,23 +717,6 @@ def pillar_valuation(asset_class: str, data: dict) -> pd.Series:
             "oas_em":    _oas_lv(oas_em),             # EM credit cheapness
         }
         weights = {"pe": 0.30, "erp": 0.30, "rel_vs_us": 0.25, "oas_em": 0.15}
-
-    elif asset_class == "em_xchina":
-        signals = {
-            "pe":     _pe_s(pe_emx),
-            "erp":    _erp(emx_ey),
-            "oas_em": _oas_lv(oas_em),
-        }
-        weights = {"pe": 0.35, "erp": 0.35, "oas_em": 0.30}
-
-    elif asset_class == "china_equity":
-        pe_us_ref = pe_acwi if pe_acwi is not None else pe_val
-        signals = {
-            "pe":        _pe_s(pe_china),
-            "erp":       _erp(china_ey),
-            "rel_vs_us": _rel_pe(pe_china, pe_us_ref),
-        }
-        weights = {"pe": 0.40, "erp": 0.35, "rel_vs_us": 0.25}
 
     else:
         signals, weights = {}, {}

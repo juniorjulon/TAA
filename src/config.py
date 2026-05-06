@@ -181,32 +181,32 @@ SHEET_F1_COLS = {
     "CESIEUR Index":    "cesi_ez",
     "CESICNY Index":    "cesi_china",
     "CESIGL Index":     "cesi_global",
-    "ECGDUS 26 Index":  "gdp_us_cur",
-    "ECGDUS 27 Index":  "gdp_us_nxt",
-    "ECGDM1 26 Index":  "gdp_em_cur",
-    "ECGDM1 27 Index":  "gdp_em_nxt",
-    "ECGDD1 26 Index":  "gdp_dm_cur",
-    "ECGDD1 27 Index":  "gdp_dm_nxt",
-    "ECGDEU 26 Index":  "gdp_eu_cur",
-    "ECGDWO 26 Index":  "gdp_world_cur",
-    "ECGDWO 27 Index":  "gdp_world_nxt",
+    "ECGDUS 26 Index":  "gdp_forecast_us_26",    # US current-year GDP consensus (daily Bloomberg)
+    "ECGDUS 27 Index":  "gdp_forecast_us_27",    # US next-year GDP consensus (available from ~2025)
+    "ECGDM1 26 Index":  "gdp_forecast_em_26",    # EM current-year GDP consensus
+    "ECGDM1 27 Index":  "gdp_forecast_em_27",    # EM next-year GDP consensus
+    "ECGDD1 26 Index":  "gdp_forecast_dm_26",    # DM current-year GDP consensus
+    "ECGDD1 27 Index":  "gdp_forecast_dm_27",    # DM next-year GDP consensus
+    "ECGDEU 26 Index":  "gdp_forecast_eu_26",    # Eurozone current-year GDP consensus
+    "ECGDWO 26 Index":  "gdp_forecast_world_26", # World current-year GDP consensus
+    "ECGDWO 27 Index":  "gdp_forecast_world_27", # World next-year GDP consensus
 }
 
 # Sheet "H2": Additional regional PMI, CESI, GDP (~3,960 rows from 2011).
 SHEET_F2_COLS = {
-    "ECGDEU 27 Index":  "gdp_eu_nxt",
+    "ECGDEU 27 Index":  "gdp_forecast_eu_27",    # Eurozone next-year GDP consensus
     "MPMIJPMA Index":   "pmi_japan_mfg",
     "MPMIGBMA Index":   "pmi_uk_mfg",
     "MPMIGLMA Index":   "pmi_global_mfg",
     "CESIGBP Index":    "cesi_uk",
     "CESIJPY Index":    "cesi_japan",
     "CESIEM Index":     "cesi_em",
-    "ECGDJP 26 Index":  "gdp_japan_cur",
-    "ECGDJP 27 Index":  "gdp_japan_nxt",
-    "ECGDCN 26 Index":  "gdp_china_cur",
-    "ECGDCN 27 Index":  "gdp_china_nxt",
-    "ECGDR4 26 Index":  "gdp_latam_cur",
-    "ECGDR4 27 Index":  "gdp_latam_nxt",
+    "ECGDJP 26 Index":  "gdp_forecast_jp_26",    # Japan current-year GDP consensus
+    "ECGDJP 27 Index":  "gdp_forecast_jp_27",    # Japan next-year GDP consensus
+    "ECGDCN 26 Index":  "gdp_forecast_cn_26",    # China current-year GDP consensus
+    "ECGDCN 27 Index":  "gdp_forecast_cn_27",    # China next-year GDP consensus
+    "ECGDR4 26 Index":  "gdp_forecast_latam_26", # LatAm current-year GDP consensus
+    "ECGDR4 27 Index":  "gdp_forecast_latam_27", # LatAm next-year GDP consensus
 }
 
 # Sheet "H3": Forward EPS only (~3,991 rows from 2011).
@@ -317,9 +317,22 @@ MOM_HORIZONS = {
     "skip": 21,  # skip last month for 12-1M cross-sectional momentum
 }
 
-MAX_FFILL_DAYS         = 5      # max consecutive ffill days for price gaps
+MAX_FFILL_DAYS         = 5      # max consecutive ffill days for price gaps (daily series)
+MAX_FFILL_MONTHLY      = 31     # max ffill for monthly series (PMI, CESI in F1)
 OUTLIER_CLIP_Z         = 3.0    # winsorise z-scores beyond ±3σ
 RETURN_OUTLIER_ZSCORE  = 5.0    # flag daily returns beyond 5σ as data errors
+
+# ── Signal reliability floor ───────────────────────────────────────────────
+# EWMA span = 756 days; all data starts 2010-12-31.
+# z-scores before 2013-02-01 use incomplete EWMA windows → excluded as unreliable.
+# Per-signal reliable_from is computed dynamically (signal_engine.get_reliable_from()).
+MIN_DATE_FOR_SIGNALS   = "2013-02-01"
+
+# ── Composite z-score smoothing ─────────────────────────────────────────────
+# SMOOTH_COMPOSITE = True applies a 10-day rolling median to composite z-scores
+# before conviction mapping, eliminating holiday/month-end spikes.
+# Both raw and smoothed values are always exported to the scorecard.
+SMOOTH_COMPOSITE       = False   # default off; set True in config to activate
 
 
 # ─────────────────────────────────────────────────────────────────────────────

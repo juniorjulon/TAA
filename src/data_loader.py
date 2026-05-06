@@ -37,7 +37,7 @@ from config import (
     SHEET_H6_PE_COLS, SHEET_H6_EY_COLS, SHEET_H6_TR_COLS,
     SHEET5_COLS, SHEET_F1_COLS, SHEET_F2_COLS, SHEET_F3_COLS,
     SHEET_AAII_COLS, SHEET_H7_COLS,
-    MAX_FFILL_DAYS, RETURN_OUTLIER_ZSCORE,
+    MAX_FFILL_DAYS, MAX_FFILL_MONTHLY, RETURN_OUTLIER_ZSCORE,
 )
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -285,8 +285,10 @@ def load_f1() -> pd.DataFrame:
 
     combined = h1.join(h2, how="outer")
     combined = _sort_asc(combined)
-    # Forward-fill monthly data over daily calendar (up to 25 days for monthly PMI)
-    combined = combined.ffill(limit=MAX_FFILL_DAYS * 5)
+    # Forward-fill: monthly series (PMI, CESI) get MAX_FFILL_MONTHLY (31 days = 1 month max).
+    # Daily GDP forecasts (gdp_forecast_*) also benefit from capped fill to avoid
+    # synthetic 5-month fills from the legacy MAX_FFILL_DAYS * 5 = 25 days approach.
+    combined = combined.ffill(limit=MAX_FFILL_MONTHLY)
     _validate_index(combined, "F1")
     return combined
 

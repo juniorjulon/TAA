@@ -279,6 +279,16 @@ def run_pipeline(verbose: bool = True) -> dict:
     # STEP 1: Load raw data (needed for crisis override + proxy fallbacks)
     data = load_all(verbose=verbose)
 
+    # Data freshness check — OAS often lags H5 by several weeks
+    _oas = data.get("oas", pd.DataFrame())
+    _mkt = data.get("mkt", pd.DataFrame())
+    if not _oas.empty and not _mkt.empty:
+        _oas_lag = (_mkt.index.max() - _oas.index.max()).days
+        if _oas_lag > 7:
+            print(f"  WARNING: OAS data is {_oas_lag} days behind H5 "
+                  f"({_oas.index.max().date()} vs {_mkt.index.max().date()}). "
+                  f"Credit signals (oas_bbb, oas_em, hy_stress) may be stale.")
+
     # STEP 2: Load all signals via SignalEngine (reads DataSeries from taa_config.xlsx)
     if verbose:
         print("\nLoading signals via SignalEngine...")
@@ -397,7 +407,7 @@ def export_results(results: dict, out_dir: str = None) -> None:
     """Export all outputs to results/RUN_YYYYMMDD_HHMM/."""
     import os as _os
     from datetime import datetime
-    timestamp = datetime.now().strftime("RUN_%Y%m%d_%H%M")
+    timestamp = datetime.now().strftime("RUN_%Y%m%d_%H%M%S")
     base      = out_dir if out_dir is not None else OUTPUT_DIR
     run_dir   = _os.path.join(base, timestamp)
     _os.makedirs(run_dir, exist_ok=True)

@@ -307,7 +307,7 @@ def print_scorecard(df: pd.DataFrame, date: str = "Latest") -> None:
 
     GROUPS = {
         "Fixed Income": ["money_market","short_term_fi","lt_treasuries","lt_us_corp","lt_em_fi"],
-        "Equity":       ["us_equity","us_growth","us_value","dm_equity","em_equity","em_xchina","china_equity"],
+        "Equity":       ["us_equity","us_growth","us_value","dm_equity","em_equity"],
     }
 
     for group_label, acs in GROUPS.items():
@@ -350,7 +350,7 @@ def print_scorecard(df: pd.DataFrame, date: str = "Latest") -> None:
 
     # Portfolio summary
     fi_acs  = ["money_market","short_term_fi","lt_treasuries","lt_us_corp","lt_em_fi"]
-    eq_acs  = ["us_equity","us_growth","us_value","dm_equity","em_equity","em_xchina","china_equity"]
+    eq_acs  = ["us_equity","us_growth","us_value","dm_equity","em_equity"]
     fi_net  = sum(float(df.loc[ac,"final_tilt_%"]) for ac in fi_acs if ac in df.index)
     eq_net  = sum(float(df.loc[ac,"final_tilt_%"]) for ac in eq_acs if ac in df.index)
     tot_abs = sum(abs(float(df.loc[ac,"final_tilt_%"]))

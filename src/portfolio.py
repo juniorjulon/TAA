@@ -151,13 +151,32 @@ def apply_house_view(
 
     result = pd.DataFrame(rows).set_index("ac")
 
-    # Optional: enforce zero-sum by pro-rata reduction of excess
+    # Clip weights: no short positions (Solvency II / UCITS long-only mandate)
+    result["portfolio_weight"] = (result["saa_weight"] + result["portfolio_tilt"]).clip(lower=0.0)
+    result["portfolio_tilt"]   = (result["portfolio_weight"] - result["saa_weight"]).round(2)
+
+    # Enforce zero-sum AFTER clipping: redistribute net excess proportionally
+    # among ACs with positive SAA weight. Use money_market as final residual.
     if portfolio.force_zero_sum:
         excess = result["portfolio_tilt"].sum()
         if abs(excess) > 0.01:
-            result["portfolio_tilt"] = (result["portfolio_tilt"] - excess / len(result)).round(2)
-            result["portfolio_weight"] = (
-                result["saa_weight"] + result["portfolio_tilt"]).round(2)
+            # Eligible ACs: those with positive SAA that can absorb a negative adjustment
+            eligible = result[result["saa_weight"] > 0].index.tolist()
+            if eligible:
+                adj_per_ac = excess / len(eligible)
+                result.loc[eligible, "portfolio_tilt"] = (
+                    result.loc[eligible, "portfolio_tilt"] - adj_per_ac).round(2)
+                result["portfolio_weight"] = (
+                    result["saa_weight"] + result["portfolio_tilt"]).round(2)
+            # Final sanity: clip again and push any residual to money_market
+            result["portfolio_weight"] = result["portfolio_weight"].clip(lower=0.0)
+            result["portfolio_tilt"]   = (result["portfolio_weight"] - result["saa_weight"]).round(2)
+            leftover = result["portfolio_tilt"].sum()
+            if abs(leftover) > 0.01 and "money_market" in result.index:
+                result.loc["money_market", "portfolio_tilt"] -= round(leftover, 2)
+                result.loc["money_market", "portfolio_weight"] = round(
+                    result.loc["money_market", "saa_weight"] +
+                    result.loc["money_market", "portfolio_tilt"], 2)
 
     return result
 
