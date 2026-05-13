@@ -421,9 +421,9 @@ def build_chartbook_data() -> dict:
             "cesi_global": _ser_raw_and_z(_get(f1, "cesi_global"), pctile_window=WINDOWS["medium"]),
         },
         "gdp_revision": {
-            "us":    _ser(_blended_gdp_revision(f1, "gdp_us_cur",    "gdp_us_nxt")),
-            "ez":    _ser(_blended_gdp_revision(f1, "gdp_eu_cur",    "gdp_eu_nxt")),
-            "china": _ser(_blended_gdp_revision(f1, "gdp_china_cur", "gdp_china_nxt")),
+            "us":    _ser(_blended_gdp_revision(f1, "gdp_forecast_us_26", "gdp_forecast_us_27")),
+            "ez":    _ser(_blended_gdp_revision(f1, "gdp_forecast_eu_26", "gdp_forecast_eu_27")),
+            "china": _ser(_blended_gdp_revision(f1, "gdp_forecast_cn_26", "gdp_forecast_cn_27")),
             "em":    _ser(_blended_gdp_revision(f1, "gdp_em_cur",    "gdp_em_nxt")),
             "japan": _ser(_blended_gdp_revision(f1, "gdp_japan_cur", "gdp_japan_nxt")),
             "dm":    _ser(_blended_gdp_revision(f1, "gdp_dm_cur",    "gdp_dm_nxt")),
@@ -437,9 +437,9 @@ def build_chartbook_data() -> dict:
             "eps_fwd_eafe":  _ser_raw_and_z(_get(f3, "eps_fwd_eafe")),
         },
         "inflation": {
-            "breakeven_5y":  _ser_raw_and_z(_get(f3, "breakeven_5y"),  pctile_window=WINDOWS["xlarge"]),
-            "breakeven_10y": _ser_raw_and_z(_get(f3, "breakeven_10y"), pctile_window=WINDOWS["xlarge"]),
-            "cpi_us":        _ser_raw_and_z(_get(f3, "cpi_us")),
+            "breakeven_5y":  _ser_raw_and_z(_get(mkt, "breakeven_5y"),  pctile_window=WINDOWS["xlarge"]),
+            "breakeven_10y": _ser_raw_and_z(_get(mkt, "breakeven_10y"), pctile_window=WINDOWS["xlarge"]),
+            "cpi_us":        _ser_raw_and_z(_get(mkt, "cpi_us")),
         },
     }
 
@@ -500,7 +500,7 @@ def build_chartbook_data() -> dict:
     vix_s    = _get(mkt, "vix")
     move_s   = _get(mkt, "move")
     vstoxx_s = _get(mkt, "vstoxx")
-    ted_s    = _get(mkt, "ted")
+    ted_s    = _get(tsy, "modern_ted")   # modern_ted = tbill_3m - SOFR (available from 2018)
     pcr_s    = _get(mkt, "pcr")
     aaii_s   = _get(aaii_df, "aaii_bull_bear")
 

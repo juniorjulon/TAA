@@ -251,5 +251,32 @@ Regenerate with `python src/build_custom_series.py`.
 | PE/YIELDS missing 32–41% (new indices) | MEDIUM | Documented | Expected inception gaps |
 | Holiday z-score spikes | MEDIUM | Documented | SMOOTH_COMPOSITE toggle available |
 | PCR had no data wired | LOW | Fixed | Added to H5 → DataSeries → SignalMapping |
-| em_xchina/china_equity orphaned code | LOW | Fixed | Dead branches removed |
-| Same-minute run collision | LOW | Fixed | RUN timestamp now includes seconds |
+| em_xchina/china_equity orphaned code | LOW | Fixed | Dead branches removed from pillars.py + scoring.py |
+| Same-minute run collision | LOW | Fixed | RUN timestamp now includes seconds (%S) |
+| GDP columns wrong in chartbook_data.py | LOW | Fixed | Updated to gdp_forecast_*_26/27 naming |
+| Breakeven 5Y reading from wrong sheet | LOW | Fixed | Changed from f3 (H3) to mkt (H5) |
+| TED spread reading defunct column | LOW | Fixed | Changed from mkt["ted"] to tsy["modern_ted"] |
+| OAS spread charts empty in dashboard | LOW | Fixed | spreadMomChart reads (m1\|\|m3)?.dates structure |
+
+## 12. GDP Series Naming Convention (updated May 2026)
+
+Bloomberg publishes daily consensus GDP forecasts. Columns renamed to use year suffix:
+
+| Old name | New name | Ticker |
+|---|---|---|
+| gdp_us_cur | gdp_forecast_us_26 | ECGDUS 26 Index |
+| gdp_us_nxt | gdp_forecast_us_27 | ECGDUS 27 Index |
+| gdp_em_cur | gdp_forecast_em_26 | ECGDM1 26 Index |
+| gdp_em_nxt | gdp_forecast_em_27 | ECGDM1 27 Index |
+| gdp_dm_cur | gdp_forecast_dm_26 | ECGDD1 26 Index |
+| gdp_dm_nxt | gdp_forecast_dm_27 | ECGDD1 27 Index |
+| gdp_eu_cur | gdp_forecast_eu_26 | ECGDEU 26 Index |
+| gdp_eu_nxt | gdp_forecast_eu_27 | ECGDEU 27 Index |
+| gdp_japan_cur | gdp_forecast_jp_26 | ECGDJP 26 Index |
+| gdp_japan_nxt | gdp_forecast_jp_27 | ECGDJP 27 Index |
+| gdp_china_cur | gdp_forecast_cn_26 | ECGDCN 26 Index |
+| gdp_china_nxt | gdp_forecast_cn_27 | ECGDCN 27 Index |
+| gdp_latam_cur | gdp_forecast_latam_26 | ECGDR4 26 Index |
+| gdp_latam_nxt | gdp_forecast_latam_27 | ECGDR4 27 Index |
+
+**Update all references** in `src/config.py` (SHEET_F1_COLS, SHEET_F2_COLS) and `src/build_custom_series.py` when adding new GDP series.

@@ -119,21 +119,19 @@ environment" signal, only after the P/E + ERP signals are well understood.
 
 ---
 
-## 7. CBOE PCR (Put/Call Ratio) for US Equity Sentiment
+## 7. CBOE PCR (Put/Call Ratio) — ✅ ACTIVATED May 2026
 
 **Pillar:** Sentiment | **ACs:** US Equity, US Growth, US Value
 
+**Status:** ACTIVE — wired in SignalMapping with sign=+1, weight=0.15 for all 3 US equity ACs.
+
 **Economic rationale:** High PCR = elevated put buying = fear = contrarian buy signal.
-Historically one of the most reliable short-term equity sentiment indicators.
+`PCRTEQTY Index` confirmed to have 3,844 clean daily values (2010–2026, range 0.38–2.46).
 
-**Why excluded:** `PCRTEQTY Index` is in H5 but currently has no data in our Excel
-(all NaN). Needs Bloomberg pull for `PCRTEQTY Index` (CBOE Equity PCR, 10-day average).
-
-**To activate:**
-1. Ensure `PCRTEQTY Index` is populated in Dashboard_TAA_Inputs.xlsx H5
-2. Wire as `pcr` in SHEET5_COLS
-3. Add to DataSeries: `series_type="original"`, transform `ewma_z`, sign +1 (contrarian)
-4. Add to US Equity/Growth/Value S at ~10-15% weight
+**Current configuration:**
+- `series_type = "original"`, `input_sheet = "H5"`, `input_column = "PCRTEQTY Index"`
+- `transform_code = "ewma_z"`, `window = 756`
+- Wired to: us_equity (S, +1, 0.15), us_growth (S, +1, 0.15), us_value (S, +1, 0.15)
 
 ---
 
@@ -268,11 +266,13 @@ at small weight (-1, ~0.10), only if static DXY signal is removed from S.
 
 ## Priority for Next Phase
 
-| Priority | Signal | Ease | Impact |
-|---|---|---|---|
-| 1 | PCR (Put/Call Ratio) | Medium — needs data pull | High for equity S pillar |
-| 2 | Shiller CAPE | Easy — data exists in H3 | High for equity V pillar |
-| 3 | DXY for EM Equity S | Easy — data exists | Medium for EM pillar quality |
-| 4 | CDX HY Momentum overlays | Easy — data exists | Medium for US Growth M |
+| Priority | Signal | Ease | Impact | Status |
+|---|---|---|---|---|
+| ✅ | PCR (Put/Call Ratio) | Done | High for equity S pillar | **ACTIVE** |
+| 1 | Shiller CAPE | Medium — compute from H3 trailing EPS | High for equity V pillar | Pending |
+| 2 | DXY for EM Equity S | Easy — data exists | Medium for EM pillar quality | Pending |
+| 3 | CDX HY Momentum overlays | Easy — data exists | Medium for US Growth M | Pending |
+| 4 | GDP Revision composite | Easy — compute from existing data | Medium for F pillar | Pending |
+| 5 | CFTC COT positioning | Hard — external data source | High if available | Pending |
 | 5 | GDP Revision composite | Easy — compute from existing data | Medium for F pillar |
 | 6 | CFTC COT positioning | Hard — external data source | High if available |

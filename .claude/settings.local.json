@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.venv/Scripts/python.exe -c \"import pandas as pd; xl=pd.ExcelFile\\('Dashboard_TAA_Inputs.xlsx'\\); print\\(xl.sheet_names\\)\")"
+      "Bash(.venv/Scripts/python.exe -c \"import pandas as pd; xl=pd.ExcelFile\\('Dashboard_TAA_Inputs.xlsx'\\); print\\(xl.sheet_names\\)\")",
+      "Bash(npm list *)",
+      "Bash(node docs/build_ic_deck.js)",
+      "Bash(npm root *)",
+      "Bash(NODE_PATH=\"C:\\\\Users\\\\JUNIOR\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\" node docs/build_ic_deck.js)",
+      "Bash(python -m markitdown docs/TAA_IC_Presentation.pptx)",
+      "Bash(pip install *)",
+      "Bash(python -m markitdown \"C:\\\\Users\\\\JUNIOR\\\\Documents\\\\GitHub\\\\TAA\\\\docs\\\\TAA_IC_Presentation.pptx\")",
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(.venv/Scripts/python -m markitdown docs/TAA_IC_Presentation.pptx)",
+      "Bash(.venv/Scripts/python -c ' *)",
+      "Bash(pip show *)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -c \"from pptx import Presentation; print\\('ok'\\)\")",
+      "Bash(py -c \"from pptx import Presentation; print\\('ok'\\)\")",
+      "Bash(where python3 *)",
+      "Bash(where py *)",
+      "Bash(C:\\\\Users\\\\JUNIOR\\\\Documents\\\\GitHub\\\\Rimac_Projects\\\\9_TAA Dashboard\\\\.venv\\\\Scripts\\\\python.exe *)"
     ]
   }
 }
