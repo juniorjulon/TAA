@@ -1,0 +1,172 @@
+series_id,signal_name,ticker,source,frequency,pillar,transformation,window,notes,series_type,input_sheet,input_column,transform_code
+ism_mfg_pmi,ISM Mfg PMI,NAPMPMI Index,BBG,Monthly,F,Level z-score + Delta3M + 4-quadrant regime,60M,Classic US manufacturing activity gauge,,,,
+ism_svcs_pmi,ISM Services PMI,NAPMNMI Index,BBG,Monthly,F,Level z-score + Delta3M,60M,US services economy breadth,,,,
+ism_new_ord_inv,ISM New Orders / Inventories,.ISM G Index,BBG,Monthly,F,Ratio level z-score,60M,Leading indicator for ISM headline,,,,
+ism_employment,ISM Mfg Employment,NAPMEMPL Index,BBG,Monthly,F,Level z-score,60M,US labour demand signal,,,,
+ism_exports,ISM Mfg New Export Orders,NAPMNEWO Index,BBG,Monthly,F,Level z-score,60M,Proxy for global external demand,,,,
+pmi_ez_mfg,Eurozone Mfg PMI,MPMIEZMA Index,BBG,Monthly,F,Level z-score + Delta3M,60M,Eurozone factory activity,,,,
+pmi_ez_svcs,Eurozone Services PMI,MPMIEZSA Index,BBG,Monthly,F,Level z-score,60M,Eurozone services activity,,,,
+pmi_china_mfg,China Mfg PMI (Caixin),CPMINDX Index,BBG,Monthly,F,Level z-score + Delta3M,60M,Dominant EM fundamental signal,,,,
+pmi_china_svcs,China Services PMI,MPMICNSA Index,BBG,Monthly,F,Level z-score,60M,China consumer/services economy,,,,
+pmi_japan_mfg,Japan Mfg PMI,MPMIJPMA Index,BBG,Monthly,F,Level z-score,60M,Japanese industrial activity,original,H2,MPMIJPMA Index,ewma_z
+pmi_global_mfg,Global Mfg PMI,MPMIGLMA Index,BBG,Monthly,F,Level z-score,60M,Cross-asset risk regime context,,,,
+cesi_us,Citi US Surprise (CESIUSD),CESIUSD Index,BBG,Daily,F,Level z + Delta20d + percentile; contrarian extremes,252d,Mean-reverts to zero; flip at pctile>85 / <15,original,H1,CESIUSD Index,ewma_z
+cesi_ez,Citi Eurozone Surprise,CESIEUR Index,BBG,Daily,F,Level z + Delta20d,252d,European data surprises,original,H1,CESIEUR Index,ewma_z
+cesi_china,Citi China Surprise,CESICNY Index,BBG,Daily,F,Level z + Delta20d,252d,China macro beat/miss,original,H1,CESICNY Index,ewma_z
+cesi_em,Citi EM Surprise,CESIEM Index,BBG,Daily,F,Level z + Delta20d,252d,Broad EM surprises,original,H2,CESIEM Index,ewma_z
+gdp_us_rev,US GDP Forecast Revision,ECGDUS 26/27,BBG,Daily,F,Blended current/next year; Delta1M revision,36M,MoM revision more predictive than level,,,,
+gdp_dm_rev,DM GDP Forecast Revision,ECGDD1 26/27,BBG,Daily,F,Blended current/next; Delta1M,36M,Developed-markets consensus change,,,,
+gdp_em_rev,EM GDP Forecast Revision,ECGDM1 26/27,BBG,Daily,F,Blended current/next; Delta1M,36M,EM growth forecast revisions,,,,
+gdp_china_rev,China GDP Forecast Revision,ECGDCN 26/27,BBG,Daily,F,Blended current/next; Delta1M,36M,Bloomberg consensus China GDP,,,,
+gdp_eu_rev,EU GDP Forecast Revision,ECGDEU 26/27,BBG,Daily,F,Blended current/next; Delta1M,36M,Eurozone GDP consensus,,,,
+eps_us_fwd,US Fwd EPS Growth,SPX BEST_EPS_GRO,BBG,Daily,F,Level z + Delta20d + Earnings Revision Ratio,252d,Forward EPS trend and revisions,,,,
+eps_em_fwd,EM Fwd EPS Growth,MXEF BEST_EPS_GRO,BBG,Daily,F,Level z + Delta20d,252d,MSCI EM earnings trend,,,,
+eps_ez_fwd,Eurozone Fwd EPS Growth,MXEMU BEST_EPS_GRO,BBG,Daily,F,Level z + Delta20d,252d,MSCI EMU earnings trend,,,,
+eps_china_fwd,China Fwd EPS Growth,MXCN BEST_EPS_GRO,BBG,Daily,F,Level z + Delta20d,252d,MSCI China earnings trend,,,,
+eps_world_fwd,MSCI World Fwd EPS Growth,MXWO BEST_EPS_GRO,BBG,Daily,F,Level z + Delta20d,252d,DM earnings breadth,,,,
+eps_beat_us,US Earnings Beat %,Computed,BBG,Quarterly,F,"Discrete score: >65% +2, 55-65% +1, <50% -1",60M,Corporate delivery vs estimates,,,,
+breakeven_5y,5Y Breakeven Inflation,T5YIE (FRED),FRED,Daily,F,Level z + Delta20d vs 2% target,5Y,Market implied 5Y inflation,original,H5,USGGBE05 Index,rolling_z
+breakeven_10y,10Y Breakeven Inflation,T10YIE (FRED),FRED,Daily,F,Level z + Delta20d,5Y,Amplified signal for long duration,original,H5,USGGBE10 Index,rolling_z
+core_pce,US Core PCE YoY,PCEPILFE (FRED),FRED,Monthly,F,Level z vs 2% target,60M,Fed's preferred inflation gauge,original,H5,PCE CYOY Index,ewma_z
+fed_funds,Fed Funds Rate,FDTR (BBG),BBG,Daily,F,Level vs neutral r*; direction; real FF,5Y,Policy stance; restrictive >r*,,,,
+spxt_mom,SPXT 12-1M Price Momentum,SPXT Index TR,BBG,Daily,M,12-1M(40%)+3M(25%)+MA50/200(20%)+RSI(15%),1Y,S&P 500 composite momentum; highest IC single signal,,,,
+spxt_ma,SPXT MA50 vs MA200,SPXT Index TR,BBG,Daily,M,Distance z-score,1Y,Golden/death cross proximity,,,,
+spxt_rsi,RSI(14) on SPXT,SPXT Index TR,BBG,Daily,M,(RSI-50)/50; contrarian at extremes,60d,Short-term mean-reversion,,,,
+eafe_mom,EAFE Price Momentum,M0EFHUSD Index TR,BBG,Daily,M,Composite (12-1M/3M/MA/RSI),1Y,EAFE (DM ex-US) trend,,,,
+em_mom,MSCI EM Price Momentum,NDUEEGF Index TR,BBG,Daily,M,Composite,1Y,Broad EM equity trend,,,,
+em_xcn_mom,EM ex-China Price Momentum,M1CXBRV Index TR,BBG,Daily,M,Composite,1Y,EM ex-China breadth check,,,,
+china_mom,China Price Momentum,NDEUCHF Index TR,BBG,Daily,M,Composite,1Y,MSCI China trend,,,,
+growth_mom,US Growth Momentum,SPTRSGX Index TR,BBG,Daily,M,Composite,1Y,S&P 500 Growth trend,,,,
+value_mom,US Value Momentum,SPTRSVX Index TR,BBG,Daily,M,Composite,1Y,S&P 500 Value trend,,,,
+bfu5_mom,BFU5TRUU 1-5Y Treasury Mom,BFU5TRUU Index,BBG,Daily,M,"Composite, TR-based",1Y,Short UST price momentum,,,,
+i132_mom,ICE 1-3Y UST Momentum,I13282US Index,BBG,Daily,M,"Composite, TR-based",1Y,Short UST momentum (alt),,,,
+bsgv_mom,BSGVTRUU Long Govt Mom,BSGVTRUU Index,BBG,Daily,M,"Composite, TR-based",1Y,Long UST TR trend,,,,
+usagg_mom,US Agg Momentum,I26729US Index,BBG,Daily,M,Composite,1Y,IG Corp proxy,,,,
+lt03_mom,LT03TRUU ST Govt Mom,LT03TRUU Index,BBG,Daily,M,Composite,1Y,Money market TR proxy,,,,
+bbb_oas_mom,BBB OAS Momentum,BAMLC0A4CBBB,FRED,Daily,M,z = -1 * zscore(DeltaOAS),5Y,Tightening=+ for IG credit,,,,
+hy_oas_mom,HY OAS Momentum,BAMLH0A0HYM2,FRED,Daily,M,z = -1 * zscore(DeltaOAS),5Y,Tightening=+ for HY / equity proxy,,,,
+em_oas_mom,EM BBB OAS Momentum,BAMLEM2BRRBBBCRPIOAS,FRED,Daily,M,z = -1 * zscore(DeltaOAS),5Y,EM credit leading indicator,,,,
+latam_oas_mom,LatAm Corp OAS Momentum,BAMLEMRLCRPILAOAS,FRED,Daily,M,z = -1 * zscore(DeltaOAS),5Y,LatAm-specific spread mom,,,,
+cdx_ig_mom,CDX IG 5Y Momentum,IBOXUMAE Index,BBG,Daily,M,z = -1 * zscore(DeltaSpread),5Y,Real-time IG credit conditions,custom,custom_series,cdx_ig_mom,ewma_z
+cdx_hy_mom,CDX HY Momentum,IBOXHYAE Index,BBG,Daily,M,Price-based composite,5Y,HY risk appetite,custom,custom_series,cdx_hy_mom,ewma_z
+ust10_yld_mom,US 10Y Yield Momentum,GT10 @BGN Govt,BBG,Daily,M,z = -1 * zscore(Deltayld),5Y,Falling 10Y = +z for duration,,,,
+ust2_yld_mom,US 2Y Yield Momentum,GT02 @BGN Govt,BBG,Daily,M,z = -1 * zscore(Deltayld),5Y,Falling 2Y = +z for STFI,,,,
+dxy_mom,USD DXY Momentum,DXY Index,BBG,Daily,M,Composite (direction),5Y,Weak USD = + for EM,,,,
+vix_level,VIX Level (percentile),VIXCLS (FRED),FRED,Daily,S,Percentile (5Y) + non-linear score,5Y,Contrarian for equity; flight-to-quality for FI,,,,
+vix_term,VIX Term Structure (VIX/VIX3M),Computed,FRED,Daily,S,Ratio; >1 = backwardation (panic),5Y,Near-term stress vs medium-term,,,,
+move_index,MOVE Index,MOVE Index,BBG,Daily,S,Level z; regime thresholds,5Y,Bond vol; high = bad for FI carry,,,,
+vstoxx,VSTOXX (EZ vol),V2X Index,BBG,Daily,S,Percentile (5Y),5Y,DM ex-US vol,,,,
+ted_spread,TED Spread,TEDRATE (FRED),FRED,Daily,S,Level z (5Y),5Y,Funding stress; risk-off gauge,,,,
+dxy_level,USD DXY Level,DTWEXBGS (FRED),FRED,Daily,S,Level z inverted for EM,5Y,Strong USD = EM headwind,,,,
+embi_spread,EMBI Sovereign Spread,BAMLHE00EHY2Y,FRED,Daily,S,Level z; widening = negative,5Y,EM sovereign stress,,,,
+gsfci,GS Financial Conditions,GSFCI Index,BBG,Daily,S,Level z + Delta20d,5Y,Broad US financial conditions,,,,
+pcr_10d,CBOE PCR 10d Avg,CPCE (FRED),FRED,Daily,S,MA10 level z; contrarian,5Y,>1.1 fear -> buy; <0.7 -> sell,,,,
+aaii_bb,AAII Bull-Bear Spread,AAII.com,AAII,Weekly,S,Spread z (104w); contrarian,2Y,>+30% sell; <-20% buy,,,,
+cot_spx,CFTC COT S&P Net Spec,CFTC / Quandl,CFTC,Weekly,S,Net positions z; contrarian,1Y,Extreme long = crowded = fade,,,,
+cot_ust10,CFTC COT UST 10Y Net Spec,CFTC / Quandl,CFTC,Weekly,S,Net positions z; contrarian,1Y,Extreme short = squeeze = buy UST,,,,
+skew,SKEW Index,SKEWX (FRED),FRED,Daily,S,Level z (252d),1Y,Tail hedging; mild equity bearish,,,,
+pe_spx,S&P 500 Forward P/E,SPXT Index PE,BBG,Daily,V,pctile(10Y); score = -2 + 4*(1 - pctile),10Y,<15x cheap / 15-20x fair / >22x expensive,,,,
+pe_eafe,EAFE Forward P/E,M0EFHUSD Index PE,BBG,Daily,V,pctile(10Y),10Y,<13x cheap / 13-17x fair / >19x expensive,,,,
+pe_em,MSCI EM Forward P/E,NDUEEGF Index PE,BBG,Daily,V,pctile(10Y),10Y,<10x cheap / 10-13x fair / >15x expensive,,,,
+pe_china,MSCI China Forward P/E,NDEUCHF Index PE,BBG,Daily,V,pctile(10Y),10Y,<9x cheap / 9-12x fair / >14x expensive,,,,
+pe_em_xcn,MSCI EM ex-China Forward P/E,M1CXBRV Index PE,BBG,Daily,V,pctile(10Y),10Y,<10x cheap / 10-13x fair,,,,
+pe_gro,S&P 500 Growth P/E,SPTRSGX Index PE,BBG,Daily,V,Relative to Value: z-score of ratio,10Y,Growth/Value relative valuation,,,,
+pe_val,S&P 500 Value P/E,SPTRSVX Index PE,BBG,Daily,V,Relative to Market: z-score of ratio,10Y,Value style attractiveness,,,,
+erp_us,US Equity Risk Premium,Computed (EY-TIPS10),BBG,Daily,V,z-score (10Y),10Y,Primary cross-asset signal; >4% = OW equity,custom,custom_series,erp_us,rolling_z
+erp_em,EM Equity Risk Premium,Computed,BBG,Daily,V,z-score (10Y),10Y,EM EY - UST 10Y - EMBI spread,custom,custom_series,erp_em,rolling_z
+shiller_cape,Shiller CAPE (10Y),Computed,BBG,Daily,V,Level z; >35x = expensive,30Y,Long-run anchor (10% weight cap),,,,
+yield_ust10,US 10Y Yield Level (pctile),GT10 @BGN Govt,BBG,Daily,V,pctile(10Y),10Y,High yield = attractive UST carry,,,,
+yield_ust2,US 2Y Yield Level (pctile),GT02 @BGN Govt,BBG,Daily,V,pctile(10Y),10Y,High 2Y = attractive STFI carry,,,,
+term_spread,Term Spread 10Y-2Y,Computed,BBG,Daily,V,Level z; inverted = bullish duration,10Y,Recession signal when inverted,custom,custom_series,term_spread,ewma_z
+tips10,TIPS 10Y Real Yield,DFII10 (FRED),FRED,Daily,V,Level z,10Y,>2% = duration very attractive,,,,
+tips5,TIPS 5Y Real Yield,DFII5 (FRED),FRED,Daily,V,Level z,10Y,>1.5% = STFI very attractive,,,,
+bbb_oas_lv,BBB OAS Level (pctile),BAMLC0A4CBBB,FRED,Daily,V,pctile(5Y/10Y); >180bps cheap,10Y,IG valuation anchor,,,,
+hy_oas_lv,HY OAS Level (pctile),BAMLH0A0HYM2,FRED,Daily,V,pctile; >500bps cheap,10Y,HY carry vs risk,,,,
+em_oas_lv,EM BBB OAS Level (pctile),BAMLEM2BRRBBBCRPIOAS,FRED,Daily,V,pctile; >250bps cheap,10Y,EM credit cheapness,,,,
+latam_oas_lv,LatAm OAS Level,BAMLEMRLCRPILAOAS,FRED,Daily,V,pctile,10Y,LatAm-specific credit,,,,
+real_tbill_3m,Real 3M T-bill Rate,Computed (DTB3-CPI),FRED,Daily,V,Level z,10Y,Main MM signal,,,,
+tbill_3m_pctile,3M T-bill Yield Pctile,DTB3 (FRED),FRED,Daily,V,pctile(10Y),10Y,Nominal cash yield attractiveness,,,,
+ff_vs_neutral,Fed Funds vs Neutral (r*),FEDFUNDS (FRED),FRED,Daily,V,Level vs 2.5% neutral,10Y,Policy stance,,,,
+hy_ig_ratio,HY/IG Spread Ratio,Computed,FRED,Daily,V,Level z of ratio,10Y,Credit cycle position,custom,custom_series,hy_ig_ratio,ewma_z
+dxy_z,DXY USD Index,DXY Curncy (BBG via H5),Bloomberg/H5,Daily,S,EWMA z-score,1Y EWMA,Strong USD = EM headwind. From 2011.,original,H5,DXY Curncy,ewma_z
+modern_ted,Modern TED (T-bill - SOFR),GB03 - SOFRRATE (H5),Bloomberg/H5,Daily,S,Raw spread,5Y,"Funding stress proxy, replaces BASPTDSP",custom,custom_series,modern_ted,ewma_z
+fci_z,Bloomberg US FCI,BFCIUS Index (H5),Bloomberg/H5,Daily,S,EWMA z-score,1Y EWMA,Tight FCI = risk headwind for US equity,original,H5,BFCIUS Index,ewma_z
+aaii_z,AAII Bull-Bear Spread,AAII (dedicated sheet),AAII,Weekly,S,EWMA z-score,5Y EWMA,Contrarian: extreme bulls → sell signal,original,AAII,Bull-Bear Spread,ewma_z
+vstoxx_z,VSTOXX (Eurostoxx Vol Index),V2X Index (H5),Bloomberg/H5,Daily,S,EWMA z-score,1Y EWMA,European fear gauge; contrarian for DM equity,original,H5,V2X Index,ewma_z
+pce_yoy,US Core PCE YoY,PCE CYOY Index (H5),Bloomberg/H5,Monthly,F,Level,5Y,Inflation signal for MM/STFI fundamentals,,,,
+real_ff,Real Fed Funds Rate,FDTR - PCE CYOY (computed),Bloomberg/H5,Daily,F,Level (computed),5Y,Positive = tight policy = MM carry attractive,custom,custom_series,real_ff,rolling_z
+pmi_japan,Japan Mfg PMI (Jibun Bank),MPMIJPMA Index (H2),Bloomberg/H2,Monthly,F,EWMA z-score,5Y pmi,DM equity fundamentals: Japan proxy,,,,
+gdp_japan,Japan GDP Consensus Forecast,ECGDJP (H2),Bloomberg/H2,Monthly,F,Blended revision,5Y,DM equity: blended cur/nxt-year GDP,custom,custom_series,gdp_japan,ewma_z
+eps_japan,Japan Fwd EPS Revision,MXJP Index Forward EPS (H3),Bloomberg/H3,Monthly,F,EWMA z-score mom,1Y EWMA,DM equity EPS revision,original,H3,MXJP Index Forward EPS,mom_z
+cesi_japan,Citi Japan Eco Surprise,CESIJPY Index,BBG,Daily,F,EWMA z-score,252,Japan macro surprises,original,H2,CESIJPY Index,ewma_z
+eps_us,US Fwd EPS Revision,SPX Fwd EPS,BBG,Daily,F,mom_z,21,pct_change(21)→ewma_z,original,H3,SPX Index Forward EPS,mom_z
+eps_em,EM Fwd EPS Revision,MXEM Fwd EPS,BBG,Daily,F,mom_z,21,pct_change(21)→ewma_z,original,H3,MXEM Index Forward EPS,mom_z
+eps_eafe,EAFE Fwd EPS Revision,MXEF Fwd EPS,BBG,Daily,F,mom_z,21,pct_change(21)→ewma_z,original,H3,MXEF Index Forward EPS,mom_z
+eps_china,China Fwd EPS Revision,MXCN Fwd EPS,BBG,Daily,F,mom_z,21,pct_change(21)→ewma_z,original,H3,MXCN Index Forward EPS,mom_z
+vix,CBOE VIX Index,VIX Index,BBG,Daily,S,ewma_z,1260,Contrarian equity; FQ for FI,original,H5,VIX Index,ewma_z
+move_z,ICE MOVE Index,MOVE Index,BBG,Daily,S,ewma_z,1260,Bond vol; FQ signal for FI,original,H5,MOVE Index,ewma_z
+oas_bbb,BBB OAS Valuation,BAMLC0A4CBBB,FRED,Daily,V,pctile,1260,Wide=cheap=positive; 5Y pctile,original,OAS,BAMLC0A4CBBB,pctile
+oas_hy,HY OAS Valuation,BAMLH0A0HYM2,FRED,Daily,V,pctile,1260,Wide=cheap=positive; 5Y pctile,original,OAS,BAMLH0A0HYM2,pctile
+oas_em,EM Corp OAS Valuation,BAMLEM2BRRBBBCRPIOAS,FRED,Daily,V,pctile,1260,Wide=cheap=positive,original,OAS,BAMLEM2BRRBBBCRPIOAS,pctile
+oas_latam,LatAm Corp OAS,BAMLEMRLCRPILAOAS,FRED,Daily,V,pctile,1260,Wide=cheap=positive,original,OAS,BAMLEMRLCRPILAOAS,pctile
+oas_bbb_mom,BBB OAS Momentum,BAMLC0A4CBBB,FRED,Daily,M,inv_mom_z,21,Tightening=positive; diff window,original,OAS,BAMLC0A4CBBB,diff_z
+oas_hy_mom,HY OAS Momentum,BAMLH0A0HYM2,FRED,Daily,M,inv_mom_z,21,Tightening=positive,original,OAS,BAMLH0A0HYM2,diff_z
+oas_em_mom,EM Corp OAS Momentum,BAMLEM2BRRBBBCRPIOAS,FRED,Daily,M,inv_mom_z,21,Tightening=positive,original,OAS,BAMLEM2BRRBBBCRPIOAS,diff_z
+gt02,US 2Y Yield Level,GT02 @BGN Govt,BBG,Daily,V,pctile,2520,High yield=attractive carry,original,H5,GT02 @BGN Govt,pctile
+gt10,US 10Y Yield Level,GT10 @BGN Govt,BBG,Daily,V,pctile,2520,High yield=attractive carry,original,H5,GT10 @BGN Govt,pctile
+tips_5y,TIPS 5Y Real Yield,H15X5YR Index,BBG,Daily,V,pctile,2520,High real yield=attractive,original,H5,H15X5YR Index,pctile
+tips_10y,TIPS 10Y Real Yield,H15X10YR Index,BBG,Daily,V,pctile,2520,High real yield=attractive,original,H5,H15X10YR Index,pctile
+gt02_mom,US 2Y Yield Momentum,GT02 @BGN Govt,BBG,Daily,M,inv_mom_z,21,Falling yield=bond price up=+,original,H5,GT02 @BGN Govt,diff_z
+gt10_mom,US 10Y Yield Momentum,GT10 @BGN Govt,BBG,Daily,M,inv_mom_z,21,Falling yield=bond price up=+,original,H5,GT10 @BGN Govt,diff_z
+sp500_tr,S&P 500 TR,SPXT Index TR,BBG,Daily,M,price_mom,252,12-1M+3M+MA+RSI composite,original,H4,SPXT Index TR,price_mom
+sp500_gro_tr,S&P 500 Growth TR,SPTRSGX Index TR,BBG,Daily,M,price_mom,252,Growth style momentum,original,H4,SPTRSGX Index TR,price_mom
+sp500_val_tr,S&P 500 Value TR,SPTRSVX Index TR,BBG,Daily,M,price_mom,252,Value style momentum,original,H4,SPTRSVX Index TR,price_mom
+eafe_tr,MSCI EAFE TR,NDDUEAFE Index TR,BBG,Daily,M,price_mom,252,DM ex-US momentum,original,H4,NDDUEAFE Index TR,price_mom
+msci_em_tr,MSCI EM TR,NDUEEGF Index TR,BBG,Daily,M,price_mom,252,EM equity momentum,original,H4,NDUEEGF Index TR,price_mom
+em_xchina_tr,MSCI EM ex-China TR,M1CXBRV Index TR,BBG,Daily,M,price_mom,252,EM ex-China momentum,original,H4,M1CXBRV Index TR,price_mom
+china_tr,MSCI China TR,NDEUCHF Index TR,BBG,Daily,M,price_mom,252,China equity momentum,original,H4,NDEUCHF Index TR,price_mom
+msci_acwi_tr,MSCI ACWI TR,NDUEACWF Index TR,BBG,Daily,M,price_mom,252,Global equity momentum,original,H4,NDUEACWF Index TR,price_mom
+bfu5_price,BFU5 / 1-3Y UST TR,I13282US Index TR,BBG,Daily,M,price_mom,252,Short-term FI momentum,original,H4,I13282US Index TR,price_mom
+i132_price,ICE 1-3Y UST TR,I13282US Index TR,BBG,Daily,M,price_mom,252,Short-term FI momentum (alt),original,H4,I13282US Index TR,price_mom
+lt03_price,LT03 Short Govt TR,LT03TRUU Index TR,BBG,Daily,M,price_mom,252,MM/STFI bond TR momentum,original,H4,LT03TRUU Index TR,price_mom
+bsgv_price,BSGV Long Govt TR,BSGVTRUU Index TR,BBG,Daily,M,price_mom,252,Long UST TR momentum,original,H4,BSGVTRUU Index TR,price_mom
+pmi_us,PMI US Composite,(NAPMPMI+NAPMNMI)/2,BBG,Monthly,F,ewma_z,252,ISM Mfg+Svcs average,custom,custom_series,pmi_us,ewma_z
+pmi_ez,PMI Eurozone Composite,(MPMIEZMA+MPMIEZSA)/2,BBG,Monthly,F,ewma_z,252,EZ Mfg+Svcs average,custom,custom_series,pmi_ez,ewma_z
+pmi_china,PMI China Composite,(CPMINDX+MPMICNSA)/2,BBG,Monthly,F,ewma_z,252,Caixin Mfg+Svcs average,custom,custom_series,pmi_china,ewma_z
+gdp_us,US GDP Blend,ECGDUS 26+27 blended,BBG,Daily,F,ewma_z,252,w_cur=month/12; revision signal,custom,custom_series,gdp_us,ewma_z
+gdp_dm,DM GDP Blend,ECGDD1 26+27 blended,BBG,Daily,F,ewma_z,252,Developed markets GDP blend,custom,custom_series,gdp_dm,ewma_z
+gdp_em,EM GDP Blend,ECGDM1 26+27 blended,BBG,Daily,F,ewma_z,252,EM consensus GDP blend,custom,custom_series,gdp_em,ewma_z
+gdp_eu,EU GDP Blend,ECGDEU 26+27 blended,BBG,Daily,F,ewma_z,252,Eurozone GDP blend,custom,custom_series,gdp_eu,ewma_z
+gdp_china,China GDP Blend,ECGDCN 26+27 blended,BBG,Daily,F,ewma_z,252,China GDP consensus blend,custom,custom_series,gdp_china,ewma_z
+erp_acwi,ACWI ERP,acwi_ey-tips_10y,Calc,Daily,V,rolling_z,2520,Global ERP,custom,custom_series,erp_acwi,rolling_z
+erp_em_xchina,EM ex-China ERP,emx_ey-tips_10y,Calc,Daily,V,rolling_z,2520,EM ex-China ERP,custom,custom_series,erp_em_xchina,rolling_z
+erp_china,China ERP,china_ey-tips_10y,Calc,Daily,V,rolling_z,2520,China equity ERP,custom,custom_series,erp_china,rolling_z
+pe_score_sp500,S&P 500 PE Score,pe_score(sp500_pe),Calc,Daily,V,ewma_z,756,-2+4*(1-pctile); cheap=positive,custom,custom_series,pe_score_sp500,ewma_z
+pe_score_eafe,EAFE PE Score,pe_score(eafe_pe),Calc,Daily,V,ewma_z,756,DM ex-US valuation score,custom,custom_series,pe_score_eafe,ewma_z
+pe_score_em,MSCI EM PE Score,pe_score(em_pe),Calc,Daily,V,ewma_z,756,EM valuation score,custom,custom_series,pe_score_em,ewma_z
+pe_score_emx,EM ex-China PE Score,pe_score(emx_pe),Calc,Daily,V,ewma_z,756,EM ex-China valuation score,custom,custom_series,pe_score_emx,ewma_z
+pe_score_china,China PE Score,pe_score(china_pe),Calc,Daily,V,ewma_z,756,China valuation score,custom,custom_series,pe_score_china,ewma_z
+pe_score_gro,US Growth PE Score,pe_score(growth_pe),Calc,Daily,V,ewma_z,756,Growth style valuation,custom,custom_series,pe_score_gro,ewma_z
+pe_score_val,US Value PE Score,pe_score(value_pe),Calc,Daily,V,ewma_z,756,Value style valuation,custom,custom_series,pe_score_val,ewma_z
+rel_pe_gro_val,Growth vs Value Rel PE,log(PE_val/PE_gro),Calc,Daily,V,ewma_z,756,Growth cheap vs value=positive,custom,custom_series,rel_pe_gro_val,ewma_z
+rel_pe_val_gro,Value vs Growth Rel PE,log(PE_gro/PE_val),Calc,Daily,V,ewma_z,756,Value cheap vs growth=positive,custom,custom_series,rel_pe_val_gro,ewma_z
+rel_pe_dm_us,DM vs US Rel PE,log(PE_sp500/PE_eafe),Calc,Daily,V,ewma_z,756,DM cheap vs US=positive,custom,custom_series,rel_pe_dm_us,ewma_z
+rel_pe_em_us,EM vs US Rel PE,log(PE_sp500/PE_em),Calc,Daily,V,ewma_z,756,EM cheap vs US=positive,custom,custom_series,rel_pe_em_us,ewma_z
+rel_pe_us_em,US vs EM Rel PE,log(PE_em/PE_sp500),Calc,Daily,V,ewma_z,756,US cheap vs EM=positive,custom,custom_series,rel_pe_us_em,ewma_z
+rel_pe_china_us,China vs US Rel PE,log(PE_sp500/PE_china),Calc,Daily,V,ewma_z,756,China cheap vs US=positive,custom,custom_series,rel_pe_china_us,ewma_z
+hy_stress,HY Spread Stress Proxy,oas_hy.diff(21),Calc,Daily,S,ewma_z,756,+widening=stress; sign=-1 for credit,custom,custom_series,hy_stress,ewma_z
+em_stress,EM Spread Stress Proxy,oas_em.diff(21),Calc,Daily,S,ewma_z,756,+widening=EM stress; sign=-1 for EM,custom,custom_series,em_stress,ewma_z
+hy_safe_haven,HY Widening=Safe Haven,oas_hy.diff(21),Calc,Daily,S,ewma_z,756,+widening=flight to safety; sign=+1,custom,custom_series,hy_safe_haven,ewma_z
+embi,EMBI Proxy (EM OAS chg),oas_em.diff(21),Calc,Daily,S,ewma_z,756,+widening=EM stress; sign=-1 for EM,custom,custom_series,embi,ewma_z
+skew_z,CBOE SKEW Index,SKEW Index,Bloomberg,daily,Sentiment,EWMA z-score,252*3,High SKEW = institutional tail hedging; contrarian signal,original,H5,SKEW Index,ewma_z
+ism_no_inv,ISM New Orders/Inventories,.ISM G Index,Bloomberg,monthly,Fundamentals,EWMA z-score,252,Ratio > 1 = demand expanding faster than supply; leading ~3-6M,original,H1,.ISM G Index,ewma_z
+eps_rev_us,US EPS Revision Composite (3M+6M),custom,custom,daily,Fundamentals,EWMA z-score,252,40%×pct_change(3M) + 60%×pct_change(6M); stronger signal than 1M alone,custom,custom_series,eps_rev_us,ewma_z
+eps_rev_em,EM EPS Revision Composite (3M+6M),custom,custom,daily,Fundamentals,EWMA z-score,252,40%×pct_change(3M) + 60%×pct_change(6M),custom,custom_series,eps_rev_em,ewma_z
+eps_rev_eafe,EAFE EPS Revision Composite (3M+6M),custom,custom,daily,Fundamentals,EWMA z-score,252,40%×pct_change(3M) + 60%×pct_change(6M),custom,custom_series,eps_rev_eafe,ewma_z
+eps_rev_china,China EPS Revision Composite (3M+6M),custom,custom,daily,Fundamentals,EWMA z-score,252,40%×pct_change(3M) + 60%×pct_change(6M),custom,custom_series,eps_rev_china,ewma_z
+breakeven_1y,US 1Y Breakeven Inflation,USGGBE01 Index,Bloomberg,daily,Fundamentals,Rolling z-score 3Y,756,1Y inflation expectation — most relevant for short-end FI fundamentals,original,H7,USGGBE01 Index,rolling_z
+gdpnow,Atlanta Fed GDPNow US Forecast,GDGCAFJP Index,Bloomberg/FRB Atlanta,daily,Fundamentals,EWMA z-score,252,Real-time US GDP tracking estimate; high frequency complement to consensus GDP_US,original,H7,GDGCAFJP Index,ewma_z
+nfci,Chicago Fed National Financial Conditions Index,NFCIINDX Index,Bloomberg/FRB Chicago,daily,Sentiment,EWMA z-score,252*3,Broad US financial conditions; negative = tight = headwind for risk assets,original,H7,NFCIINDX Index,ewma_z
+fci_ez,Bloomberg Euro-Zone Financial Conditions Index,BFCIEU Index,Bloomberg,daily,Sentiment,EWMA z-score,252*3,EZ financial conditions; tight = headwind for DM equity (Europe-focused),original,H7,BFCIEU Index,ewma_z
+fci_uk,Bloomberg UK Financial Conditions Index,BFCIGB Index,Bloomberg,daily,Sentiment,EWMA z-score,252*3,UK financial conditions; available for future DM decomposition,original,H7,BFCIGB Index,ewma_z
+pcr,CBOE Equity Put/Call Ratio (10d),PCRTEQTY Index,Bloomberg,daily,Sentiment,EWMA z-score,756,Contrarian: high PCR (>1.0) = fear = buy signal for US equity; sign=+1,original,H5,PCRTEQTY Index,ewma_z

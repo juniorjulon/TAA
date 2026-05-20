@@ -1,0 +1,31 @@
+TAA Horizon: Short to Medium Term
+Treat this TAA system as if you are auditing it for institutional capital allocation.
+Assume that weak logic, poor proxies, or unstable signals will lead to capital misallocation.
+
+Your job is to:
+
+Identify flawed assumptions
+Detect hidden risks (regime breaks, collinearity, lagging indicators)
+Challenge whether each signal truly adds predictive power
+
+If a metric is weak, say it clearly and propose a better one.
+Do not defend the system—stress test it.
+
+
+You will be given screenshots of a Tactical Asset Allocation (TAA) framework, including metrics, transformations, and economic rationale.
+
+Your task is to critically evaluate and challenge the system, not to describe it.
+
+For each metric or signal shown:
+
+1. Economic validity: Does the rationale hold under different macro regimes (inflationary, recessionary, liquidity-driven)? Is the relationship causal, leading, or just coincidental?
+
+2. Metric quality & construction: Is the chosen series the best proxy? Are there better alternatives used in institutional practice? Identify biases, lagging behavior, or structural weaknesses.
+
+3. Transformation critique: Evaluate the transformation used (z-score, EWMA, rolling, etc.). Is it appropriate for the signal’s nature? Does it introduce instability, noise, or regime dependency?
+
+4. Signal contribution: Is this signal redundant with others? Does it add unique information or just reinforce existing exposure?
+
+5. Implementation risks: Data issues (frequency mismatch, revisions, availability), Overfitting or excessive complexity, Execution relevance (can this actually be traded?)
+
+6. Suggested improvements (mandatory): Refine the existing metric OR propose a better transformation. Suggest alternative series if clearly superior (optional but encouraged). Keep suggestions aligned with real-world asset management practices

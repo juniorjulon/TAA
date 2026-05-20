@@ -42,7 +42,7 @@ from config import OUTPUT_DIR, CUSTOM_SERIES_PATH
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
-MAX_ROWS = 252 * 5  # ~5 years, enough for all timeframe toggles + context
+MAX_ROWS = 252 * 30  # Full history: ~30 years covers all available series; client handles TF slicing
 
 
 def _ser(s: pd.Series, n: int = MAX_ROWS) -> dict:
@@ -107,8 +107,8 @@ def compute_momentum_components(price: pd.Series, n: int = MAX_ROWS) -> dict:
     """
     Compute individual momentum z-score components for a price series.
     Returns dict keyed by component name, each as _ser() output.
-    Also includes 'price_pct' — cumulative % return from first data point
-    (normalized to 0 at start) for display alongside the z-score metrics.
+    Also includes 'price_tr' — the RAW total return price level
+    (untransformed) for display alongside the z-score metrics.
     """
     if price is None or price.dropna().shape[0] < 63:
         return {}
@@ -133,12 +133,10 @@ def compute_momentum_components(price: pd.Series, n: int = MAX_ROWS) -> dict:
     if len(px) >= 14 + 20:
         out["rsi"]      = _ser(ewma_zscore(_rsi_signal(px)).tail(n))
 
-    # Price level as cumulative % return from first point (for visual overlay)
-    px_tail = px.tail(n)
-    base    = float(px_tail.iloc[0])
-    if base > 0:
-        pct_return = ((px_tail / base) - 1) * 100
-        out["price_pct"] = _ser(pct_return)
+    # RAW total return price level — no transformation, no normalization.
+    # This is the actual price index (e.g. SP500 TR at ~12,000), used as the
+    # grey background overlay so the user sees real price movement vs momentum z.
+    out["price_tr"] = _ser(px.tail(n))
 
     return out
 

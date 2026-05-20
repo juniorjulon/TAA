@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equity Composite Z-Scores</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #131313;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --label: #606060;
+    --grid: rgba(255,255,255,0.04);
+    --grid-strong: rgba(245,158,11,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 680px;
+    padding: 24px 24px 20px;
+  }
+
+  /* ── Header (chart_design_1 style) ──────────────────────── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .country-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Chart area ──────────────────────────────────────────── */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    cursor: crosshair;
+    margin-top: 16px;
+  }
+
+  svg.chart { width: 100%; height: 100%; overflow: visible; display: block; }
+
+  .grid-line  { stroke: var(--grid);        stroke-width: 1; }
+  .zero-line  { stroke: var(--grid-strong); stroke-width: 1; stroke-dasharray: 2 3; }
+  .sigma-band { fill: rgba(245,158,11,0.04); }
+
+  .axis-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    fill: var(--label);
+    letter-spacing: 0.04em;
+  }
+
+  .series-path {
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    opacity: 0.9;
+    transition: opacity 0.15s, stroke-width 0.15s;
+  }
+  .series-path.dim   { opacity: 0.12; }
+  .series-path.bold  { stroke-width: 2.2; opacity: 1; }
+
+  .hover-line {
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hover-overlay { fill: transparent; cursor: crosshair; }
+
+  /* ── Date row ────────────────────────────────────────────── */
+  .date-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+  .date-lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--label);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Timeframes (chart_design_1 style) ───────────────────── */
+  .timeframes {
+    display: flex;
+    gap: 2px;
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .tf {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .tf:hover { color: var(--text-primary); background: var(--border); }
+  .tf.active {
+    color: #f59e0b;
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.22);
+    font-weight: 500;
+  }
+
+  /* ── Footer asset scores ─────────────────────────────────── */
+  .footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 14px;
+  }
+
+  .asset-score {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 2px 0;
+    transition: opacity 0.15s;
+    user-select: none;
+  }
+  .asset-score.off { opacity: 0.28; }
+
+  .score-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .score-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 44px;
+  }
+  .score-val.pos { color: #4ade80; }
+  .score-val.neg { color: #f87171; }
+
+  .sig-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .sig-ow-strong { color: #fff;     background: #15803d; }
+  .sig-ow        { color: #4ade80;  background: rgba(74,222,128,0.14); border: 1px solid rgba(74,222,128,0.25); }
+  .sig-neu       { color: #a0a0a0;  background: rgba(255,255,255,0.05); border: 1px solid #2a2a2a; }
+  .sig-uw        { color: #f87171;  background: rgba(248,113,113,0.14); border: 1px solid rgba(248,113,113,0.25); }
+  .sig-uw-strong { color: #fff;     background: #b91c1c; }
+
+  .divider { width: 1px; height: 14px; background: var(--border); margin: 0 10px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="header">
+    <div>
+      <div class="country-tag">Global Equity</div>
+      <div class="chart-title">Composite Z-Scores</div>
+    </div>
+  </div>
+
+  <div class="chart-wrap" id="chartWrap">
+    <svg class="chart" id="chartSvg" viewBox="0 0 640 200" preserveAspectRatio="none">
+      <defs>
+        <clipPath id="chartClip"><rect x="28" y="6" width="602" height="182"/></clipPath>
+      </defs>
+      <g id="gridG"></g>
+      <g id="seriesG" clip-path="url(#chartClip)"></g>
+      <line class="hover-line" id="hoverLine" x1="0" y1="6" x2="0" y2="188"/>
+      <g id="dotsG"></g>
+      <rect class="hover-overlay" id="hoverOverlay" x="28" y="6" width="602" height="182"/>
+    </svg>
+  </div>
+
+  <div class="date-row" id="dateRow"></div>
+
+  <div class="timeframes" id="timeframes">
+    <div class="tf" data-tf="63">3M</div>
+    <div class="tf" data-tf="126">6M</div>
+    <div class="tf active" data-tf="252">1Y</div>
+    <div class="tf" data-tf="0">MAX</div>
+  </div>
+
+  <div class="footer" id="footerScores"></div>
+
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const N_FULL = 756; // 3Y of daily
+
+function rng(seed) { let s = seed; return () => { s = (s*9301+49297)%233280; return s/233280; }; }
+function smooth(arr, w=4) {
+  return arr.map((_,i) => {
+    let sum=0, n=0;
+    for (let j=Math.max(0,i-w); j<=Math.min(arr.length-1,i+w); j++){ sum+=arr[j]; n++; }
+    return sum/n;
+  });
+}
+function genZ(seed, amp=0.5, bias=0, sw=3) {
+  const r = rng(seed); const a=[0];
+  for (let i=1;i<N_FULL;i++) a.push(a[i-1]+(r()-0.5)*amp);
+  const mu = a.reduce((s,v)=>s+v,0)/a.length;
+  const sd = Math.sqrt(a.reduce((s,v)=>s+(v-mu)**2,0)/a.length)||1;
+  return smooth(a.map(v=>(v-mu)/sd+bias), sw);
+}
+
+const SERIES = [
+  { key:'us',    label:'US Eq',  color:'#4ade80', data: genZ(21, 0.5,  +0.3) },
+  { key:'dm',    label:'DM',     color:'#f59e0b', data: genZ(22, 0.55, -0.1) },
+  { key:'emeq',  label:'EM Eq',  color:'#a78bfa', data: genZ(23, 0.7,  +0.4) },
+  { key:'emxcn', label:'EM xCN', color:'#f472b6', data: genZ(24, 0.6,  +0.1) },
+  { key:'china', label:'China',  color:'#fb923c', data: genZ(25, 0.65, -0.3) },
+];
+
+const startDate = new Date('2023-05-13');
+const endDate   = new Date('2026-05-13');
+function dateAt(i, len) {
+  const t = startDate.getTime() + (endDate.getTime()-startDate.getTime())*(i/(N_FULL-1));
+  return new Date(t);
+}
+function fmtShort(d) { return d.toLocaleDateString('en-US',{month:'short',year:'2-digit'}); }
+
+// ── Geometry ──────────────────────────────────────────────────────────────
+const SVG_W=640, SVG_H=200;
+const PAD = { l:28, r:10, t:6, b:12 };
+const Z_MIN=-2.5, Z_MAX=2.5;
+
+function xAt(i, len) {
+  return PAD.l + (i/(len-1))*(SVG_W-PAD.l-PAD.r);
+}
+function yZ(v) {
+  return PAD.t + (1-(v-Z_MIN)/(Z_MAX-Z_MIN))*(SVG_H-PAD.t-PAD.b);
+}
+function linePath(data) {
+  return data.map((v,i)=>`${i===0?'M':'L'}${xAt(i,data.length).toFixed(2)},${yZ(v).toFixed(2)}`).join(' ');
+}
+function fmtZ(v) { return (v>=0?'+':'−')+Math.abs(v).toFixed(2); }
+
+function classify(v) {
+  if (v >=  1.0) return { cls: 'sig-ow-strong', label: 'OW++' };
+  if (v >=  0.3) return { cls: 'sig-ow',        label: 'OW'   };
+  if (v <= -1.0) return { cls: 'sig-uw-strong', label: 'UW−−' };
+  if (v <= -0.3) return { cls: 'sig-uw',        label: 'UW'   };
+  return               { cls: 'sig-neu',        label: 'NEU'  };
+}
+
+const enabled = {};
+SERIES.forEach(s => enabled[s.key] = true);
+
+let curLen = 252; // default 1Y
+
+// ── Build static grid (once) ─────────────────────────────────────────────
+function buildGrid() {
+  const g = document.getElementById('gridG');
+  let h = '';
+  // ±1σ band
+  h += `<rect class="sigma-band" x="${PAD.l}" y="${yZ(1).toFixed(2)}" width="${SVG_W-PAD.l-PAD.r}" height="${(yZ(-1)-yZ(1)).toFixed(2)}"/>`;
+  [-2,-1,0,1,2].forEach(z => {
+    const y = yZ(z).toFixed(2);
+    h += `<line class="${z===0?'zero-line':'grid-line'}" x1="${PAD.l}" y1="${y}" x2="${SVG_W-PAD.r}" y2="${y}"/>`;
+    h += `<text class="axis-label" x="${PAD.l-4}" y="${(+y+3).toFixed(0)}" text-anchor="end">${z>0?'+'+z:z}σ</text>`;
+  });
+  g.innerHTML = h;
+}
+
+// ── Render series ────────────────────────────────────────────────────────
+function renderSeries(boldKey=null) {
+  const g = document.getElementById('seriesG');
+  g.innerHTML = SERIES
+    .filter(s => enabled[s.key])
+    .map(s => {
+      const sliced = s.data.slice(-curLen);
+      let cls = 'series-path';
+      if (boldKey) cls += boldKey===s.key ? ' bold' : ' dim';
+      return `<path class="${cls}" style="stroke:${s.color}" d="${linePath(sliced)}"/>`;
+    }).join('');
+}
+
+// ── Date row ─────────────────────────────────────────────────────────────
+function renderDateRow() {
+  const el = document.getElementById('dateRow');
+  const ticks = 4;
+  const sliceStart = N_FULL - curLen;
+  el.innerHTML = Array.from({length:ticks}, (_,i) => {
+    const idx = sliceStart + Math.round((curLen-1)*(i/(ticks-1)));
+    return `<span class="date-lbl">${fmtShort(dateAt(idx))}</span>`;
+  }).join('');
+}
+
+// ── Footer scores ────────────────────────────────────────────────────────
+function renderFooter() {
+  const el = document.getElementById('footerScores');
+  el.innerHTML = SERIES.map((s,i) => {
+    const v   = s.data[N_FULL-1];
+    const cls = v>=0?'pos':'neg';
+    const sig = classify(v);
+    const offCls = enabled[s.key]?'':'off';
+    return `
+      ${i>0?'<div class="divider"></div>':''}
+      <div class="asset-score ${offCls}" data-k="${s.key}">
+        <span class="score-key" style="color:${s.color}">${s.label}</span>
+        <span class="score-val ${cls}" id="score-${s.key}">${fmtZ(v)}</span>
+        <span class="sig-badge ${sig.cls}" id="sig-${s.key}">${sig.label}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Toggle on click
+  document.querySelectorAll('.asset-score').forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.dataset.k;
+      enabled[k] = !enabled[k];
+      el.classList.toggle('off', !enabled[k]);
+      renderSeries();
+    });
+  });
+}
+
+// ── Update footer values ─────────────────────────────────────────────────
+function setScore(key, v) {
+  const valEl = document.getElementById(`score-${key}`);
+  const sigEl = document.getElementById(`sig-${key}`);
+  if (!valEl || !sigEl) return;
+  const sig = classify(v);
+  valEl.textContent = fmtZ(v);
+  valEl.className   = `score-val ${v>=0?'pos':'neg'}`;
+  sigEl.textContent = sig.label;
+  sigEl.className   = `sig-badge ${sig.cls}`;
+}
+
+function updateScores(idx) {
+  SERIES.forEach(s => setScore(s.key, s.data[idx]));
+}
+function resetScores() {
+  SERIES.forEach(s => setScore(s.key, s.data[N_FULL-1]));
+}
+
+// ── Hover interaction ────────────────────────────────────────────────────
+const overlay   = document.getElementById('hoverOverlay');
+const hoverLine = document.getElementById('hoverLine');
+const dotsG     = document.getElementById('dotsG');
+const chartSvg  = document.getElementById('chartSvg');
+
+overlay.addEventListener('mousemove', e => {
+  const rect   = chartSvg.getBoundingClientRect();
+  const svgX   = ((e.clientX - rect.left) / rect.width) * SVG_W;
+  const localI = Math.max(0, Math.min(curLen-1,
+    Math.round((svgX - PAD.l) / (SVG_W - PAD.l - PAD.r) * (curLen-1))
+  ));
+  // Map local index back to full-data index
+  const fullI = (N_FULL - curLen) + localI;
+
+  const cx = xAt(localI, curLen).toFixed(2);
+  hoverLine.setAttribute('x1', cx);
+  hoverLine.setAttribute('x2', cx);
+  hoverLine.style.opacity = '1';
+
+  // Dots on each enabled series
+  dotsG.innerHTML = SERIES.filter(s => enabled[s.key]).map(s => {
+    const v = s.data.slice(-curLen)[localI];
+    return `<circle r="3.5" cx="${cx}" cy="${yZ(v).toFixed(2)}" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
+  }).join('');
+
+  updateScores(fullI);
+});
+
+overlay.addEventListener('mouseleave', () => {
+  hoverLine.style.opacity = '0';
+  dotsG.innerHTML = '';
+  resetScores();
+});
+
+// ── Timeframes ───────────────────────────────────────────────────────────
+document.querySelectorAll('.tf').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tf').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tf = parseInt(btn.dataset.tf);
+    curLen = (!tf || tf > N_FULL) ? N_FULL : tf;
+    renderSeries();
+    renderDateRow();
+  });
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────
+buildGrid();
+renderSeries();
+renderDateRow();
+renderFooter();
+</script>
+</body>
+</html>

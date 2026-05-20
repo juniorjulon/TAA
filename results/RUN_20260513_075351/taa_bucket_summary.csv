@@ -1,0 +1,8 @@
+bucket,sub_ac,Z_L1,Z_L2,tilt_L1,tilt_L2,tilt_hier
+us_equity,,0.26,0.0,0.0,0.0,0.0
+dm_equity,,-0.496,0.0,-0.65,0.0,-0.65
+em_equity,,0.508,0.0,0.0,0.0,0.0
+lt_fi_aggregate,[AGGREGATE],0.509,0.0,,,
+,lt_treasuries,0.50935,-0.8334,0.0,-0.6,-0.6
+,lt_us_corp,0.50935,0.3327,0.0,0.0,0.0
+,lt_em_fi,0.50935,0.8677,0.0,0.6,0.6

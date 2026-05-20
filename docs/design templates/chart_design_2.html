@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S&P 500 — Price Momentum</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #131313;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --label: #808080;
+    --pm: #f59e0b;
+    --pos: #4ade80;
+    --neg: #f87171;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 680px;
+    padding: 24px 24px 20px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .country-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 10px 0 14px;
+  }
+
+  .price-main {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .metric-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .metric-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 2px;
+  }
+
+  .metric-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 3px 9px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+
+  .metric-pill:hover { color: var(--text-primary); border-color: var(--pm); }
+  .metric-pill.active { background: var(--pm); border-color: var(--pm); color: #1a1000; }
+
+  .metric-desc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--label);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 200px;
+  }
+
+  .timeframes {
+    display: flex;
+    gap: 2px;
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .tf {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .tf:hover { color: var(--text-primary); background: var(--border); }
+  .tf.active {
+    color: var(--pm);
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    font-weight: 500;
+  }
+
+  .card-footer {
+    display: flex;
+    gap: 0;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .stat-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .stat-val.pos { color: var(--pos); }
+  .stat-val.neg { color: var(--neg); }
+  .divider { width: 1px; height: 14px; background: var(--border); margin: 0 12px; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <div>
+      <div class="country-tag">US Equity · Momentum</div>
+      <div class="chart-title">S&P 500 Total Return</div>
+    </div>
+  </div>
+
+  <div class="price-row">
+    <span class="price-main" id="price-display">—</span>
+  </div>
+
+  <div class="metric-row">
+    <span class="metric-label">Metric:</span>
+    <button class="metric-pill active" onclick="switchMetric('comp',this)">Composite</button>
+    <button class="metric-pill" onclick="switchMetric('m12',this)">12-1M (40%)</button>
+    <button class="metric-pill" onclick="switchMetric('m3',this)">3M (25%)</button>
+    <button class="metric-pill" onclick="switchMetric('ma',this)">MA(50/200) (25%)</button>
+    <button class="metric-pill" onclick="switchMetric('rsi',this)">RSI(14) (10%)</button>
+  </div>
+  <div class="metric-desc" id="metric-desc-txt"></div>
+
+  <div class="chart-wrap">
+    <canvas id="ch-mom"></canvas>
+  </div>
+
+  <div class="timeframes">
+    <div class="tf" onclick="switchTF(63,this)">3M</div>
+    <div class="tf" onclick="switchTF(252,this)">1Y</div>
+    <div class="tf active" onclick="switchTF(756,this)">3Y</div>
+    <div class="tf" onclick="switchTF(0,this)">MAX</div>
+  </div>
+
+  <div class="card-footer">
+    <div class="stat">
+      <span class="stat-key">Composite Z</span>
+      <span class="stat-val" id="foot-comp">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">12-1M</span>
+      <span class="stat-val" id="foot-m12">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">3M</span>
+      <span class="stat-val" id="foot-m3">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">MA(50/200)</span>
+      <span class="stat-val" id="foot-ma">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-key">RSI(14)</span>
+      <span class="stat-val" id="foot-rsi">—</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+function genDates(n, startYear=2013) {
+  const d = new Date(startYear,0,2);
+  const out = [];
+  for(let i=0;i<n;i++){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+7); }
+  return out;
+}
+function genPrice(n) {
+  let v = 1000, arr = [v];
+  for(let i=1;i<n;i++){ v *= (1+(Math.random()-.47)*.025); arr.push(+v.toFixed(2)); }
+  return arr;
+}
+function toZ(arr) {
+  const clean = arr.filter(x => x !== null);
+  const mu = clean.reduce((a,b)=>a+b,0)/clean.length;
+  const sd = Math.sqrt(clean.reduce((s,x)=>s+(x-mu)**2,0)/clean.length) || 1;
+  return arr.map(x => x === null ? null : +((x-mu)/sd).toFixed(2));
+}
+function mom12_1(prices) {
+  return prices.map((p,i) => i < 252 ? null : (prices[i-21]-prices[i-252])/(prices[i-252]||1)*100);
+}
+function mom3(prices) {
+  return prices.map((p,i) => i < 63 ? null : (p-prices[i-63])/prices[i-63]*100);
+}
+function maDist(prices) {
+  return prices.map((p,i) => {
+    if(i < 200) return null;
+    const ma50  = prices.slice(i-50,i).reduce((a,b)=>a+b,0)/50;
+    const ma200 = prices.slice(i-200,i).reduce((a,b)=>a+b,0)/200;
+    return (ma50-ma200)/ma200*100;
+  });
+}
+function rsiArr(prices) {
+  return prices.map((p,i) => {
+    if(i < 14) return null;
+    const changes = prices.slice(i-14,i+1).map((v,j,a)=>j>0?v-a[j-1]:0).slice(1);
+    const gains  = changes.filter(c=>c>0).reduce((a,b)=>a+b,0)/14;
+    const losses = Math.abs(changes.filter(c=>c<0).reduce((a,b)=>a+b,0))/14;
+    const rs = losses===0 ? 100 : gains/losses;
+    return (100-100/(1+rs)-50)/50;
+  });
+}
+
+const N = 700;
+const DATES   = genDates(N);
+const PRICES  = genPrice(N);  // total return price index
+
+const M12 = toZ(mom12_1(PRICES));
+const M3  = toZ(mom3(PRICES));
+const MA  = toZ(maDist(PRICES));
+const RSI = toZ(rsiArr(PRICES));
+
+const minLen = Math.min(
+  M12.filter(x=>x!==null).length,
+  M3.filter(x=>x!==null).length,
+  MA.filter(x=>x!==null).length,
+  RSI.filter(x=>x!==null).length
+);
+
+const M12_a = M12.slice(-minLen);
+const M3_a  = M3.slice(-minLen);
+const MA_a  = MA.slice(-minLen);
+const RSI_a = RSI.slice(-minLen);
+
+const COMP = Array.from({length: minLen}, (_,i) =>
+  +(.4*M12_a[i] + .25*M3_a[i] + .25*MA_a[i] + .1*RSI_a[i]).toFixed(2)
+);
+
+const DATES_A  = DATES.slice(-minLen);
+const PRICES_A = PRICES.slice(-minLen);
+
+const METRICS = {
+  comp: { data: COMP,  label: 'Composite Z',          desc: 'Composite: 40% × 12-1M skip momentum + 25% × 3M return + 25% × MA(50/200) distance + 10% × RSI(14)' },
+  m12:  { data: M12_a, label: '12-1M Skip Momentum Z', desc: '12-1M skip momentum: price return from −12M to −1M, normalized. Avoids short-term reversal (Jegadeesh-Titman 1993). Weight: 40%.' },
+  m3:   { data: M3_a,  label: '3M Return Z',           desc: '3-month total return, normalized. Captures medium-term trend. Weight: 25%.' },
+  ma:   { data: MA_a,  label: 'MA(50/200) Distance Z', desc: '(MA50 − MA200) / MA200, normalized. Positive when short-term MA above long-term (uptrend). Weight: 25%.' },
+  rsi:  { data: RSI_a, label: 'RSI(14) Z',             desc: 'RSI(14) mapped to [−1,+1] via (RSI−50)/50, normalized. Dampens signal when overbought. Weight: 10%.' },
+};
+
+let curMetric = 'comp', curTF = 756, chart = null;
+let currentPriceData = [], currentZData = [];
+
+function fmtNum(n) { return (n >= 0 ? '+' : '') + n.toFixed(2); }
+function fmtPrice(p) {
+  return p >= 1000
+    ? p.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    : p.toFixed(2);
+}
+function sliceArr(arr, tf) { return (!tf || tf >= arr.length) ? arr : arr.slice(-tf); }
+
+// ── Custom crosshair + z-score on-chart plugin ────────────────────────────
+const crosshairPlugin = {
+  id: 'crosshair',
+  afterDraw(ch) {
+    const active = ch.tooltip?._active;
+    if (!active?.length) return;
+
+    const ctx  = ch.ctx;
+    const idx  = active[0].index;
+    const area = ch.chartArea;
+    const x    = active[0].element.x;
+
+    // Vertical dashed crosshair
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, area.top);
+    ctx.lineTo(x, area.bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dot + ring + z-score label on chart (dataset index 1 = z-score series)
+    const zMeta = ch.getDatasetMeta(1);
+    const dotEl = zMeta?.data?.[idx];
+    if (dotEl) {
+      const dotX = dotEl.x;
+      const dotY = dotEl.y;
+      const zVal = ch.data.datasets[1].data[idx];
+      if (zVal == null) { ctx.restore(); return; }
+
+      // Dot
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 4, 0, 2*Math.PI);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+
+      // Ring
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 8, 0, 2*Math.PI);
+      ctx.strokeStyle = 'rgba(245,158,11,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Z-score label
+      const sign  = zVal >= 0 ? '+' : '';
+      const label = `z = ${sign}${zVal.toFixed(2)}`;
+      ctx.font = '500 10px IBM Plex Mono';
+      const tw  = ctx.measureText(label).width;
+      const pad = 6;
+      const lx  = dotX + 14 + tw + pad*2 > area.right ? dotX - tw - pad*2 - 10 : dotX + 14;
+      const ly  = Math.max(area.top + 16, Math.min(dotY, area.bottom - 6));
+
+      ctx.fillStyle = 'rgba(20,20,20,0.9)';
+      ctx.beginPath();
+      ctx.rect(lx - pad, ly - 13, tw + pad*2, 17);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(lx - pad, ly - 13, tw + pad*2, 17);
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillText(label, lx, ly);
+    }
+
+    // Update price-main header on hover
+    const priceVal = ch.data.datasets[0].data[idx];
+    if (priceVal != null) {
+      document.getElementById('price-display').textContent = fmtPrice(priceVal);
+    }
+
+    ctx.restore();
+  }
+};
+
+// ── Chart build ───────────────────────────────────────────────────────────
+function buildConfig(metricKey, tf) {
+  const m         = METRICS[metricKey];
+  const zData     = sliceArr(m.data, tf);
+  const priceData = sliceArr(PRICES_A, tf);
+  const dates     = sliceArr(DATES_A, tf);
+
+  currentZData     = zData;
+  currentPriceData = priceData;
+
+  document.getElementById('price-display').textContent = fmtPrice(priceData[priceData.length-1]);
+  document.getElementById('metric-desc-txt').textContent = m.desc;
+  updateFooter();
+
+  return {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        // Total return price index — grey area on right axis
+        {
+          label: 'Price Index',
+          data: priceData,
+          borderColor: 'rgba(160,160,160,0.25)',
+          backgroundColor: 'rgba(160,160,160,0.06)',
+          borderWidth: 1, fill: true, tension: 0.3, pointRadius: 0,
+          yAxisID: 'y2', order: 2,
+        },
+        // Momentum Z-Score — amber line on left axis
+        {
+          label: m.label,
+          data: zData,
+          borderColor: '#f59e0b',
+          backgroundColor: ctx2 => {
+            const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 200);
+            g.addColorStop(0, 'rgba(245,158,11,.18)');
+            g.addColorStop(1, 'rgba(245,158,11,0)');
+            return g;
+          },
+          borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0,
+          yAxisID: 'y1', order: 1,
+        },
+        // ±1σ reference bands
+        { data: zData.map(()=>1),  borderColor:'rgba(245,158,11,.15)', borderDash:[4,4], borderWidth:1, fill:false, pointRadius:0, tension:0, yAxisID:'y1', order:3 },
+        { data: zData.map(()=>-1), borderColor:'rgba(245,158,11,.15)', borderDash:[4,4], borderWidth:1, fill:false, pointRadius:0, tension:0, yAxisID:'y1', order:3 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 200 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false },
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxTicksLimit: 6,
+            font: { size: 9, family: 'IBM Plex Mono' },
+            color: '#808080',
+            maxRotation: 0,
+            callback: (v, i, a) => {
+              const date = dates[i];
+              if (!date) return '';
+              const d    = new Date(date);
+              const prev = i > 0 ? new Date(dates[i-1]) : null;
+              if (prev && d.getMonth() === prev.getMonth()) return '';
+              const nMonths = Math.round(dates.length / 4.3);
+              const skip = nMonths <= 6 ? 1 : nMonths <= 18 ? 2 : nMonths <= 42 ? 3 : 6;
+              if (d.getMonth() % skip !== 0) return '';
+              return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            }
+          },
+          grid: { color: 'rgba(50,50,50,0.5)' },
+          border: { color: 'rgba(50,50,50,0.5)' },
+        },
+        y1: {
+          type: 'linear', position: 'left',
+          ticks: { font:{size:9, family:'IBM Plex Mono'}, color:'rgba(245,158,11,0.6)' },
+          grid: { color: 'rgba(50,50,50,0.4)' },
+          border: { color: 'rgba(50,50,50,0.5)' },
+        },
+        y2: {
+          type: 'linear', position: 'right',
+          ticks: {
+            font: { size:9, family:'IBM Plex Mono' },
+            color: '#606060',
+            callback: v => fmtPrice(v),
+          },
+          grid: { display: false },
+          border: { color: 'rgba(50,50,50,0.5)' },
+        },
+      }
+    },
+    plugins: [crosshairPlugin]
+  };
+}
+
+function updateFooter() {
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.textContent = fmtNum(val);
+    el.className = 'stat-val ' + (val >= 0 ? 'pos' : 'neg');
+  };
+  set('foot-comp', COMP.slice(-1)[0]);
+  set('foot-m12',  M12_a.slice(-1)[0]);
+  set('foot-m3',   M3_a.slice(-1)[0]);
+  set('foot-ma',   MA_a.slice(-1)[0]);
+  set('foot-rsi',  RSI_a.slice(-1)[0]);
+}
+
+function initChart() {
+  const ctx = document.getElementById('ch-mom').getContext('2d');
+  chart = new Chart(ctx, buildConfig(curMetric, curTF));
+}
+
+function refreshChart() {
+  chart.destroy();
+  const ctx = document.getElementById('ch-mom').getContext('2d');
+  chart = new Chart(ctx, buildConfig(curMetric, curTF));
+}
+
+function switchMetric(key, btn) {
+  curMetric = key;
+  document.querySelectorAll('.metric-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshChart();
+}
+
+function switchTF(tf, btn) {
+  curTF = tf;
+  document.querySelectorAll('.tf').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshChart();
+}
+
+// Reset price on mouse leave
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('ch-mom').addEventListener('mouseleave', () => {
+    document.getElementById('price-display').textContent =
+      fmtPrice(currentPriceData[currentPriceData.length-1]);
+  });
+});
+
+initChart();
+</script>
+</body>
+</html>

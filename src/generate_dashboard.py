@@ -1,16 +1,18 @@
 """
 src/generate_dashboard.py
 =========================
-Generates index.html by injecting live pipeline data into docs/model_design.html.
+Updates index.html in-place by injecting live pipeline data.
 
-Template  : docs/model_design.html  (CSS / HTML / JS design — owned by user)
+Source / Output : index.html  (single dashboard file — read and written back each run)
 Live data :
   SCORECARD, COMPOSITES → results/RUN_*/  (CSV outputs of main.py)
   CB                    → results/chartbook_data.json  (chartbook_data.py output)
   SIG_MATRIX, FI/EQ_BLUEPRINT, AC_ORDER, AC_LABEL_FULL, PW
                         → config/taa_config.xlsx  (via build_dashboard.py functions)
 
-Output    : index.html
+Note: docs/model_design.html is a design reference only — it is NOT read by this script.
+      index.html is the only dashboard file; it contains the full CSS/JS/layout plus the
+      live data constants that this script replaces on each run.
 
 Run:
   python src/generate_dashboard.py
@@ -24,9 +26,10 @@ _SRC  = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_SRC)
 sys.path.insert(0, _SRC)
 
-TEMPLATE_PATH = os.path.join(_ROOT, "docs", "model_design.html")
-CB_PATH       = os.path.join(_ROOT, "results", "chartbook_data.json")
-OUT_PATH      = os.path.join(_ROOT, "index.html")
+TEMPLATE_PATH  = os.path.join(_ROOT, "index.html")   # index.html is both source and output
+CB_PATH        = os.path.join(_ROOT, "results", "chartbook_data.json")
+SIG_Z_PATH     = os.path.join(_ROOT, "results", "signal_z_snapshot.json")
+OUT_PATH       = os.path.join(_ROOT, "index.html")
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -301,7 +304,7 @@ function buildFundamentalsHeatmap(el){
 # ── main build ────────────────────────────────────────────────────────────────
 
 def build_html(sc: pd.DataFrame, comp: pd.DataFrame, cb: dict, run: str) -> str:
-    # Read design template
+    # Read index.html (source of truth — updated in place on each run)
     with open(TEMPLATE_PATH, encoding="utf-8") as f:
         html = f.read()
 
@@ -336,8 +339,8 @@ def build_html(sc: pd.DataFrame, comp: pd.DataFrame, cb: dict, run: str) -> str:
             d[col] = v
         sc_rows.append(d)
 
-    # ── 3. Build COMPOSITES (last 252 days) ───────────────────────────────────
-    tail = comp.tail(252)
+    # ── 3. Build COMPOSITES (last 756 days = 3Y for Design 4 charts) ─────────
+    tail = comp.tail(756)
     comp_obj = {"dates": [d.strftime("%Y-%m-%d") for d in tail.index]}
     for col in tail.columns:
         comp_obj[col] = [
@@ -345,8 +348,8 @@ def build_html(sc: pd.DataFrame, comp: pd.DataFrame, cb: dict, run: str) -> str:
             for v in tail[col]
         ]
 
-    # ── 4. CB: sample to 252 rows per series to keep file manageable ─────────
-    cb_sampled = _sample(cb, n=252)
+    # ── 4. CB: pass full history (MAX_ROWS removed in chartbook_data.py) ─────
+    cb_sampled = cb  # full history; client-side TF slicing handles windowing
 
     # ── 5. Replace data constants ─────────────────────────────────────────────
     # Use lambda replacements to avoid backslash interpretation in re.sub
@@ -356,6 +359,17 @@ def build_html(sc: pd.DataFrame, comp: pd.DataFrame, cb: dict, run: str) -> str:
     html = re.sub(r"const SCORECARD\s*=\s*\[.*?\];",  lambda _: _sc_js,   html, flags=re.DOTALL)
     html = re.sub(r"const COMPOSITES\s*=\s*\{.*?\};", lambda _: _comp_js, html, flags=re.DOTALL)
     html = re.sub(r"const CB\s*=\s*\{.*?\};",         lambda _: _cb_js,   html, flags=re.DOTALL)
+
+    # ── 5b. Inject SIG_Z: real signal z-scores from latest pipeline run ───────
+    sig_z = {}
+    if os.path.exists(SIG_Z_PATH):
+        try:
+            with open(SIG_Z_PATH, encoding="utf-8") as f:
+                sig_z = json.load(f)
+        except Exception as exc:
+            print(f"  [warn] signal_z_snapshot.json not loaded: {exc}")
+    _sigz_js = _js_const("SIG_Z", sig_z)
+    html = re.sub(r"const SIG_Z\s*=\s*\{.*?\};", lambda _: _sigz_js, html, flags=re.DOTALL)
 
     # ── 6. Patch live methodology constants from taa_config.xlsx ─────────────
     overrides = _live_methodology_overrides()
@@ -386,7 +400,7 @@ def build_html(sc: pd.DataFrame, comp: pd.DataFrame, cb: dict, run: str) -> str:
 
 def main():
     if not os.path.exists(TEMPLATE_PATH):
-        raise FileNotFoundError(f"Template not found: {TEMPLATE_PATH}\nExpected docs/model_design.html")
+        raise FileNotFoundError(f"index.html not found: {TEMPLATE_PATH}")
 
     print("Loading data...")
     sc, comp, cb, run = load_data()
@@ -405,3 +419,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # Optional: run economic sanity report
+    try:
+        ans = input("\nRun economic sanity report? [y/N] ").strip().lower()
+    except EOFError:
+        ans = "n"
+    if ans in ("y", "yes"):
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from economic_sanity import main as _sanity_main
+        _sanity_main()

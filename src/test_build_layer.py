@@ -169,18 +169,12 @@ check("index.html has EQ_BLUEPRINT constant", lambda: (
     else (_ for _ in ()).throw(AssertionError("EQ_BLUEPRINT not found"))
 ))
 
-check("index.html has correct PW weights (money_market V=0.50)", lambda: (
-    html := _read_html(),
-    None if "V:0.50" in html
-    else (_ for _ in ()).throw(AssertionError("PW pillar weights appear to be equal (all 0.25)"))
-)[-1])
-
-check("FI_BLUEPRINT contains 5 AC blocks", lambda: (
+check("FI_BLUEPRINT contains 3 active FI AC blocks", lambda: (
     html := _read_html(),
     m := re.search(r"const FI_BLUEPRINT\s*=\s*\[(.*?)\];", html, re.DOTALL),
     count := m.group(1).count("pillars:{") if m else 0,
-    f"{count} blocks" if count == 5
-    else (_ for _ in ()).throw(AssertionError(f"Expected 5, got {count} in FI_BLUEPRINT"))
+    f"{count} blocks" if count == 3
+    else (_ for _ in ()).throw(AssertionError(f"Expected 3 active FI ACs, got {count}"))
 )[-1])
 
 check("EQ_BLUEPRINT has entries for US/DM/EM equity ACs", lambda: (
@@ -189,21 +183,20 @@ check("EQ_BLUEPRINT has entries for US/DM/EM equity ACs", lambda: (
     else (_ for _ in ()).throw(AssertionError("One or more EQ AC names missing"))
 )[-1])
 
-check("EQ_BLUEPRINT contains 5 AC blocks (all EQ ACs)", lambda: (
+check("EQ_BLUEPRINT contains 3 active EQ AC blocks", lambda: (
     html := _read_html(),
     m := re.search(r"const EQ_BLUEPRINT\s*=\s*\[(.*?)\];", html, re.DOTALL),
     count := m.group(1).count("pillars:{") if m else 0,
-    f"{count} blocks" if count == 5
-    else (_ for _ in ()).throw(AssertionError(f"Expected 5, got {count} in EQ_BLUEPRINT"))
+    f"{count} blocks" if count == 3
+    else (_ for _ in ()).throw(AssertionError(f"Expected 3 active EQ ACs, got {count}"))
 )[-1])
 
-check("AC_ORDER contains all 10 ac_id keys", lambda: (
+check("AC_ORDER contains the 6 active ac_id keys", lambda: (
     html := _read_html(),
     m := re.search(r"const AC_ORDER=\[(.*?)\]", html, re.DOTALL),
     ids_found := set(re.findall(r"'([a-z_]+)'", m.group(1))) if m else set(),
-    expected := {'money_market','short_term_fi','lt_treasuries','lt_us_corp','lt_em_fi',
-                 'us_equity','us_growth','us_value','dm_equity','em_equity'},
-    f"{len(ids_found)} unique AC ids" if ids_found == expected
+    expected := {'lt_treasuries','lt_us_corp','lt_em_fi','us_equity','dm_equity','em_equity'},
+    f"{len(ids_found)} active AC ids" if ids_found == expected
     else (_ for _ in ()).throw(AssertionError(f"Mismatch: extra={ids_found-expected}, missing={expected-ids_found}"))
 )[-1])
 
@@ -234,19 +227,19 @@ for marker in EXPECTED_PY_MARKERS:
         else (_ for _ in ()).throw(AssertionError(f"<<<{m}>>> not found in config.py"))
     ))
 
-check("config.py ASSET_CLASSES has 10 entries", lambda: (
+check("config.py ASSET_CLASSES has 6 active entries", lambda: (
     cfg := _read_config(),
     m := re.search(r"ASSET_CLASSES\s*=\s*\[([^\]]+)\]", cfg, re.DOTALL),
     count := len(re.findall(r'"[a-z_]+"', m.group(1))) if m else 0,
-    f"{count} entries" if count == 10
-    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 10"))
+    f"{count} entries" if count == 6
+    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 6 active ACs"))
 )[-1])
 
-check("config.py PILLAR_WEIGHTS has 10 entries", lambda: (
+check("config.py PILLAR_WEIGHTS has 6 active entries", lambda: (
     cfg := _read_config(),
     count := len(re.findall(r'"[a-z_]+":\s*\{"F":', cfg)),
-    f"{count} entries" if count == 10
-    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 10"))
+    f"{count} entries" if count == 6
+    else (_ for _ in ()).throw(AssertionError(f"Got {count} entries, expected 6 active ACs"))
 )[-1])
 
 
@@ -279,24 +272,24 @@ check("render_sig_matrix() produces valid JS", lambda: (
     else (_ for _ in ()).throw(AssertionError("SIG_MATRIX JS malformed"))
 )[-1])
 
-check("render_fi_blueprint() produces 5 AC blocks", lambda: (
+check("render_fi_blueprint() produces 3 active FI AC blocks", lambda: (
     sys.path.insert(0, HERE),
     bd := sys.modules.get("build_dashboard") or __import__("build_dashboard"),
     cfg := bd.load_config(),
     js := bd.render_fi_blueprint(cfg),
     count := js.count("pillars:{"),
-    f"{count} pillar blocks" if count == 5
-    else (_ for _ in ()).throw(AssertionError(f"Expected 5 FI AC blocks, got {count}"))
+    f"{count} pillar blocks" if count == 3
+    else (_ for _ in ()).throw(AssertionError(f"Expected 3 active FI ACs, got {count}"))
 )[-1])
 
-check("render_eq_blueprint() produces 5 AC blocks (all EQ ACs)", lambda: (
+check("render_eq_blueprint() produces 3 active EQ AC blocks", lambda: (
     sys.path.insert(0, HERE),
     bd := sys.modules.get("build_dashboard") or __import__("build_dashboard"),
     cfg := bd.load_config(),
     js := bd.render_eq_blueprint(cfg),
     count := js.count("pillars:{"),
-    f"{count} pillar blocks" if count == 5
-    else (_ for _ in ()).throw(AssertionError(f"Expected 5 EQ AC blocks, got {count}"))
+    f"{count} pillar blocks" if count == 3
+    else (_ for _ in ()).throw(AssertionError(f"Expected 3 active EQ ACs, got {count}"))
 )[-1])
 
 

@@ -156,11 +156,10 @@ def apply_house_view(
     result["portfolio_tilt"]   = (result["portfolio_weight"] - result["saa_weight"]).round(2)
 
     # Enforce zero-sum AFTER clipping: redistribute net excess proportionally
-    # among ACs with positive SAA weight. Use money_market as final residual.
+    # among ACs with positive SAA weight. Any residual goes to the largest-SAA AC.
     if portfolio.force_zero_sum:
         excess = result["portfolio_tilt"].sum()
         if abs(excess) > 0.01:
-            # Eligible ACs: those with positive SAA that can absorb a negative adjustment
             eligible = result[result["saa_weight"] > 0].index.tolist()
             if eligible:
                 adj_per_ac = excess / len(eligible)
@@ -168,15 +167,16 @@ def apply_house_view(
                     result.loc[eligible, "portfolio_tilt"] - adj_per_ac).round(2)
                 result["portfolio_weight"] = (
                     result["saa_weight"] + result["portfolio_tilt"]).round(2)
-            # Final sanity: clip again and push any residual to money_market
             result["portfolio_weight"] = result["portfolio_weight"].clip(lower=0.0)
             result["portfolio_tilt"]   = (result["portfolio_weight"] - result["saa_weight"]).round(2)
             leftover = result["portfolio_tilt"].sum()
-            if abs(leftover) > 0.01 and "money_market" in result.index:
-                result.loc["money_market", "portfolio_tilt"] -= round(leftover, 2)
-                result.loc["money_market", "portfolio_weight"] = round(
-                    result.loc["money_market", "saa_weight"] +
-                    result.loc["money_market", "portfolio_tilt"], 2)
+            if abs(leftover) > 0.01:
+                # Push residual to the AC with the largest SAA weight (most liquid absorber)
+                residual_ac = result["saa_weight"].idxmax()
+                result.loc[residual_ac, "portfolio_tilt"] -= round(leftover, 2)
+                result.loc[residual_ac, "portfolio_weight"] = round(
+                    result.loc[residual_ac, "saa_weight"] +
+                    result.loc[residual_ac, "portfolio_tilt"], 2)
 
     return result
 

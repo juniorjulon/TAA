@@ -235,40 +235,28 @@ SHEET_AAII_COLS = {
 
 # <<<BUILD:PY_AC_UNIVERSE_START>>> — regenerated from config/taa_config.xlsx
 ASSET_CLASSES = [
-    "money_market",
-    "short_term_fi",
     "lt_treasuries",
     "lt_us_corp",
     "lt_em_fi",
     "us_equity",
-    "us_growth",
-    "us_value",
     "dm_equity",
     "em_equity",
 ]
 
 ASSET_CLASS_LABELS = {
-    "money_market": "Money Market",
-    "short_term_fi": "Short-Term Fixed Income (USD)",
     "lt_treasuries": "LT US Treasuries",
     "lt_us_corp": "LT US Corporate",
     "lt_em_fi": "LT EM Fixed Income",
     "us_equity": "US Equity (Broad)",
-    "us_growth": "US Growth",
-    "us_value": "US Value",
     "dm_equity": "DM ex-US Equity",
     "em_equity": "Emerging Markets Equity",
 }
 
 ASSET_CLASS_GROUPS = {
-    "money_market": "FI",
-    "short_term_fi": "FI",
     "lt_treasuries": "FI",
     "lt_us_corp": "FI",
     "lt_em_fi": "FI",
     "us_equity": "EQ",
-    "us_growth": "EQ",
-    "us_value": "EQ",
     "dm_equity": "EQ",
     "em_equity": "EQ",
 }
@@ -282,14 +270,10 @@ ASSET_CLASS_GROUPS = {
 
 # <<<BUILD:PY_PILLAR_WEIGHTS_START>>> — regenerated from config/taa_config.xlsx
 PILLAR_WEIGHTS = {
-    "money_market": {"F": 0.10, "M": 0.15, "S": 0.25, "V": 0.50},
-    "short_term_fi": {"F": 0.20, "M": 0.25, "S": 0.20, "V": 0.35},
     "lt_treasuries": {"F": 0.25, "M": 0.25, "S": 0.20, "V": 0.30},
     "lt_us_corp": {"F": 0.20, "M": 0.30, "S": 0.20, "V": 0.30},
     "lt_em_fi": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
     "us_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "us_growth": {"F": 0.20, "M": 0.35, "S": 0.15, "V": 0.30},
-    "us_value": {"F": 0.30, "M": 0.25, "S": 0.20, "V": 0.25},
     "dm_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
     "em_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
 }
@@ -350,14 +334,10 @@ CONVICTION_THRESHOLDS = [
 
 # <<<BUILD:PY_MAX_TILT_START>>> — regenerated from config/taa_config.xlsx
 MAX_TILT_PCT = {
-    "money_market": 2.0,
-    "short_term_fi": 3.0,
     "lt_treasuries": 4.0,
     "lt_us_corp": 3.0,
     "lt_em_fi": 3.0,
     "us_equity": 5.0,
-    "us_growth": 3.0,
-    "us_value": 3.0,
     "dm_equity": 4.0,
     "em_equity": 4.0,
 }
@@ -392,23 +372,14 @@ AC_HIERARCHY = {
         "max_tilt_l1":   3.5,   # 70% of 5% (lt_treasuries cap)
         "max_tilt_l2":   1.5,   # 30%; zero-sum within FI bucket
     },
-    # Real AC — own composite z IS the L1 view
-    "us_equity": {
-        "children":      ["us_value", "us_growth"],
-        "model_weights": {"us_value": 0.50, "us_growth": 0.50},
-        "max_tilt_l1":   3.5,   # 70% of 5%
-        "max_tilt_l2":   1.5,   # 30%
-    },
 }
 
 # Standalone ACs (no children in hierarchy — L1 only, no internal rotation)
-AC_STANDALONE = ["money_market", "short_term_fi", "dm_equity", "em_equity"]
+AC_STANDALONE = ["us_equity", "dm_equity", "em_equity"]
 
 # Reverse lookup: child → parent aggregate key
 AC_PARENT = {
     "lt_treasuries": "lt_fi_aggregate",
     "lt_us_corp":    "lt_fi_aggregate",
     "lt_em_fi":      "lt_fi_aggregate",
-    "us_value":      "us_equity",
-    "us_growth":     "us_equity",
 }

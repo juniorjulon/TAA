@@ -148,7 +148,21 @@ def _apply_transform(raw: pd.Series, transform_code: str,
             return _composite_price_mom(s, cfg, series_id)
         return composite_price_momentum(s).rename(series_id)
 
+    elif tc == "diff_z":
+        # Direction-neutral: ewma_z(diff(window)).
+        # Sign lives in SignalMapping — use sign=-1 for assets where falling=bullish
+        # (credit spreads tightening, yields falling).
+        diff = s.diff(window)
+        return ewma_zscore(diff, span=EWMA_SPAN).rename(series_id)
+
     elif tc == "inv_mom_z":
+        # DEPRECATED — kept for backward compatibility only.
+        # Use diff_z + sign=-1 in SignalMapping instead (same math, cleaner design).
+        warnings.warn(
+            f"[signal_engine] '{series_id}' uses deprecated transform 'inv_mom_z'. "
+            f"Replace with 'diff_z' in DataSeries and set sign=-1 in SignalMapping.",
+            DeprecationWarning, stacklevel=2
+        )
         diff = s.diff(window)
         return ewma_zscore(-diff, span=EWMA_SPAN).rename(series_id)
 

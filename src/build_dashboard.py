@@ -50,9 +50,25 @@ def _read_sheet(ws):
     return rows
 
 
+def _normalize_sign(raw) -> str:
+    """Normalize any sign value from Excel to canonical '+' or '-'."""
+    if raw is None:
+        return "—"
+    s = str(raw).strip()
+    if s in ("1", "+1", "++", "+2"):
+        return "+"
+    if s in ("-1", "--", "-2"):
+        return "-"
+    if s in ("+", "-", "—"):
+        return s
+    return "—"
+
+
 def load_config():
     wb = load_workbook(XLSX, data_only=True)
-    acs        = _read_sheet(wb["AssetClasses"])
+    all_acs = _read_sheet(wb["AssetClasses"])
+    # Only include ACs where active column is not explicitly False/0
+    acs = [a for a in all_acs if str(a.get("active", "True")).strip().lower() not in ("false", "0", "no")]
     series     = _read_sheet(wb["DataSeries"])
     weights    = _read_sheet(wb["PillarWeights"])
     notes      = _read_sheet(wb["PillarNotes"])
@@ -115,7 +131,8 @@ def render_ac_label_pw(cfg):
 def render_sig_matrix(cfg):
     """
     Aggregate SignalMapping by series_id and build one row per signal with a
-    dict of {ac_id: sign}. Missing ACs default to '—'.
+    dict of {ac_id: sign}. Signs are normalized to '+' or '-'. Source is 'CALC'
+    for custom/derived series.
     """
     acs = [a["ac_id"] for a in cfg["asset_classes"]]
     series = cfg["data_series"]
@@ -126,9 +143,8 @@ def render_sig_matrix(cfg):
             continue
         if sid not in by_series:
             by_series[sid] = {}
-        by_series[sid][m["ac_id"]] = m["sign"] or "—"
+        by_series[sid][m["ac_id"]] = _normalize_sign(m.get("sign"))
 
-    # Order rows by pillar (F,M,S,V) then by series_id appearance in DataSeries
     series_order = list(series.keys())
     ordered_sids = sorted(
         by_series.keys(),
@@ -141,9 +157,11 @@ def render_sig_matrix(cfg):
         s = series[sid]
         signs = by_series[sid]
         sign_items = ",".join(f"{ac}:{js(signs.get(ac, '—'))}" for ac in acs)
+        # Custom/derived series show "CALC" as source; otherwise use the Excel source field
+        src = "CALC" if str(s.get("series_type", "")).lower() == "custom" else (s.get("source") or "—")
         lines.append(
             f"  {{pillar:{js(s['pillar'])},name:{js(s['signal_name'])},"
-            f"source:{js(s['source'])},freq:{js(s['frequency'])},"
+            f"source:{js(src)},freq:{js(s['frequency'])},"
             f"signs:{{{sign_items}}}}},"
         )
     lines.append("];")
@@ -195,10 +213,10 @@ def _render_blueprint(cfg, group):
                 s_meta = series.get(sid, {})
                 name = s_meta.get("signal_name", sid)
                 desc = m.get("description_override") or s_meta.get("notes") or ""
-                sign = m.get("sign") or "—"
+                sign = _normalize_sign(m.get("sign"))
                 wt   = pct(m.get("weight_in_pillar"))
                 lines.append(
-                    f"       {{n:{js(name)}, d:{js(desc)}, s:{js(sign)}, w:{js(wt)}}},"
+                    f"       {{id:{js(sid)}, n:{js(name)}, d:{js(desc)}, s:{js(sign)}, w:{js(wt)}}},"
                 )
             lines.append("     ]},")
         lines.append("   }},")

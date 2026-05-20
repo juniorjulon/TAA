@@ -5,16 +5,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 ## Project Overview
 
 **TAA Dashboard** is an institutional-grade Tactical Asset Allocation (TAA) signal generation system
-for insurance portfolios (Rimac Group). It scores **10 active asset classes** across four signal
+for insurance portfolios (Rimac Group). It scores **6 active asset classes** across four signal
 pillars — **Fundamentals (F), Momentum (M), Sentiment (S), Valuation (V)** — then maps composite
 z-scores to conviction-based tilts around strategic benchmarks.
+
+The 10-AC universe is defined in `config/taa_config.xlsx` (AssetClasses sheet), but only 6 are
+`active=True`: `lt_treasuries`, `lt_us_corp`, `lt_em_fi`, `us_equity`, `dm_equity`, `em_equity`.
+The 4 inactive ACs (`money_market`, `short_term_fi`, `us_growth`, `us_value`) are excluded from
+the signal pipeline entirely. MM and STFI's SAA weights are implicit absorbers in the
+multi-portfolio view; US Growth and US Value are not considered at all.
 
 The system serves **4 real portfolios** (IGCON / IGMOD / IGDIN / IGEQUS) with different SAA
 weights and active risk budgets (50–125 bps TE). All tilts enforce `force_zero_sum = True`
 (no short positions — Solvency II / insurance mandate).
 
 **Single source of truth for configuration**: `config/taa_config.xlsx`
-**Single source of truth for design**: `docs/model_design.html`
+**Single source of truth for dashboard**: `index.html` (CSS, JS, layout — updated in place each run)
 
 ---
 
@@ -37,7 +43,15 @@ weights and active risk budgets (50–125 bps TE). All tilts enforce `force_zero
 | May 2026 | v5 | chart_example.html visual format: IBM Plex fonts, value row, date labels, stats footer |
 | May 2026 | v5 | PMI heatmap in Chartbook Fundamentals: monthly columns, 10 series, percentile bars |
 | May 2026 | v5 | Chartbook: all charts use MAX default, percentile bands, price overlay in Momentum |
-| May 2026 | v5 | generate_dashboard.py reads docs/model_design.html as template (no hardcoded JS) |
+| May 2026 | v5 | generate_dashboard.py updates index.html in-place (model_design.html = design reference only) |
+| May 2026 | v6 | economic_sanity.py: standalone report generator → results/economic_sanity/ESR_*.md |
+| May 2026 | v6 | generate_dashboard.py: optional "[y/N] Run economic sanity?" prompt at end of pipeline |
+| May 2026 | v6 | Momentum (Design 2): single-select metric pills (Composite default), component z-score footer |
+| May 2026 | v6 | Composite Z charts (Design 4): 3Y default, sigma bands (±1), TF buttons, colored legend |
+| May 2026 | v6 | chartbook_data.py: MAX_ROWS cap removed → full history exported; MAX TF shows full series |
+| May 2026 | v6 | generate_dashboard.py: COMPOSITES extended to 756 days (3Y); CB no longer sampled |
+| May 2026 | v6 | docs/chart_management_proposal.md: full 94-signal catalog + systematic add/remove process |
+| May 2026 | v6 | Health check updated: expects 6 active ACs (not 10), 3 active FI + 3 active EQ blocks |
 
 ---
 
@@ -48,10 +62,11 @@ weights and active risk budgets (50–125 bps TE). All tilts enforce `force_zero
 | `src/build_custom_series.py` | Computes all 41 derived series (PMI, GDP blends, ERP, PE scores, stress proxies, EPS revision, CDX) | `data/custom_series.xlsx` |
 | `src/build_dashboard.py` | Reads taa_config.xlsx, regenerates BUILD blocks in `src/config.py`; skips index.html if no markers | `src/config.py` |
 | `src/main.py` | Full TAA pipeline: signals → pillars → composites → tilts → hierarchy → multi-portfolio | `results/RUN_YYYYMMDD_HHMMSS/` |
-| `src/chartbook_data.py` | Extracts signal time series + PMI heatmap data for dashboard | `results/chartbook_data.json` |
-| `src/generate_dashboard.py` | Injects live data into `docs/model_design.html` template → single dashboard file | `index.html` |
+| `src/chartbook_data.py` | Extracts full signal time series (full history, no cap) + PMI heatmap for dashboard | `results/chartbook_data.json` |
+| `src/generate_dashboard.py` | Injects live data into `index.html` in-place; prompts optionally to run economic sanity | `index.html` |
+| `src/economic_sanity.py` | Generates economic sanity report: signal movers, AC assessment, macro flags, tilt summary | `results/economic_sanity/ESR_*.md` |
 | `src/generate_methodology_doc.py` | Generates Word methodology reference | `docs/TAA_Methodology.docx` |
-| `src/test_build_layer.py` | 29-check health test (10 ACs, 100+ SignalMapping rows, config.py markers) | Exit 0 = all pass |
+| `src/test_build_layer.py` | 29-check health test (6 active ACs, 100+ SignalMapping rows, config.py markers) | Exit 0 = all pass |
 | `src/add_new_signals.py` | Template for batch additions of signals to taa_config.xlsx | `config/taa_config.xlsx` |
 | `src/rebuild_signal_mapping.py` | One-time tool: complete SignalMapping rebuild (disaster recovery) | `config/taa_config.xlsx` |
 
@@ -77,11 +92,17 @@ python src/main.py
 python src/test_build_layer.py  # Expected: 29/29 PASS
 
 # Step 4 — Regenerate dashboard
-python src/chartbook_data.py    # -> results/chartbook_data.json
+python src/chartbook_data.py     # -> results/chartbook_data.json  (full history, ~15 MB)
 python src/generate_dashboard.py # -> index.html  (open in browser)
+#   At end of generate_dashboard.py, you'll be prompted:
+#   "Run economic sanity report? [y/N]"
+#   Answer y to generate results/economic_sanity/ESR_YYYYMMDD_HHMMSS.md
 
-# Step 5 (only when config changes) — Propagate to config.py
-python src/build_dashboard.py   # -> src/config.py BUILD blocks updated
+# Step 5 (optional, standalone) — Economic sanity report only
+python src/economic_sanity.py    # -> results/economic_sanity/ESR_*.md
+
+# Step 6 (only when config changes) — Propagate to config.py
+python src/build_dashboard.py    # -> src/config.py BUILD blocks updated
 ```
 
 ---
@@ -128,7 +149,7 @@ Dashboard_TAA_Inputs.xlsx (OAS, H1-H7, AAII — 9 sheets)
          |   PMI heatmap (monthly, from 2023), momentum price overlays,
          |   GDP revision, breakeven, modern_ted from tsy sheet
          |
-   generate_dashboard.py  reads docs/model_design.html (template)
+   generate_dashboard.py  reads and updates index.html in-place
          |   Injects: SCORECARD, COMPOSITES, CB, SIG_MATRIX, FI/EQ_BLUEPRINT, PW
          |   Adds: buildFundamentalsHeatmap() JS (PMI/macro heatmap)
          →  index.html  (single dashboard file)
@@ -149,8 +170,8 @@ Dashboard_TAA_Inputs.xlsx (OAS, H1-H7, AAII — 9 sheets)
 | `src/hierarchical_scoring.py` | L1 aggregate + L2 within-class z-scores and tilts |
 | `src/portfolio.py` | `PortfolioConfig`, `apply_house_view()`, zero-sum + no-short enforcement |
 | `src/main.py` | Pipeline entry; OAS staleness warning; RUN timestamp with seconds |
-| `docs/model_design.html` | **Design template** — all CSS/JS/layout; `generate_dashboard.py` reads this |
-| `src/generate_dashboard.py` | Injects live data into model_design.html → index.html |
+| `docs/model_design.html` | Design reference only — NOT read by generate_dashboard.py; used as visual spec |
+| `src/generate_dashboard.py` | Injects live data into index.html in-place |
 | `src/chartbook_data.py` | Exports chartbook_data.json: PMI heatmap + all signal time series |
 
 ---
@@ -163,7 +184,7 @@ Dashboard_TAA_Inputs.xlsx (OAS, H1-H7, AAII — 9 sheets)
 | `config/portfolios.xlsx` | **4 real portfolios**: IGCON/IGMOD/IGDIN/IGEQUS — SAA weights, TE budgets, force_zero_sum=True | Edit in Excel; loaded automatically by `main.py` |
 | `data/custom_series.xlsx` | 41 derived series; regenerated by `build_custom_series.py` | Never edit manually |
 | `src/config.py` | Python constants (BUILD-marker blocks: ASSET_CLASSES, PILLAR_WEIGHTS, MAX_TILT_PCT) + AC_HIERARCHY, AC_PARENT, MIN_DATE_FOR_SIGNALS, MAX_FFILL_MONTHLY | BUILD blocks via `build_dashboard.py`; others edit manually |
-| `docs/model_design.html` | **Visual design template** for index.html (CSS, JS, chart rendering) | Edit directly; run `generate_dashboard.py` to apply |
+| `docs/model_design.html` | Design reference only — not part of the pipeline; kept for reference | Do not edit; not read by any script |
 | `docs/data_quality.md` | Data quality rules, known gaps, ffill limits, reliable_from dates | Reference document — update when adding new series |
 | `docs/signal_improvements.md` | Excluded signals with rationale and activation instructions | Update when reviewing signals |
 
@@ -335,8 +356,10 @@ Regenerated by `build_custom_series.py`. Never edit manually.
 
 Single standalone file. **Do NOT edit directly** — regenerate via scripts.
 
-### Template: docs/model_design.html
-All CSS, JS logic, chart rendering, and layout lives here. `generate_dashboard.py` reads this file and injects live data.
+### Single dashboard file: index.html
+All CSS, JS logic, chart rendering, layout, and live data live in `index.html`.
+`generate_dashboard.py` reads `index.html`, replaces the JS data constants in-place, and writes it back.
+`docs/model_design.html` is a **design reference only** — it is not read by any script.
 
 **Chart design** (chart_example.html reference format):
 - IBM Plex Mono + IBM Plex Sans fonts
@@ -385,6 +408,8 @@ python src/generate_dashboard.py  # → index.html (picks up new SIG_MATRIX etc.
 - **MIN_DATE_FOR_SIGNALS = 2013-02-01**: All z-scores before this date are dropped. EWMA span=756 days; data starts 2010-12-31; signals only reliable after 756 days of warm-up. Each series has its own `reliable_from` date computed as first_valid_date + warm_up_period.
 - **modern_ted gated at 2018-04-01**: SOFR inception. Before 2018, the series is NaN. Gating prevents the NaN gap from warping the EWMA mean.
 - **force_zero_sum=True for all portfolios**: Redistributes net tilt excess proportionally among positive-SAA ACs. Money market absorbs any residual. No weight ever goes below 0%.
+- **`active` column in taa_config.xlsx**: Single control for AC inclusion. Setting `active=False` excludes an AC from the entire pipeline (signal generation, scorecard, portfolio view, config.py export). Currently `False` for: `money_market`, `short_term_fi` (structural absorbers — their SAA weights in portfolios.xlsx remain valid implicitly), `us_growth`, `us_value` (not considered at all). To re-enable an AC: set `active=True` in Excel and re-run `python src/build_dashboard.py`.
+- **MM and STFI as implicit absorbers**: With `active=False`, MM and STFI are not in the scorecard or portfolio view. The 6 active tactical ACs' tilts sum to ~zero (via `force_zero_sum`), and MM/STFI's SAA weights in portfolios.xlsx provide the structural balance — they're not displayed but their weights are preserved in the portfolio math.
 - **Sign lives in SignalMapping only**: Never invert in build_custom_series.py or signals.py.
 - **GDP series naming**: Bloomberg tickers end in 26 (current year) or 27 (next year). Internal names follow `gdp_forecast_{region}_{year}` convention.
 - **OAS staleness**: OAS sheet typically lags H5 by ~17 business days. A warning prints in main.py when lag > 7 days.
@@ -392,6 +417,9 @@ python src/generate_dashboard.py  # → index.html (picks up new SIG_MATRIX etc.
 - **SMOOTH_COMPOSITE = False** (toggle in config.py): When True, applies 10-day rolling median to composite z-scores before conviction mapping (eliminates holiday/month-end spikes). Both raw and smooth exported.
 - **EWMA vs rolling**: EWMA is the default. Rolling only for slow valuation (P/E, ERP) where 10Y window is intentional.
 - **Re-standardize after pillar aggregation**: `standardise_pillar()` called after `_wavg()`. Do not remove.
+- **chartbook_data.py MAX_ROWS**: Removed cap (was 252×5). Full series history exported (~15 MB JSON). Client-side `sliceTF()` handles timeframe windowing. Dashboard file size ~16 MB.
+- **Chart design templates** (in `docs/design templates/`): Fundamentals/Sentiment = Design 1 (SVG + Z toggle), Momentum = Design 2 (Chart.js, single-select metric pills, price overlay, component z-footer), Valuation = Design 3 (Design 1 + percentile band), Composite Z = Design 4 (multi-series, 3Y default, sigma bands). AC overview cards = asset_class_card_design.html.
+- **COMPOSITES history**: generate_dashboard.py exports last 756 days (3Y) per Design 4 requirement. Composite Z charts have TF buttons (3M/1Y/3Y/MAX) with 3Y as default active.
 
 ---
 
@@ -424,8 +452,8 @@ python src/test_build_layer.py   # 29/29 PASS
 
 ### Modify the dashboard visual design
 
-1. Edit `docs/model_design.html` directly (CSS, JS functions, chart rendering)
-2. `python src/generate_dashboard.py` — applies changes to `index.html`
+1. Edit `index.html` directly (CSS, JS functions, chart rendering)
+2. `python src/generate_dashboard.py` — re-injects live data back into `index.html`
 
 ---
 

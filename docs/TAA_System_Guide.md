@@ -38,11 +38,12 @@ TAA/
 |   |   +-- data_loader.py      <- loads all Excel sheets; cleans and type-checks
 |   |   +-- signals.py          <- atomic signal functions (z-scores, momentum, valuation)
 |   |   +-- proxies.py          <- derives proxy signals when live data is absent
-|   |   +-- pillars.py          <- builds F/M/S/V pillar scores for all 12 asset classes
+|   |   +-- pillars.py          <- builds F/M/S/V pillar scores for the 6 active asset classes
 |   |   +-- scoring.py          <- composite -> conviction -> absolute/relative views -> tilt
 |   |   +-- main.py             <- pipeline entry point; Bloomberg/FRED override hooks
-|   |   +-- chartbook_data.py   <- extracts 5Y of signal history -> chartbook_data.json
-|   |   +-- generate_dashboard.py <- embeds CSVs + JSON into standalone dashboard.html
+|   |   +-- chartbook_data.py   <- extracts FULL signal history -> chartbook_data.json (~15MB)
+|   |   +-- generate_dashboard.py <- embeds CSVs + JSON into index.html; optional sanity prompt
+|   |   +-- economic_sanity.py  <- generates ESR_*.md report -> results/economic_sanity/
 |   |
 |   +-- [Configuration Build Layer]
 |   |   +-- seed_taa_config.py  <- one-time seeder: creates taa_config.xlsx from scratch
@@ -62,19 +63,32 @@ TAA/
 +-- docs/
 |   +-- TAA_System_Guide.md             <- this file (implementation reference)
 |   +-- TAA_Methodology.docx            <- GENERATED - methodology reference (do not edit)
-|   +-- TAA_Signal_Methodology.html     <- visual methodology reference (open in browser)
-|   +-- TAA Signal Generation v1.0.md  <- legacy (superseded by TAA_Methodology.docx)
-|   +-- Dashboard TAA - Guidelines.docx <- legacy guidelines
+|   +-- TAA_Methodology.md              <- markdown version of methodology
+|   +-- chart_management_proposal.md   <- systematic chart add/remove process + 94-signal catalog
+|   +-- economic_sanity_methodology.md <- economic sanity framework documentation
+|   +-- data_quality.md                <- data quality rules and known gaps
+|   +-- signal_improvements.md         <- excluded signals with rationale
+|   +-- design templates/              <- chart design reference templates
+|       +-- chart_design_1.html        <- Fundamentals + Sentiment charts
+|       +-- chart_design_2.html        <- Momentum charts (Chart.js, price overlay)
+|       +-- chart_design_3.html        <- Valuation charts (+ percentile band)
+|       +-- chart_design_4.html        <- Composite Z charts (multi-series, 3Y default)
+|       +-- asset_class_card_design.html <- AC overview card
 |
 +-- results/
-|   +-- RUN_YYYYMMDD_HHMM/     <- auto-created each run
-|       +-- taa_scorecard.csv
-|       +-- taa_composite_series.csv
-|       +-- pillars_{ac}.csv   <- x12 files, one per asset class
-|   +-- chartbook_data.json    <- extracted by chartbook_data.py
+|   +-- RUN_YYYYMMDD_HHMMSS/   <- auto-created each run (includes seconds to avoid collision)
+|       +-- taa_scorecard.csv              <- 6 active ACs, z-scores + tilts
+|       +-- taa_composite_series.csv       <- full composite history
+|       +-- pillars_{ac}.csv               <- per-AC pillar history (x10)
+|       +-- taa_hierarchy_scorecard.csv    <- L1/L2 views
+|       +-- taa_bucket_summary.csv         <- bucket summary
+|       +-- multi_portfolio_views.xlsx     <- 4 portfolios × tilts
+|       +-- signal_z_snapshot.json         <- current z-scores for all 97 signals
+|   +-- chartbook_data.json    <- extracted by chartbook_data.py (full history, ~15 MB)
+|   +-- economic_sanity/       <- sanity reports (one per run, when requested)
+|       +-- ESR_YYYYMMDD_HHMMSS.md
 |
-+-- index.html                 <- TAA methodology reference dashboard (static, file://)
-+-- dashboard.html             <- GENERATED - live data dashboard (do not edit)
++-- index.html                 <- LIVE dashboard (single file, CSS+JS+data — do not edit manually)
 +-- CLAUDE.md                  <- AI assistant instructions
 +-- requirements.txt
 ```

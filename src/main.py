@@ -393,6 +393,15 @@ def run_pipeline(verbose: bool = True) -> dict:
 
     print_scorecard(scorecard, date=latest_date)
 
+    # Build current signal z-score snapshot: latest value for each series_id
+    sig_z_snapshot = {}
+    for sid, s in signals.items():
+        if s is None or not isinstance(s, pd.Series):
+            continue
+        clean = s.dropna()
+        if len(clean) > 0:
+            sig_z_snapshot[sid] = round(float(clean.iloc[-1]), 4)
+
     return {
         "pillar_scores":      pillar_scores,
         "composites":         composites,
@@ -400,17 +409,31 @@ def run_pipeline(verbose: bool = True) -> dict:
         "hierarchy_scorecard": hierarchy_scorecard,
         "bucket_summary":     bucket_summary,
         "data":               data,
+        "sig_z_snapshot":     sig_z_snapshot,
     }
 
 
 def export_results(results: dict, out_dir: str = None) -> None:
     """Export all outputs to results/RUN_YYYYMMDD_HHMM/."""
     import os as _os
+    import json as _json
     from datetime import datetime
     timestamp = datetime.now().strftime("RUN_%Y%m%d_%H%M%S")
     base      = out_dir if out_dir is not None else OUTPUT_DIR
     run_dir   = _os.path.join(base, timestamp)
     _os.makedirs(run_dir, exist_ok=True)
+
+    # ── Signal z-score snapshot (series_id -> latest z-score) ────────────────
+    sig_z = results.get("sig_z_snapshot", {})
+    if sig_z:
+        sig_z_path = _os.path.join(run_dir, "signal_z_snapshot.json")
+        with open(sig_z_path, "w") as _f:
+            _json.dump(sig_z, _f, indent=2)
+        # Also write to results/ root so generate_dashboard.py can find latest
+        sig_z_root = _os.path.join(base, "signal_z_snapshot.json")
+        with open(sig_z_root, "w") as _f:
+            _json.dump(sig_z, _f, indent=2)
+        print(f"  Signal Z snap    -> {sig_z_path}")
 
     # ── Standard outputs ─────────────────────────────────────────────────────
     sc_path = _os.path.join(run_dir, "taa_scorecard.csv")

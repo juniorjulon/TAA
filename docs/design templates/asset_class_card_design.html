@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LT US Treasuries · TAA Card</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b24;
+    --surface-2: #1a2030;
+    --border: #232b3a;
+    --border-soft: #1f2937;
+    --text-primary: #e8eaf0;
+    --text-secondary: #6b7585;
+    --text-muted: #4b5563;
+    --label: #8b97a8;
+    --grid: rgba(255,255,255,0.05);
+
+    --pos: oklch(0.72 0.16 150);
+    --neg: oklch(0.66 0.20 25);
+    --neu: oklch(0.72 0.02 240);
+
+    /* Pillar accents */
+    --p-fund: oklch(0.72 0.14 175);     /* teal */
+    --p-mom:  oklch(0.78 0.13 75);      /* amber */
+    --p-sent: oklch(0.72 0.14 305);     /* violet */
+    --p-val:  oklch(0.72 0.14 245);     /* blue */
+
+    /* OW/UW signal colors */
+    --ow-strong: oklch(0.72 0.18 150);
+    --ow:        oklch(0.72 0.13 150);
+    --neutral:   oklch(0.70 0.02 240);
+    --uw:        oklch(0.68 0.13 25);
+    --uw-strong: oklch(0.66 0.20 25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { background: var(--bg); }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 1280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px 24px;
+  }
+
+  /* Card header --------------------------------------------------------- */
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .head-left { display: flex; align-items: baseline; gap: 14px; }
+  .ticker {
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--p-val), var(--p-fund));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.01em;
+  }
+  .sub-ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+  }
+
+  .head-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .composite {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .composite .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+  }
+  .z-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+  }
+  .z-pill.pos { color: var(--pos); background: oklch(0.72 0.16 150 / 0.14); border: 1px solid oklch(0.72 0.16 150 / 0.35); }
+  .z-pill.neg { color: var(--neg); background: oklch(0.66 0.20 25 / 0.14); border: 1px solid oklch(0.66 0.20 25 / 0.35); }
+  .z-pill.neu { color: var(--neu); background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+
+  /* Asset-class OW/UW big badge */
+  .ac-signal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .ac-signal .arrow { font-size: 14px; }
+  .sig-ow-strong { color: #fff; background: var(--ow-strong); }
+  .sig-ow        { color: var(--ow); background: oklch(0.72 0.13 150 / 0.18); border: 1px solid oklch(0.72 0.13 150 / 0.4); }
+  .sig-neutral   { color: var(--neutral); background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+  .sig-uw        { color: var(--uw); background: oklch(0.68 0.13 25 / 0.18); border: 1px solid oklch(0.68 0.13 25 / 0.4); }
+  .sig-uw-strong { color: #fff; background: var(--uw-strong); }
+
+  /* Pillar grid --------------------------------------------------------- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .pillar {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pillar-head {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .pillar-head-left { display: flex; align-items: baseline; gap: 10px; }
+  .pillar-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pc);
+  }
+  .pillar-wgt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+  }
+  .pillar-note {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+    max-width: 340px;
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  /* Rows ---------------------------------------------------------------- */
+  .col-head {
+    display: grid;
+    grid-template-columns: 1fr 40px 56px 72px 80px;
+    gap: 14px;
+    align-items: center;
+    padding: 8px 16px 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .col-head .num   { text-align: right; }
+  .col-head .sig   { text-align: center; }
+  .col-head .bar   { text-align: center; }
+  .col-head .badge { text-align: center; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 40px 56px 72px 80px;
+    gap: 14px;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    min-width: 0;
+  }
+  .row > * { min-width: 0; }
+  .row:last-of-type { border-bottom: 0; }
+
+  .signal-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .signal-desc {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+
+  .sign-tag {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 auto;
+  }
+  .sign-tag.plus  { background: oklch(0.72 0.16 150 / 0.18); color: var(--pos); border: 1px solid oklch(0.72 0.16 150 / 0.4); }
+  .sign-tag.minus { background: oklch(0.66 0.20 25 / 0.16); color: var(--neg); border: 1px solid oklch(0.66 0.20 25 / 0.4); }
+
+  .wgt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+
+  .z-cell {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .z-val {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .z-val.pos { color: var(--pos); }
+  .z-val.neg { color: var(--neg); }
+  .z-val.neu { color: var(--neu); }
+
+  /* Mini bar */
+  .mini-bar {
+    position: relative;
+    height: 14px;
+    background: var(--grid);
+    border-radius: 3px;
+  }
+  .mini-bar::before {
+    /* zero line */
+    content: '';
+    position: absolute;
+    left: 50%; top: -2px; bottom: -2px;
+    width: 1px;
+    background: rgba(255,255,255,0.18);
+  }
+  .mini-needle {
+    position: absolute;
+    top: -2px;
+    width: 3px;
+    height: 18px;
+    border-radius: 1.5px;
+    transform: translateX(-50%);
+  }
+  .mini-needle.pos { background: var(--pos); box-shadow: 0 0 6px oklch(0.72 0.16 150 / 0.5); }
+  .mini-needle.neg { background: var(--neg); box-shadow: 0 0 6px oklch(0.66 0.20 25 / 0.5); }
+  .mini-needle.neu { background: var(--neu); }
+
+  /* OW/UW badge */
+  .ow-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 4px 0;
+    border-radius: 4px;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .ow-badge .ic { font-size: 11px; line-height: 1; }
+  .ow-strong { color: #fff; background: var(--ow-strong); }
+  .ow        { color: var(--ow); background: oklch(0.72 0.13 150 / 0.16); border: 1px solid oklch(0.72 0.13 150 / 0.4); }
+  .neutral   { color: var(--neutral); background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+  .uw        { color: var(--uw); background: oklch(0.68 0.13 25 / 0.16); border: 1px solid oklch(0.68 0.13 25 / 0.4); }
+  .uw-strong { color: #fff; background: var(--uw-strong); }
+
+  /* Pillar footer (PILLAR Z-SCORE) */
+  .pillar-foot {
+    display: grid;
+    grid-template-columns: 1fr 40px 56px 72px 80px;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 16px;
+    background: color-mix(in oklch, var(--pc) 8%, transparent);
+    border-top: 1px solid color-mix(in oklch, var(--pc) 25%, transparent);
+    margin-top: auto;
+    min-width: 0;
+  }
+  .pillar-foot > * { min-width: 0; }
+  .pillar-foot .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pc);
+    grid-column: 1 / span 3;
+  }
+  .pillar-foot .z-cell { grid-column: 4; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .col-head, .row, .pillar-foot {
+      grid-template-columns: 1fr 32px 48px 64px 72px;
+      gap: 10px;
+    }
+    .signal-desc { display: none; }
+    .head { flex-wrap: wrap; }
+    .head-right { flex-wrap: wrap; gap: 10px; }
+  }
+
+  /* Footer of card with legend */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .legend-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-secondary);
+  }
+  .legend-swatch {
+    width: 18px;
+    height: 12px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="head">
+    <div class="head-left">
+      <span class="ticker">LT US Treasuries</span>
+      <span class="sub-ticker">7-30Y duration, BSGVTRUU benchmark</span>
+    </div>
+    <div class="head-right">
+      <div class="composite">
+        <span class="lbl">Composite Z</span>
+        <span class="z-pill neg">−0.32</span>
+      </div>
+      <span class="lbl" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);letter-spacing:0.1em;text-transform:uppercase;">Asset-Class Signal</span>
+      <span class="ac-signal sig-uw">UW</span>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid" id="grid"></div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="legend-title">Signal Scale</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--uw-strong)"></span>Strong UW · z ≤ −1.0</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:oklch(0.68 0.13 25 / 0.5);border:1px solid oklch(0.68 0.13 25 / 0.6)"></span>UW · z ≤ −0.3</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:rgba(255,255,255,0.06);border:1px solid var(--border)"></span>Neutral · |z| &lt; 0.3</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:oklch(0.72 0.13 150 / 0.5);border:1px solid oklch(0.72 0.13 150 / 0.6)"></span>OW · z ≥ +0.3</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--ow-strong)"></span>Strong OW · z ≥ +1.0</span>
+  </div>
+
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const pillars = [
+  {
+    key: 'fund',
+    name: 'Fundamentals',
+    weight: 25,
+    color: 'var(--p-fund)',
+    note: 'All macro growth signals are inverted and amplified. Inflation signals are doubly negative (higher rates + lower real value).',
+    signals: [
+      { name: 'PMI US Composite',        desc: 'PMI up = rates rise = UST prices fall',         sign: -1, wgt: 30, z: -1.06 },
+      { name: 'US GDP Blend',            desc: 'GDP growth + Fed stays restrictive = duration headwind', sign: -1, wgt: 25, z: -0.78 },
+      { name: 'Citi US Surprise (CESIUSD)', desc: 'Better-than-expected data = rates rise',     sign: -1, wgt: 20, z: +0.16 },
+      { name: '10Y Breakeven Inflation', desc: '10Y inflation expectations: rising = UST real yield falls', sign: -1, wgt: 25, z: -0.70 },
+    ],
+    pillarZ: -0.28
+  },
+  {
+    key: 'mom',
+    name: 'Momentum',
+    weight: 25,
+    color: 'var(--p-mom)',
+    note: 'Long UST have significant price momentum. Duration sells off in trending rate-rise environments and rallies in risk-off.',
+    signals: [
+      { name: 'BSGV Long Govt TR',       desc: 'LT Govt TR momentum — primary',                  sign: +1, wgt: 45, z: -0.21 },
+      { name: 'US 10Y Yield Momentum',   desc: '10Y yield falling = positive for UST',           sign: +1, wgt: 35, z: +0.08 },
+      { name: 'BBB OAS Momentum',        desc: 'Credit stress = flight-to-quality = UST demand', sign: +1, wgt: 20, z: -0.57 },
+    ],
+    pillarZ: -0.11
+  },
+  {
+    key: 'sent',
+    name: 'Sentiment',
+    weight: 20,
+    color: 'var(--p-sent)',
+    note: 'VIX and MOVE are positive for UST. CFTC net-short UST (contrarian) also matters.',
+    signals: [
+      { name: 'CBOE VIX Index',          desc: 'High VIX = risk-off = UST safe-haven demand',    sign: +1, wgt: 40, z: -0.23 },
+      { name: 'ICE MOVE Index',          desc: 'MOVE rising = UST vol = safe-haven hedging demand', sign: +1, wgt: 30, z: -1.04 },
+      { name: 'Modern TED (T-bill - SOFR)', desc: 'Funding stress = flight to UST',              sign: +1, wgt: 20, z: +0.29 },
+      { name: 'CBOE SKEW Index',         desc: 'High SKEW = tail-risk hedging = UST safe-haven', sign: +1, wgt: 10, z: -0.27 },
+    ],
+    pillarZ: -0.41
+  },
+  {
+    key: 'val',
+    name: 'Valuation',
+    weight: 30,
+    color: 'var(--p-val)',
+    note: '10Y yield level, real yield, and term premium are the anchors. Most powerful: high real yields + inverted curve.',
+    signals: [
+      { name: 'US 10Y Yield Level',      desc: '10Y yield pctile; high = LT UST attractive carry', sign: +1, wgt: 40, z: +1.41 },
+      { name: 'TIPS 10Y Real Yield',     desc: 'TIPS 10Y real yield: positive and high = UST very attractive', sign: +1, wgt: 35, z: +1.30 },
+      { name: 'Term Spread 10Y-2Y',      desc: 'Steep curve = long-end premium = LT attractive', sign: +1, wgt: 25, z: +0.61 },
+    ],
+    pillarZ: +1.18
+  },
+];
+
+// Asset class composite (weighted)
+const compositeZ = pillars.reduce((s, p) => s + p.pillarZ * (p.weight/100), 0);
+
+// ── Signal classification ────────────────────────────────────────────────
+function classify(z){
+  if (z >= 1.0)   return { cls: 'ow-strong', label: 'OW++' };
+  if (z >= 0.3)   return { cls: 'ow',        label: 'OW'   };
+  if (z <= -1.0)  return { cls: 'uw-strong', label: 'UW−−' };
+  if (z <= -0.3)  return { cls: 'uw',        label: 'UW'   };
+  return            { cls: 'neutral',   label: 'NEU'  };
+}
+
+function signedContribution(signal){
+  // sign indicates whether series direction is good (+1) or bad (-1) for the asset
+  return signal.sign * signal.z;
+}
+
+function miniBar(z, signCls){
+  // Map z in [-2, +2] to position 0..100%
+  const pct = Math.max(0, Math.min(100, (z + 2) / 4 * 100));
+  return `<div class="mini-bar"><div class="mini-needle ${signCls}" style="left:${pct}%"></div></div>`;
+}
+
+function zClass(z){
+  if (Math.abs(z) < 0.05) return 'neu';
+  return z > 0 ? 'pos' : 'neg';
+}
+
+function fmtZ(z){
+  return (z >= 0 ? '+' : '−') + Math.abs(z).toFixed(2);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+const grid = document.getElementById('grid');
+
+pillars.forEach(p => {
+  let html = `
+    <div class="pillar" style="--pc:${p.color}">
+      <div class="pillar-head">
+        <div class="pillar-head-left">
+          <span class="pillar-name">${p.name}</span>
+          <span class="pillar-wgt">${p.weight}%</span>
+        </div>
+        <div class="pillar-note">${p.note}</div>
+      </div>
+      <div class="col-head">
+        <span>Signal / Series</span>
+        <span class="sig">Sign</span>
+        <span class="num">Wgt</span>
+        <span class="num">Z-Score</span>
+        <span class="badge">Signal</span>
+      </div>
+  `;
+
+  p.signals.forEach(s => {
+    const contrib = signedContribution(s);
+    const cls = classify(contrib);
+    const zClsName = zClass(s.z);
+    html += `
+      <div class="row">
+        <div>
+          <div class="signal-name">${s.name}</div>
+          <div class="signal-desc">${s.desc}</div>
+        </div>
+        <span class="sign-tag ${s.sign > 0 ? 'plus' : 'minus'}">${s.sign > 0 ? '+' : '−'}</span>
+        <span class="wgt">${s.wgt}%</span>
+        <span class="z-cell"><span class="z-val ${zClsName}">${fmtZ(s.z)}</span></span>
+        <span class="ow-badge ${cls.cls}">${cls.label}</span>
+      </div>
+    `;
+  });
+
+  // Pillar footer
+  const pZcls = zClass(p.pillarZ);
+  const pSig = classify(p.pillarZ);
+  html += `
+      <div class="pillar-foot">
+        <span class="label">Pillar Z-Score</span>
+        <span class="z-cell"><span class="z-val ${pZcls}">${fmtZ(p.pillarZ)}</span></span>
+        <span class="ow-badge ${pSig.cls}">${pSig.label}</span>
+      </div>
+    </div>
+  `;
+  grid.insertAdjacentHTML('beforeend', html);
+});
+
+// Update header composite
+const compEl = document.querySelector('.composite .z-pill');
+compEl.textContent = fmtZ(compositeZ);
+compEl.className = 'z-pill ' + zClass(compositeZ);
+
+const acSig = classify(compositeZ);
+const acEl = document.querySelector('.ac-signal');
+acEl.className = 'ac-signal sig-' + acSig.cls;
+acEl.innerHTML = `${acSig.label === 'NEU' ? 'NEUTRAL' : acSig.label}`;
+</script>
+
+</body>
+</html>

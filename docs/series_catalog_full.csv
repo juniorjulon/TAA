@@ -1,0 +1,95 @@
+series_id,signal_name,pillar,transform_code,frequency,source_sheet,series_type,current_z,in_snapshot
+pmi_japan_mfg,Japan Mfg PMI,F,ewma_z,Monthly,H2,original,+3.00,Y
+cesi_us,Citi US Surprise (CESIUSD),F,ewma_z,Daily,H1,original,+1.15,Y
+cesi_ez,Citi Eurozone Surprise,F,ewma_z,Daily,H1,original,-1.41,Y
+cesi_china,Citi China Surprise,F,ewma_z,Daily,H1,original,+0.91,Y
+cesi_em,Citi EM Surprise,F,ewma_z,Daily,H2,original,+1.33,Y
+breakeven_5y,5Y Breakeven Inflation,F,rolling_z,Daily,H5,original,+2.10,Y
+breakeven_10y,10Y Breakeven Inflation,F,rolling_z,Daily,H5,original,+2.45,Y
+core_pce,US Core PCE YoY,F,ewma_z,Monthly,H5,original,+0.24,Y
+cdx_ig_mom,CDX IG 5Y Momentum,M,ewma_z,Daily,custom_series,custom,-0.07,Y
+cdx_hy_mom,CDX HY Momentum,M,ewma_z,Daily,custom_series,custom,+0.31,Y
+erp_us,US Equity Risk Premium,V,rolling_z,Daily,custom_series,custom,-1.85,Y
+erp_em,EM Equity Risk Premium,V,rolling_z,Daily,custom_series,custom,-2.10,Y
+term_spread,Term Spread 10Y-2Y,V,ewma_z,Daily,custom_series,custom,+0.56,Y
+hy_ig_ratio,HY/IG Spread Ratio,V,ewma_z,Daily,custom_series,custom,+1.55,Y
+dxy_z,DXY USD Index,S,ewma_z,Daily,H5,original,-0.42,Y
+modern_ted,Modern TED (T-bill - SOFR),S,ewma_z,Daily,custom_series,custom,+0.75,Y
+fci_z,Bloomberg US FCI,S,ewma_z,Daily,H5,original,+0.59,Y
+aaii_z,AAII Bull-Bear Spread,S,ewma_z,Weekly,AAII,original,+0.05,Y
+vstoxx_z,VSTOXX (Eurostoxx Vol Index),S,ewma_z,Daily,H5,original,+0.55,Y
+real_ff,Real Fed Funds Rate,F,rolling_z,Daily,custom_series,custom,-1.91,Y
+gdp_japan,Japan GDP Consensus Forecast,F,ewma_z,Monthly,custom_series,custom,+0.16,Y
+eps_japan,Japan Fwd EPS Revision,F,mom_z,Monthly,H3,original,+0.15,Y
+cesi_japan,Citi Japan Eco Surprise,F,ewma_z,Daily,H2,original,-0.52,Y
+eps_us,US Fwd EPS Revision,F,mom_z,Daily,H3,original,+0.19,Y
+eps_em,EM Fwd EPS Revision,F,mom_z,Daily,H3,original,+0.10,Y
+eps_eafe,EAFE Fwd EPS Revision,F,mom_z,Daily,H3,original,+0.26,Y
+eps_china,China Fwd EPS Revision,F,mom_z,Daily,H3,original,-0.52,Y
+vix,CBOE VIX Index,S,ewma_z,Daily,H5,original,-0.06,Y
+move_z,ICE MOVE Index,S,ewma_z,Daily,H5,original,-0.45,Y
+oas_bbb,BBB OAS Valuation,V,pctile,Daily,OAS,original,-1.93,Y
+oas_hy,HY OAS Valuation,V,pctile,Daily,OAS,original,-1.43,Y
+oas_em,EM Corp OAS Valuation,V,pctile,Daily,OAS,original,-1.95,Y
+oas_latam,LatAm Corp OAS,V,pctile,Daily,OAS,original,-1.90,Y
+oas_bbb_mom,BBB OAS Momentum,M,diff_z,Daily,OAS,original,-0.39,Y
+oas_hy_mom,HY OAS Momentum,M,diff_z,Daily,OAS,original,+0.04,Y
+oas_em_mom,EM Corp OAS Momentum,M,diff_z,Daily,OAS,original,-0.30,Y
+gt02,US 2Y Yield Level,V,pctile,Daily,H5,original,+1.12,Y
+gt10,US 10Y Yield Level,V,pctile,Daily,H5,original,+1.91,Y
+tips_5y,TIPS 5Y Real Yield,V,pctile,Daily,H5,original,+1.09,Y
+tips_10y,TIPS 10Y Real Yield,V,pctile,Daily,H5,original,+1.75,Y
+gt02_mom,US 2Y Yield Momentum,M,diff_z,Daily,H5,original,+1.23,Y
+gt10_mom,US 10Y Yield Momentum,M,diff_z,Daily,H5,original,+1.21,Y
+sp500_tr,S&P 500 TR,M,price_mom,Daily,H4,original,+0.39,Y
+sp500_gro_tr,S&P 500 Growth TR,M,price_mom,Daily,H4,original,+0.45,Y
+sp500_val_tr,S&P 500 Value TR,M,price_mom,Daily,H4,original,+0.19,Y
+eafe_tr,MSCI EAFE TR,M,price_mom,Daily,H4,original,-0.20,Y
+msci_em_tr,MSCI EM TR,M,price_mom,Daily,H4,original,+0.77,Y
+em_xchina_tr,MSCI EM ex-China TR,M,price_mom,Daily,H4,original,+1.09,Y
+china_tr,MSCI China TR,M,price_mom,Daily,H4,original,-0.57,Y
+msci_acwi_tr,MSCI ACWI TR,M,price_mom,Daily,H4,original,+0.34,Y
+bfu5_price,BFU5 / 1-3Y UST TR,M,price_mom,Daily,H4,original,-0.89,Y
+i132_price,ICE 1-3Y UST TR,M,price_mom,Daily,H4,original,-0.89,Y
+lt03_price,LT03 Short Govt TR,M,price_mom,Daily,H4,original,-0.92,Y
+bsgv_price,BSGV Long Govt TR,M,price_mom,Daily,H4,original,-0.36,Y
+pmi_us,PMI US Composite,F,ewma_z,Monthly,custom_series,custom,+0.81,Y
+pmi_ez,PMI Eurozone Composite,F,ewma_z,Monthly,custom_series,custom,-0.71,Y
+pmi_china,PMI China Composite,F,ewma_z,Monthly,custom_series,custom,+0.36,Y
+gdp_us,US GDP Blend,F,ewma_z,Daily,custom_series,custom,+0.65,Y
+gdp_dm,DM GDP Blend,F,ewma_z,Daily,custom_series,custom,-0.16,Y
+gdp_em,EM GDP Blend,F,ewma_z,Daily,custom_series,custom,+0.66,Y
+gdp_eu,EU GDP Blend,F,ewma_z,Daily,custom_series,custom,-1.59,Y
+gdp_china,China GDP Blend,F,ewma_z,Daily,custom_series,custom,+0.93,Y
+erp_acwi,ACWI ERP,V,rolling_z,Daily,custom_series,custom,-2.10,Y
+erp_em_xchina,EM ex-China ERP,V,rolling_z,Daily,custom_series,custom,-1.96,Y
+erp_china,China ERP,V,rolling_z,Daily,custom_series,custom,-1.82,Y
+pe_score_sp500,S&P 500 PE Score,V,ewma_z,Daily,custom_series,custom,+0.85,Y
+pe_score_eafe,EAFE PE Score,V,ewma_z,Daily,custom_series,custom,-0.25,Y
+pe_score_em,MSCI EM PE Score,V,ewma_z,Daily,custom_series,custom,+1.44,Y
+pe_score_emx,EM ex-China PE Score,V,ewma_z,Daily,custom_series,custom,+1.38,Y
+pe_score_china,China PE Score,V,ewma_z,Daily,custom_series,custom,+0.46,Y
+pe_score_gro,US Growth PE Score,V,ewma_z,Daily,custom_series,custom,+1.06,Y
+pe_score_val,US Value PE Score,V,ewma_z,Daily,custom_series,custom,+0.20,Y
+rel_pe_gro_val,Growth vs Value Rel PE,V,ewma_z,Daily,custom_series,custom,+0.78,Y
+rel_pe_val_gro,Value vs Growth Rel PE,V,ewma_z,Daily,custom_series,custom,-0.78,Y
+rel_pe_dm_us,DM vs US Rel PE,V,ewma_z,Daily,custom_series,custom,-0.62,Y
+rel_pe_em_us,EM vs US Rel PE,V,ewma_z,Daily,custom_series,custom,+0.86,Y
+rel_pe_us_em,US vs EM Rel PE,V,ewma_z,Daily,custom_series,custom,-0.86,Y
+rel_pe_china_us,China vs US Rel PE,V,ewma_z,Daily,custom_series,custom,-0.06,Y
+hy_stress,HY Spread Stress Proxy,S,ewma_z,Daily,custom_series,custom,+0.04,Y
+em_stress,EM Spread Stress Proxy,S,ewma_z,Daily,custom_series,custom,-0.48,Y
+hy_safe_haven,HY Widening=Safe Haven,S,ewma_z,Daily,custom_series,custom,+0.04,Y
+embi,EMBI Proxy (EM OAS chg),S,ewma_z,Daily,custom_series,custom,-0.48,Y
+skew_z,CBOE SKEW Index,Sentiment,ewma_z,daily,H5,original,+0.10,Y
+ism_no_inv,ISM New Orders/Inventories,Fundamentals,ewma_z,monthly,H1,original,+0.58,Y
+eps_rev_us,US EPS Revision Composite (3M+6M),Fundamentals,ewma_z,daily,custom_series,custom,+1.67,Y
+eps_rev_em,EM EPS Revision Composite (3M+6M),Fundamentals,ewma_z,daily,custom_series,custom,+1.44,Y
+eps_rev_eafe,EAFE EPS Revision Composite (3M+6M),Fundamentals,ewma_z,daily,custom_series,custom,+1.83,Y
+eps_rev_china,China EPS Revision Composite (3M+6M),Fundamentals,ewma_z,daily,custom_series,custom,+1.01,Y
+breakeven_1y,US 1Y Breakeven Inflation,Fundamentals,rolling_z,daily,H7,original,+0.59,Y
+gdpnow,Atlanta Fed GDPNow US Forecast,Fundamentals,ewma_z,daily,H7,original,+0.77,Y
+nfci,Chicago Fed National Financial Conditions Index,Sentiment,ewma_z,daily,H7,original,-0.69,Y
+fci_ez,Bloomberg Euro-Zone Financial Conditions Index,Sentiment,ewma_z,daily,H7,original,+0.36,Y
+fci_uk,Bloomberg UK Financial Conditions Index,Sentiment,ewma_z,daily,H7,original,+0.39,Y
+pcr,CBOE Equity Put/Call Ratio (10d),Sentiment,ewma_z,daily,H5,original,+0.49,Y
