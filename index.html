@@ -1018,7 +1018,8 @@ function makeLineChart(id, labels, datasets, opts={}){
   });
 }
 function ds(label,data,color,opts={}){
-  return {label,data,borderColor:color,backgroundColor:opts.fill?color+'22':'transparent',
+  const c=_resolveColor(color);
+  return {label,data,borderColor:c,backgroundColor:opts.fill?c+'22':'transparent',
     borderWidth:opts.bw??1.5,pointRadius:0,pointHoverRadius:3,fill:opts.fill??false,tension:.3,...opts};
 }
 function sliceTF(arr,n){return arr?(n<=0?arr:arr.slice(-n)):arr}
@@ -2095,10 +2096,10 @@ function _fmtDs(s){
   return mm[parseInt(p[1])-1]+" '"+p[0].slice(2);
 }
 
-// Resolve CSS variable to hex/rgb (needed for SVG linearGradient stop-color)
+// Resolve CSS variable to hex/rgb (needed for SVG + Canvas)
 function _resolveColor(c){
   if(!c||!c.startsWith('var(--')) return c||'#f59e0b';
-  const name=c.slice(4,-1).trim();
+  const name=c.slice(6,-1).trim();  // strip 'var(--' (6 chars) → just the var name
   return getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim()||'#f59e0b';
 }
 
