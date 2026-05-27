@@ -37,33 +37,35 @@
   --ps-foot:rgba(139,92,246,.06);--pv-foot:rgba(58,123,213,.06);
 }
 [data-theme="dark"]{
-  --bg:#0B1220;--bg2:#111C2E;--bg3:#162236;--bg4:#1E2E47;
-  --text:#E2E8F0;--text2:#8B9CC0;--text3:#6B7A93;
-  --brand:#10D182;--brand-dark:#0BB06A;--brand-tint:rgba(16,209,130,.14);
-  --blue:#60A5FA;--teal:#2DD4BF;--amber:#FBBF24;
-  --purple:#C084FC;--green:#22C55E;--red:#F87171;--orange:#FB923C;
-  --pos:#22C55E;--neg:#F87171;--neut:#6B7A93;
-  --pf:#2DD4BF;--pm:#FBBF24;--ps:#C084FC;--pv:#60A5FA;
-  --border:#243555;--border-strong:#344E72;
-  --grid:rgba(255,255,255,.14);
-  --chart-text:#A0B0C8;
-  --sign-pos-bg:rgba(34,197,94,.15);--sign-pos-col:#4ADE80;--sign-pos-bd:rgba(34,197,94,.35);
-  --sign-pos2-bg:rgba(34,197,94,.25);--sign-pos2-col:#86EFAC;--sign-pos2-bd:rgba(34,197,94,.5);
-  --sign-neg-bg:rgba(248,113,113,.14);--sign-neg-col:#F87171;--sign-neg-bd:rgba(248,113,113,.35);
-  --sign-neg2-bg:rgba(248,113,113,.24);--sign-neg2-col:#FCA5A5;--sign-neg2-bd:rgba(248,113,113,.5);
-  --sign-con-bg:rgba(192,132,252,.15);--sign-con-col:#C084FC;--sign-con-bd:rgba(192,132,252,.35);
-  --pf-text:#2DD4BF;--pm-text:#FBBF24;--ps-text:#C084FC;--pv-text:#60A5FA;
-  --pf-head:rgba(45,212,191,.08);--pm-head:rgba(251,191,36,.08);
-  --ps-head:rgba(192,132,252,.08);--pv-head:rgba(96,165,250,.08);
-  --pf-foot:rgba(45,212,191,.1);--pm-foot:rgba(251,191,36,.1);
-  --ps-foot:rgba(192,132,252,.1);--pv-foot:rgba(96,165,250,.1);
+  /* Bloomberg-inspired: near-black navy, electric green brand, orange momentum, cyan data */
+  --bg:#060A14;--bg2:#0B1220;--bg3:#101A2C;--bg4:#162034;
+  --text:#E8EEF8;--text2:#7A95BE;--text3:#4E6485;
+  --brand:#00E5A0;--brand-dark:#00C080;--brand-tint:rgba(0,229,160,.12);
+  --blue:#1AAFFF;--teal:#00D4C8;--amber:#FF8C00;
+  --purple:#C088FF;--green:#00E5A0;--red:#FF3D45;--orange:#FF6B00;
+  --pos:#00D87A;--neg:#FF3D45;--neut:#4E6485;
+  --pf:#00D4C8;--pm:#FF8C00;--ps:#C088FF;--pv:#1AAFFF;
+  --border:#0F1D30;--border-strong:#1A2E48;
+  --grid:rgba(255,255,255,.08);
+  --chart-text:#6A8BB8;
+  --sign-pos-bg:rgba(0,216,122,.14);--sign-pos-col:#00D87A;--sign-pos-bd:rgba(0,216,122,.35);
+  --sign-pos2-bg:rgba(0,216,122,.24);--sign-pos2-col:#4DFFB4;--sign-pos2-bd:rgba(0,216,122,.5);
+  --sign-neg-bg:rgba(255,61,69,.13);--sign-neg-col:#FF3D45;--sign-neg-bd:rgba(255,61,69,.35);
+  --sign-neg2-bg:rgba(255,61,69,.23);--sign-neg2-col:#FF7A7F;--sign-neg2-bd:rgba(255,61,69,.5);
+  --sign-con-bg:rgba(192,136,255,.13);--sign-con-col:#C088FF;--sign-con-bd:rgba(192,136,255,.35);
+  --pf-text:#00D4C8;--pm-text:#FF8C00;--ps-text:#C088FF;--pv-text:#1AAFFF;
+  --pf-head:rgba(0,212,200,.08);--pm-head:rgba(255,140,0,.08);
+  --ps-head:rgba(192,136,255,.08);--pv-head:rgba(26,175,255,.08);
+  --pf-foot:rgba(0,212,200,.1);--pm-foot:rgba(255,140,0,.1);
+  --ps-foot:rgba(192,136,255,.1);--pv-foot:rgba(26,175,255,.1);
 }
 body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.4;overflow:hidden}
 .layout{display:flex;height:100vh}
 
 /* Sidebar */
 .sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;
+  transition:width .22s ease,padding .22s ease,border-color .22s ease;min-width:0}
 .sidebar-header{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
 .sidebar-logo{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.3px}
 .sidebar-logo span{color:var(--brand)}
@@ -143,7 +145,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
   border:1px solid rgba(0,169,104,.3);font-weight:500}
 [data-theme="dark"] .tf-btn.active{
   color:var(--brand);background:var(--brand-tint);
-  border:1px solid rgba(16,209,130,.25)}
+  border:1px solid rgba(0,229,160,.25)}
 /* Value display row (large latest reading) */
 .cc-value-row{
   display:flex;align-items:baseline;gap:8px;margin:8px 0 14px;min-height:26px}
@@ -329,6 +331,10 @@ canvas{display:block}
 .sig-row-sign{text-align:center;padding-top:2px}
 .sig-row-wt{text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);padding-top:3px}
 @media(max-width:900px){.pillar-grid{grid-template-columns:1fr}}
+/* Clickable signal name link in pillar cards */
+.pc-sig-link{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;
+  text-underline-offset:2px;transition:color .12s}
+.pc-sig-link:hover{color:var(--brand)}
 
 /* ── Sidebar collapse + responsive ───────────────────────────── */
 .sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -345,8 +351,9 @@ canvas{display:block}
 .sidebar-scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
 
 /* desktop collapsed */
-body.sb-collapsed .sidebar{width:0;border-right:0;overflow:hidden}
+body.sb-collapsed .sidebar{width:0;border-right:0;overflow:hidden;padding:0;min-width:0}
 body.sb-collapsed .topbar-toggle{display:flex}
+body.sb-collapsed .page-header{padding-left:60px}
 
 /* mobile */
 @media (max-width:860px){
@@ -412,7 +419,7 @@ body.sb-collapsed .topbar-toggle{display:flex}
 .ac-legend-swatch{width:18px;height:12px;border-radius:3px}
 
 .pc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;
-  box-shadow:0 2px 14px rgba(0,0,0,.25)}
+  box-shadow:0 2px 14px rgba(0,0,0,.25);display:flex;flex-direction:column}
 .pc.pf{border-color:rgba(20,184,166,.45)}
 .pc.pm{border-color:rgba(245,158,11,.45)}
 .pc.ps{border-color:rgba(168,85,247,.45)}
@@ -432,10 +439,10 @@ body.sb-collapsed .topbar-toggle{display:flex}
 .pc-note{font-size:10.5px;color:var(--text3);font-style:italic;line-height:1.4;
   max-width:340px;text-align:right;font-weight:300}
 
-.pc.pf .pc-title,.pc.pf .pc-weight{color:#2DD4BF}
-.pc.pm .pc-title,.pc.pm .pc-weight{color:#FCD34D}
-.pc.ps .pc-title,.pc.ps .pc-weight{color:#C084FC}
-.pc.pv .pc-title,.pc.pv .pc-weight{color:#60A5FA}
+.pc.pf .pc-title,.pc.pf .pc-weight{color:#00D4C8}
+.pc.pm .pc-title,.pc.pm .pc-weight{color:#FF8C00}
+.pc.ps .pc-title,.pc.ps .pc-weight{color:#C088FF}
+.pc.pv .pc-title,.pc.pv .pc-weight{color:#1AAFFF}
 
 .pc-cols{display:grid;grid-template-columns:1fr 40px 56px 72px 80px;gap:14px;
   padding:8px 16px 6px;border-bottom:1px solid rgba(255,255,255,.03);align-items:center}
@@ -480,7 +487,7 @@ body.sb-collapsed .topbar-toggle{display:flex}
 .pc-z-fill.neg{background:#E8354A;right:50%}
 
 .pc-foot{display:grid;grid-template-columns:1fr 40px 56px 72px 80px;gap:14px;
-  align-items:center;padding:12px 16px;border-top:1px solid var(--border)}
+  align-items:center;padding:12px 16px;border-top:1px solid var(--border);margin-top:auto}
 .pc.pf .pc-foot{background:rgba(20,184,166,.07);border-top-color:rgba(20,184,166,.2)}
 .pc.pm .pc-foot{background:rgba(245,158,11,.07);border-top-color:rgba(245,158,11,.2)}
 .pc.ps .pc-foot{background:rgba(168,85,247,.07);border-top-color:rgba(168,85,247,.2)}
@@ -488,10 +495,10 @@ body.sb-collapsed .topbar-toggle{display:flex}
 .pc-foot-label-cell{grid-column:1 / span 3}
 .pc-foot-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;opacity:.75}
-.pc.pf .pc-foot-label{color:#2DD4BF}
-.pc.pm .pc-foot-label{color:#FCD34D}
-.pc.ps .pc-foot-label{color:#C084FC}
-.pc.pv .pc-foot-label{color:#60A5FA}
+.pc.pf .pc-foot-label{color:#00D4C8}
+.pc.pm .pc-foot-label{color:#FF8C00}
+.pc.ps .pc-foot-label{color:#C088FF}
+.pc.pv .pc-foot-label{color:#1AAFFF}
 .pc-foot-wrap{display:flex;align-items:center;gap:10px}
 .pc-foot-track{width:90px;height:4px;background:rgba(255,255,255,.07);
   border-radius:2px;position:relative}
@@ -981,7 +988,7 @@ function pctFmt(v){return v===null?'—':(v>=0?'+':'')+v.toFixed(2)+'%'}
 (function(){
   const css = getComputedStyle(document.documentElement);
   Chart.defaults.color = css.getPropertyValue('--chart-text').trim() || '#4B5668';
-  Chart.defaults.borderColor = css.getPropertyValue('--border').trim() || '#E5EAF0';
+  Chart.defaults.borderColor = css.getPropertyValue('--grid').trim() || '#E5EAF0';
 })();
 Chart.defaults.font.family = "'IBM Plex Mono', 'JetBrains Mono', monospace";
 Chart.defaults.font.size = 10;
@@ -1527,6 +1534,96 @@ function classifySignal(z){
   return            {cls:'neutral',   label:'NEU'};
 }
 
+// Systematic mapping: series_id → {s: chartbook nav section, id: card element id}
+// Covers all signals in FI_BLUEPRINT + EQ_BLUEPRINT; signals not listed remain plain text.
+const SIGNAL_TO_CHART={
+  // Fundamentals
+  pmi_us:{s:'cb-fund',id:'card-f-ism-mfg'},
+  pmi_ez:{s:'cb-fund',id:'card-f-ez-mfg'},
+  pmi_china:{s:'cb-fund',id:'card-f-cn-mfg'},
+  pmi_japan:{s:'cb-fund',id:'card-f-jp-mfg'},
+  cesi_us:{s:'cb-fund',id:'card-f-cesi-us'},
+  cesi_ez:{s:'cb-fund',id:'card-f-cesi-ez'},
+  cesi_em:{s:'cb-fund',id:'card-f-cesi-em'},
+  cesi_china:{s:'cb-fund',id:'card-f-cesi-cn'},
+  gdp_us:{s:'cb-fund',id:'card-f-gdp-us'},
+  gdp_dm:{s:'cb-fund',id:'card-f-gdp-us'},
+  gdp_em:{s:'cb-fund',id:'card-f-eps-em'},
+  gdpnow:{s:'cb-fund',id:'card-f-gdp-us'},
+  eps_us:{s:'cb-fund',id:'card-f-eps-us'},
+  eps_rev_us:{s:'cb-fund',id:'card-f-eps-us'},
+  eps_em:{s:'cb-fund',id:'card-f-eps-em'},
+  eps_eafe:{s:'cb-fund',id:'card-f-eps-em'},
+  breakeven_10y:{s:'cb-fund',id:'card-f-bk5'},
+  breakeven_5y:{s:'cb-fund',id:'card-f-bk5'},
+  breakeven_1y:{s:'cb-fund',id:'card-f-bk5'},
+  // Momentum
+  sp500_tr:{s:'cb-mom',id:'card-m-us-eq'},
+  eafe_tr:{s:'cb-mom',id:'card-m-dm'},
+  msci_em_tr:{s:'cb-mom',id:'card-m-em'},
+  bsgv_price:{s:'cb-mom',id:'card-m-lttsy'},
+  lt03_price:{s:'cb-mom',id:'card-m-lttsy'},
+  bfu5_price:{s:'cb-mom',id:'card-m-corp'},
+  i132_price:{s:'cb-mom',id:'card-m-corp'},
+  oas_bbb_mom:{s:'cb-mom',id:'card-m-oas-bbb'},
+  oas_hy_mom:{s:'cb-mom',id:'card-m-oas-hy'},
+  oas_em_mom:{s:'cb-mom',id:'card-m-oas-em'},
+  gt10_mom:{s:'cb-mom',id:'card-m-lttsy'},
+  gt02_mom:{s:'cb-mom',id:'card-m-lttsy'},
+  cdx_ig_mom:{s:'cb-mom',id:'card-m-oas-bbb'},
+  cdx_hy_mom:{s:'cb-mom',id:'card-m-oas-hy'},
+  // Sentiment
+  vix:{s:'cb-sent',id:'card-s-vix'},
+  move_z:{s:'cb-sent',id:'card-s-move'},
+  vstoxx_z:{s:'cb-sent',id:'card-s-vstoxx'},
+  skew_z:{s:'cb-sent',id:'card-s-vix'},
+  modern_ted:{s:'cb-sent',id:'card-s-ted'},
+  embi:{s:'cb-sent',id:'card-s-embi'},
+  em_stress:{s:'cb-sent',id:'card-s-embi'},
+  hy_stress:{s:'cb-sent',id:'card-s-embi'},
+  hy_safe_haven:{s:'cb-sent',id:'card-s-embi'},
+  aaii_z:{s:'cb-sent',id:'card-s-aaii'},
+  pcr:{s:'cb-sent',id:'card-s-pcr'},
+  fci_z:{s:'cb-sent',id:'card-s-vix'},
+  fci_ez:{s:'cb-sent',id:'card-s-vstoxx'},
+  // Valuation
+  pe_score_sp500:{s:'cb-val',id:'card-v-pe-sp500'},
+  pe_score_eafe:{s:'cb-val',id:'card-v-pe-eafe'},
+  pe_score_em:{s:'cb-val',id:'card-v-pe-em'},
+  erp_us:{s:'cb-val',id:'card-v-erp-us'},
+  erp_acwi:{s:'cb-val',id:'card-v-erp-us'},
+  erp_em:{s:'cb-val',id:'card-v-erp-em'},
+  rel_pe_us_em:{s:'cb-val',id:'card-v-pe-sp500'},
+  rel_pe_em_us:{s:'cb-val',id:'card-v-pe-em'},
+  rel_pe_dm_us:{s:'cb-val',id:'card-v-pe-eafe'},
+  rel_pe_gro_val:{s:'cb-val',id:'card-v-pe-sp500'},
+  rel_pe_val_gro:{s:'cb-val',id:'card-v-pe-sp500'},
+  oas_bbb:{s:'cb-val',id:'card-v-oas-bbb'},
+  oas_hy:{s:'cb-val',id:'card-v-oas-hy'},
+  oas_em:{s:'cb-val',id:'card-v-oas-em'},
+  oas_latam:{s:'cb-val',id:'card-v-oas-la'},
+  hy_ig_ratio:{s:'cb-val',id:'card-v-oas-hy'},
+  gt10:{s:'cb-val',id:'card-v-y10'},
+  gt02:{s:'cb-val',id:'card-v-y2'},
+  tips_10y:{s:'cb-val',id:'card-v-tips10'},
+  tips_5y:{s:'cb-val',id:'card-v-tips5'},
+  term_spread:{s:'cb-val',id:'card-v-term'},
+};
+
+// Navigate to a chartbook section and scroll+highlight the target card
+function goToChart(section, cardId){
+  nav(section);
+  // Allow 120ms for lazy section build (buildCBFund/Mom/Sent/Val) before querying DOM
+  setTimeout(()=>{
+    const card=document.getElementById(cardId);
+    if(!card) return;
+    card.scrollIntoView({behavior:'smooth',block:'start'});
+    card.style.transition='box-shadow .2s';
+    card.style.boxShadow='0 0 0 2px var(--brand),0 0 18px rgba(0,229,160,.22)';
+    setTimeout(()=>{ card.style.boxShadow=''; }, 2000);
+  }, 120);
+}
+
 // renders one signal row — uses real z-score from SIG_Z if available
 function renderSignalRow(sig, pillarZ){
   // SIG_Z: {series_id -> latest raw z-score} injected by generate_dashboard.py
@@ -1539,9 +1636,13 @@ function renderSignalRow(sig, pillarZ){
   const sig_badge = classifySignal(sigZ);
   const tip = hasReal ? 'Signed z-score (sign × raw z). Pillar Z is EWMA-standardised against history.' : 'Estimated from pillar z (no real data yet)';
   const zLabel = hasReal ? zFmt2(sigZ) : '<span style="opacity:.5">'+zFmt2(sigZ)+'</span>';
+  const chartLink = sig.id ? SIGNAL_TO_CHART[sig.id] : null;
+  const nameEl = chartLink
+    ? '<span class="pc-sig-name pc-sig-link" onclick="goToChart(\''+chartLink.s+'\',\''+chartLink.id+'\')" title="View in Chartbook →">'+sig.n+'</span>'
+    : '<span class="pc-sig-name">'+sig.n+'</span>';
   return '<div class="pc-row">'
     + '<div class="pc-info">'
-    +   '<span class="pc-sig-name">'+sig.n+'</span>'
+    +   nameEl
     +   '<span class="pc-sig-desc">'+sig.d+'</span>'
     + '</div>'
     + '<div class="pc-sign">'+blueprintSignBadge(sig.s)+'</div>'
@@ -1644,7 +1745,7 @@ function toggleTheme(){
   // refresh Chart.js defaults + redraw existing charts
   const css = getComputedStyle(document.documentElement);
   Chart.defaults.color = css.getPropertyValue('--chart-text').trim() || '#4B5668';
-  Chart.defaults.borderColor = css.getPropertyValue('--border').trim() || '#E5EAF0';
+  Chart.defaults.borderColor = css.getPropertyValue('--grid').trim() || '#E5EAF0';
   Object.values(Chart.instances||{}).forEach(c=>{
     try{
       const scales = c.options?.scales || {};
@@ -3387,15 +3488,16 @@ function buildFundamentalsHeatmap(el){
   const HM=CB.fundamentals_heatmap;
   if(!HM||!HM.rows||!HM.col_meta) return;
 
-  const cols    = HM.col_meta;   // [{year,quarter,month_idx,month_short,month_full}]
-  const years   = HM.years;      // [{year,start_idx,count}]
-  const quarters= HM.quarters;   // [{year,quarter,label,start_idx,count}]
+  const cols    = HM.col_meta;
+  const years   = HM.years;
+  const quarters= HM.quarters;
   const rows    = HM.rows;
   const nCols   = cols.length;
-  const YB      = '2px solid var(--border-strong)';   // year separator — CSS var = visible in dark/light
-  const QB      = '1px solid var(--border)';           // quarter separator
+  const YB      = '2px solid var(--border-strong)';
+  const QB      = '1px solid var(--border)';
+  // Sticky style applied ONLY to data-row label cells (not header rows)
+  const STICK   = 'position:sticky;left:0;z-index:2;background:var(--bg2);box-shadow:3px 0 8px rgba(0,0,0,.22);';
 
-  // Helper: is column ci the first of a new year?
   function isYearStart(ci){ return ci>0 && years.some(y=>y.start_idx===ci); }
   function isQtrStart(ci) { return ci>0 && quarters.some(q=>q.start_idx===ci); }
   function colLeftBorder(ci){
@@ -3404,13 +3506,12 @@ function buildFundamentalsHeatmap(el){
     return '';
   }
 
-  let t=`<div style="overflow-x:auto;margin-bottom:20px">
-  <div style="margin-bottom:8px">
+  // Title + legend are OUTSIDE the scroll container so they don't scroll with the table
+  let t=`<div style="margin-bottom:8px">
     <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.2px">
       Global Industry Growth Heatmap</div>
     <div style="font-size:10px;color:var(--text3);margin-top:2px;font-style:italic">${HM.subtitle||''}</div>
   </div>
-  <!-- Legend -->
   <div style="display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap">
     <span style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Color:</span>
     <span style="background:rgba(0,169,104,.85);padding:2px 8px;border-radius:3px;color:#fff;font-size:9px">Expansion / Positive</span>
@@ -3420,31 +3521,32 @@ function buildFundamentalsHeatmap(el){
     <span style="background:rgba(225,29,72,.85);padding:2px 8px;border-radius:3px;color:#fff;font-size:9px">Contraction / Negative</span>
     <span style="font-size:9px;color:var(--text3);margin-left:6px">PMI: absolute 50 threshold · Other series: independent per-row scale</span>
   </div>
-  <table style="border-collapse:collapse;font-size:10px">
+  <div id="hm-outer" style="overflow-x:auto;margin-bottom:4px">
+  <table style="border-collapse:separate;border-spacing:0;font-size:10px">
   <thead>
-  <!-- Row 1: Year groups -->
+  <!-- Row 1: Year groups — first <th> is plain (no sticky) to avoid ghost box in light mode -->
   <tr>
-    <th style="min-width:195px;padding:4px 10px 3px 0"></th>`;
+    <th style="min-width:195px;padding:4px 10px 3px 0;border-bottom:1px solid var(--border)"></th>`;
 
   years.forEach((yr,yi)=>{
     const lb=yi===0?'':'border-left:'+YB+';';
     t+=`<th colspan="${yr.count}" style="text-align:center;padding:3px 4px;
-      font-weight:700;font-size:12px;color:var(--text);letter-spacing:-.2px;${lb}">${yr.year}</th>`;
+      font-weight:700;font-size:12px;color:var(--text);letter-spacing:-.2px;${lb}border-bottom:1px solid var(--border)">${yr.year}</th>`;
   });
 
   t+=`</tr>
-  <!-- Row 2: Quarter groups -->
+  <!-- Row 2: Quarter groups — first <th> plain, no sticky -->
   <tr>
-    <th></th>`;
+    <th style="border-bottom:1px solid var(--border)"></th>`;
 
   quarters.forEach((qr,qi)=>{
     const lb=qr.start_idx>0?'border-left:'+(qr.quarter===1?YB:QB)+';':'';
     t+=`<th colspan="${qr.count}" style="text-align:center;padding:2px 3px;
-      font-size:10px;font-weight:600;color:var(--text2);${lb}">${qr.label}</th>`;
+      font-size:10px;font-weight:600;color:var(--text2);${lb}border-bottom:1px solid var(--border)">${qr.label}</th>`;
   });
 
   t+=`</tr>
-  <!-- Row 3: Month labels -->
+  <!-- Row 3: Month labels — first <th> plain, no sticky -->
   <tr>
     <th style="border-bottom:2px solid var(--border-strong)"></th>`;
 
@@ -3457,7 +3559,6 @@ function buildFundamentalsHeatmap(el){
 
   t+=`</tr></thead><tbody>`;
 
-  // Data rows
   rows.forEach(row=>{
     if(row.type==='header'){
       t+=`<tr><td colspan="${nCols+1}" style="padding:7px 0 3px;font-size:10px;
@@ -3472,9 +3573,9 @@ function buildFundamentalsHeatmap(el){
     const thr=row.threshold||50;
     const inv=row.invert||false;
 
-    // No badge next to series name — clean label only
+    // Series label cell: sticky so it stays visible while scrolling right
     t+=`<tr><td style="padding:3px 10px 3px 0;color:var(--text2);font-size:10.5px;
-      border-bottom:1px solid var(--border);white-space:nowrap">${row.label}</td>`;
+      border-bottom:1px solid var(--border);white-space:nowrap;${STICK}">${row.label}</td>`;
 
     vals.forEach((v,ci)=>{
       const lb=colLeftBorder(ci);
@@ -3496,13 +3597,19 @@ function buildFundamentalsHeatmap(el){
   });
 
   t+=`</tbody></table>
-  <div style="font-size:9px;color:var(--text3);margin-top:6px;line-height:1.5">
+  </div>
+  <div style="font-size:9px;color:var(--text3);margin-top:6px;margin-bottom:20px;line-height:1.5">
     Color legend: White = neutral/50 · Green = expansion/positive · Red = contraction/negative.
     PMI threshold = 50 · ISM N.O./Inventories threshold = 1.0 · FCI/NFCI: high = tight = red.
     Non-PMI series: color scaled independently per row using historical percentile rank.
-  </div></div>`;
+  </div>`;
 
   el.insertAdjacentHTML('afterbegin',t);
+  // Scroll to show the most recent (rightmost) columns on load
+  requestAnimationFrame(()=>{
+    const sc=el.querySelector('#hm-outer');
+    if(sc) sc.scrollLeft=sc.scrollWidth;
+  });
 }
 
 let cbFundBuilt=false;
