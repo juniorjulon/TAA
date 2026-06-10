@@ -1044,6 +1044,13 @@ function convClass(c){
   return c==='HIGH OW'?'conv-how2':c==='MEDIUM OW'?'conv-how':c==='NEUTRAL'?'conv-neu':
          c==='MEDIUM UW'?'conv-luw':'conv-huw';
 }
+function signalLabel(z){
+  if(z>=1.0)  return {label:'Strong Bull', cls:'conv-how2'};
+  if(z>=0.5)  return {label:'Bull',        cls:'conv-how'};
+  if(z>-0.5)  return {label:'Neutral',     cls:'conv-neu'};
+  if(z>-1.0)  return {label:'Bear',        cls:'conv-luw'};
+              return {label:'Strong Bear', cls:'conv-huw'};
+}
 function tiltBar(v,max){
   const pct=Math.min(Math.abs(v)/max*50,50);
   const color=v>=0?'#22C55E':'#E8354A';
@@ -1078,13 +1085,12 @@ function buildScorecard(){
   let html=`<thead><tr>
     <th>Asset Class</th><th style="color:var(--pf)">F</th><th style="color:var(--pm)">M</th>
     <th style="color:var(--ps)">S</th><th style="color:var(--pv)">V</th>
-    <th>Composite</th><th>Agree</th><th>Conviction</th>
-    <th>Abs Tilt</th><th>Rel Tilt</th><th>Final Tilt</th></tr></thead><tbody>`;
+    <th>Composite</th><th>Agree</th><th>Signal</th></tr></thead><tbody>`;
   let lastGroup='';
   SCORECARD.forEach(r=>{
     const g=r.group==='FI'?'Fixed Income':'Equity';
     if(g!==lastGroup){
-      html+=`<tr class="group-row"><td colspan="11">${g}</td></tr>`;
+      html+=`<tr class="group-row"><td colspan="8">${g}</td></tr>`;
       lastGroup=g;
     }
     const zc=z=>
@@ -1095,10 +1101,7 @@ function buildScorecard(){
       <td>${zc(r.Z_S)}</td><td>${zc(r.Z_V)}</td>
       <td>${zc(r.Z_composite)}</td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${r.n_agree}/4</td>
-      <td><span class="conv ${convClass(r.conviction)}">${r.conviction}</span></td>
-      <td>${tiltBar(r['abs_tilt_%'],5)}</td>
-      <td>${tiltBar(r['rel_tilt_%'],5)}</td>
-      <td>${tiltBar(r['final_tilt_%'],5)}</td>
+      <td>${(s=>` <span class="conv ${s.cls}">${s.label}</span>`)(signalLabel(r.Z_composite))}</td>
     </tr>`;
   });
   html+='</tbody>';
