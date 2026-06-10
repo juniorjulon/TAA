@@ -803,7 +803,6 @@ body{font-weight:400}
   <div class="page-date" id="sc-date">Apr 2026</div>
 </div>
 <div class="content">
-  <div class="kpi-row" id="kpi-row"></div>
   <div class="card mb16">
     <div class="card-title">Composite Scorecard — All Asset Classes</div>
     <table class="sc-table" id="sc-table"></table>
@@ -1062,24 +1061,6 @@ function tiltBar(v,max){
 }
 function buildScorecard(){
   scorecardBuilt=true;
-  // KPIs
-  const fi   = SCORECARD.filter(r=>r.group==='FI');
-  const eq   = SCORECARD.filter(r=>r.group==='EQ');
-  const fiTilt = fi.reduce((s,r)=>s+(r['final_tilt_%']||0),0);
-  const eqTilt = eq.reduce((s,r)=>s+(r['final_tilt_%']||0),0);
-  const agree  = SCORECARD.filter(r=>r.n_agree>=3).length;
-  const teBudget = SCORECARD.reduce((s,r)=>s+Math.abs(r['final_tilt_%']||0),0);
-  const kpis = [
-    {label:'FI Net Tilt',    value:pctFmt(fiTilt),  sub:'5 asset classes', cls:fiTilt>=0?'kpi-pos':'kpi-neg'},
-    {label:'Equity Net Tilt',value:pctFmt(eqTilt),  sub:'7 asset classes', cls:eqTilt>=0?'kpi-pos':'kpi-neg'},
-    {label:'Pillars Agree',  value:agree+'/'+SCORECARD.length, sub:'≥3 pillars aligned', cls:'kpi-neut'},
-    {label:'TE Budget Used', value:teBudget.toFixed(1)+'%', sub:'sum |final tilt|', cls:'kpi-neut'},
-  ];
-  document.getElementById('kpi-row').innerHTML = kpis.map(k=>
-    `<div class="kpi"><div class="kpi-label">${k.label}</div>
-     <div class="kpi-value ${k.cls}">${k.value}</div>
-     <div class="kpi-sub">${k.sub}</div></div>`).join('');
-
   // Table — use AC_LABEL_FULL injected from Excel (no hardcoded duplicate needed)
   const AC_LABEL=AC_LABEL_FULL;
   let html=`<thead><tr>
