@@ -1,0 +1,7 @@
+,label,group,Z_F,Z_M,Z_S,Z_V,Z_composite,n_agree,conviction_mult,conviction,abs_tilt_%,Z_relative,rel_tilt_%,final_tilt_%
+lt_treasuries,LT US Treasuries,FI,0.159,-0.308,-0.11,1.149,0.285,1,0.0,NEUTRAL,0.0,0.241,0.0,0.0
+lt_us_corp,LT US Corporate,FI,0.172,-0.708,-0.538,3.0,0.615,2,0.5,NEUTRAL,0.0,0.833,0.75,0.49
+lt_em_fi,LT EM Fixed Income,FI,-1.416,0.854,1.227,3.0,0.898,3,0.8,MEDIUM OW,1.2,1.341,1.2,1.2
+us_equity,US Equity (Broad),EQ,0.034,0.668,-0.298,-0.631,-0.008,2,0.5,NEUTRAL,0.0,-0.285,0.0,0.0
+dm_equity,DM ex-US Equity,EQ,-0.455,-0.899,-0.698,-0.17,-0.566,3,0.8,NEUTRAL,0.0,-1.286,-1.6,-1.04
+em_equity,Emerging Markets Equity,EQ,-1.211,0.302,-1.619,0.864,-0.32,2,0.5,NEUTRAL,0.0,-0.845,-1.0,-0.65
