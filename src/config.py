@@ -270,12 +270,12 @@ ASSET_CLASS_GROUPS = {
 
 # <<<BUILD:PY_PILLAR_WEIGHTS_START>>> — regenerated from config/taa_config.xlsx
 PILLAR_WEIGHTS = {
-    "lt_treasuries": {"F": 0.25, "M": 0.25, "S": 0.20, "V": 0.30},
-    "lt_us_corp": {"F": 0.20, "M": 0.30, "S": 0.20, "V": 0.30},
-    "lt_em_fi": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "us_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "dm_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
-    "em_equity": {"F": 0.25, "M": 0.30, "S": 0.20, "V": 0.25},
+    "lt_treasuries": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
+    "lt_us_corp": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
+    "lt_em_fi": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
+    "us_equity": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
+    "dm_equity": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
+    "em_equity": {"F": 0.25, "M": 0.25, "S": 0.25, "V": 0.25},
 }
 # <<<BUILD:PY_PILLAR_WEIGHTS_END>>>
 
